@@ -1,0 +1,117 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: $JOB_NAME
+  namespace: $NAMESPACE
+spec:
+  replicas: 1
+  progressDeadlineSeconds: 120
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1        # how many pods we can add at a time
+      maxUnavailable: 0  # maxUnavailable define how many pods can be unavailable # during the rolling update
+  selector:
+    matchLabels:
+      name: $JOB_NAME
+  template:
+    metadata:
+      name: $JOB_NAME
+      labels:
+        name: $JOB_NAME
+    spec:
+      containers:
+      - name: $JOB_NAME
+        image: asia.gcr.io/minswap-devops/$JOB_NAME:$IMAGE_TAG
+        resources:
+          requests:
+            cpu: "200m"
+            memory: "300Mi"
+          limits:
+            cpu: "800m"
+            memory: "1000Mi"
+        lifecycle:
+          postStart:
+            exec:
+              command: ["/bin/sh", "/usr/app/start.sh"]
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: http
+          containerPort: $APP_PORT
+        envFrom:
+        - configMapRef:
+            name: $JOB_NAME
+        - secretRef:
+            name: $JOB_NAME
+      volumes:
+      - name: kafka-cert
+        secret:
+          secretName: kafka-cert
+      restartPolicy: Always
+      imagePullSecrets:
+      - name: docker-image-pull-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    name: $JOB_NAME
+  name: $JOB_NAME
+  namespace: $NAMESPACE
+spec:
+  ports:
+  - name: http
+    port: 80
+    targetPort: ${APP_PORT}
+  selector:
+    name: $JOB_NAME
+  type: ClusterIP
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name:  $JOB_NAME
+  namespace: $NAMESPACE
+spec:
+  gateways:
+    - fs-gateway
+  hosts:
+    - $HOST
+  http:
+    - match:
+        - uri:
+            prefix: $SERVICE_PATH/
+      route:
+        - destination:
+            host: $JOB_NAME
+            port:
+              number: 80
+    - headers:
+        request:
+          set:
+            x-envoy-force-trace: true
+  rules:
+    - host: $HOST
+      http:
+        paths:
+          - backend:
+              serviceName: $CI_PROJECT_NAME
+              servicePort: 80
+            path: $SERVICE_PATH/
+  tls:
+    - hosts:
+        - $HOST
+---
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: $JOB_NAME
+  namespace: $NAMESPACE
+spec:
+  scaleTargetRef:
+    apiVersion: extensions/v1beta1
+    kind: Deployment
+    name: $JOB_NAME
+  minReplicas: 1
+  maxReplicas: 1
+  targetCPUUtilizationPercentage: 75

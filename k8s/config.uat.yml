@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: $JOB_NAME
+  namespace: $NAMESPACE
+data:
+  ENV: uat
+  APP_PORT: "6640"
+  

@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: $JOB_NAME
+data:
+  ENV: prod
+  ENVIRONMENT: prod
+  APP_PORT: "6640"
+  

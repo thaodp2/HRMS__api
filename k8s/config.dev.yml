@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: $JOB_NAME
+data:
+  ENV: dev
+  ENVIRONMENT: dev
+  APP_PORT: "6640"
+  ELASTIC_APM_ACTIVE: "false"
+  ELASTIC_APM_INSTRUMENT: "false"
+  APM_SERVICENAME: ew-pay-platform-internal-dev

@@ -1,0 +1,5 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'asia.gcr.io/minswap-devops/${_JOB_NAME}:${_IMAGE_TAG}', '.']
+- name: 'gcr.io/cloud-builders/docker'
+  args: ["push", "asia.gcr.io/minswap-devops/${_JOB_NAME}:${_IMAGE_TAG}"]

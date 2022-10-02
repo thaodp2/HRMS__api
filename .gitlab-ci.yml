@@ -1,0 +1,170 @@
+include:
+  - project: 'devops/gitlab-ci-templates'
+    ref: master
+    file: "/common/libs-next-gen.yml"
+  - project: 'devops/gitlab-ci-templates'
+    ref: master
+    file: "before-script-templates.yml"
+
+image: asia.gcr.io/minswap-devops/k8s-deployer:latest
+
+default:
+  tags:
+    - nonprod
+
+variables:
+  MAVEN_CLI_TEST_OPTS: "clean test"
+  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
+  GIT_SUBMODULE_STRATEGY: recursive
+  no_proxy: "10.111.184.21"
+  APP_PORT: "6640"
+  SERVICE_PATH: /lending-management
+  JOB_NAME: $CI_PROJECT_NAME
+  IMAGE_TAG: $CI_COMMIT_SHORT_SHA
+
+.docker_image_build: # Run docker in docker
+  tags: [shared-k8s-runner]
+  image: asia.gcr.io/minswap-devops/devops-docker-build:latest
+  cache: { }
+  services:
+    - asia.gcr.io/minswap-devops/docker:20.10.7-dind
+  variables:
+    DOCKER_HOST: tcp://localhost:2376 # tcp://docker-dind.shared-gitlab-runner:2375 # For using remote docker dind
+    DOCKER_IMAGE_REPO: asia.gcr.io/minswap-devops
+    DOCKER_TLS_CERTDIR: "/certs"
+    DOCKER_TLS_VERIFY: 0
+    DOCKER_CERT_PATH: "$DOCKER_TLS_CERTDIR/client"
+  before_script:
+    - | # https://gitlab.com/gitlab-org/gitlab-runner/-/issues/27384#note_497228752
+      for i in $(seq 1 30)
+      do
+          docker info && break
+          echo "Waiting for docker to start"
+          sleep 1s
+      done
+      gcloud auth configure-docker -q
+  script: |
+      docker build -t $DOCKER_IMAGE_REPO/$DOCKER_IMAGE_NAME:$IMAGE_TAG .
+      docker push $DOCKER_IMAGE_REPO/$DOCKER_IMAGE_NAME:$IMAGE_TAG
+
+
+stages:
+- verify
+- build
+- tag
+- deploy
+- request deploy to production
+- notify
+
+code analysis:
+  image: maven:3.6.1-jdk-8
+  stage: verify
+  coverage: '/Total.*?([0-9]{1,3})%/'
+  allow_failure: true
+  tags:
+    - nonprod
+  script:
+    - mvn clean verify
+    - mvn package -Dmaven.test.skip=false
+#    - mvn clean verify -Dmaven.test.skip=false -Dspring.profiles.active=backup
+    - cat target/site/jacoco/index.html
+    - mkdir temp/
+    - cp target/*.jar temp/
+  except:
+    refs:
+      - tags
+  only:
+    - master
+    - /^uat.*$/
+    - /^qc.*$/
+    - /^feature.*$/
+    - /^release.*$/
+    - /^DEVOPS.*$/
+  artifacts:
+    expire_in: 6h
+    paths:
+      - temp/*.jar
+
+image build:
+  stage: build
+  extends: .docker_image_build
+  dependencies:
+  - code analysis
+  only:
+    refs:
+    - /^uat.*$/
+    - /^qc.*$/
+    - /^release.*$/
+    - /^DEVOPS.*$/
+  variables:
+    DOCKER_IMAGE_NAME: $CI_PROJECT_NAME
+    DOCKER_FILE: Dockerfile
+
+deploy to sit:
+  stage: deploy
+  when: manual
+  allow_failure: false
+  tags:
+    - nonprod
+  only:
+    - /^qc.*$/
+    - feature/test-deploy-qc
+    - /^DEVOPS.*$/
+  variables:
+    HOST: host-sit.dev
+    ENVIRONMENT: sit
+    NAMESPACE: sit
+    SERVICE_PATH: /lending-management
+  script:
+    - cd k8s && bash deploy.sh
+
+deploy to uat:
+  stage: deploy
+  when: manual
+  allow_failure: false
+  tags:
+    - nonprod
+  only:
+    - /^uat.*$/
+    - feature/test-deploy-staging
+  variables:
+    HOST: host-uat.dev
+    ENVIRONMENT: uat
+    NAMESPACE: uat
+    SERVICE_PATH: /lending-management
+  script:
+    - cd k8s && bash deploy.sh
+
+request to prod:
+  extends: .request_to_prod
+  only:
+    - tags
+  except:
+    - /^*-sandbox$/
+      
+tag:
+  stage: tag
+  only:
+  - tags
+  script:
+  - echo $GCR_PUSHER_KEY > /tmp/gcr-pusher.json
+  - gcloud auth activate-service-account --key-file /tmp/gcr-pusher.json
+  - gcloud container images add-tag asia.gcr.io/minswap-devops/$CI_PROJECT_NAME:$IMAGE_TAG asia.gcr.io/minswap-devops/$CI_PROJECT_NAME:$CI_COMMIT_TAG --quiet
+
+failure notify:
+  stage: notify
+  when: on_failure
+  script:
+    - failure-notify
+
+success notify:
+  stage: notify
+  when: on_success
+  only:
+    refs:
+      - master
+      - develop
+      - feature/test-deploy-dev
+      - feature/test-deploy-staging
+  script:
+    - success-notify

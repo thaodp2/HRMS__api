@@ -1,0 +1,1 @@
+echo $GAMI_SIGNATURE_PUBLICKEY > /usr/app/conf/gami_signature_publickey
