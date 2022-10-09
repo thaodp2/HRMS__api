@@ -21,7 +21,7 @@ public class BasicRequest implements Serializable {
 	private static final long serialVersionUID = 1L;
 	
 	@JsonProperty("request_id")
-	@NotNull(message = "500001")
+	//@NotNull(message = "500001")
 	private String requestId;
 
 	@JsonProperty("device_id")

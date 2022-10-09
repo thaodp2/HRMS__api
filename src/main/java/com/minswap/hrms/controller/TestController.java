@@ -1,13 +1,13 @@
 package com.minswap.hrms.controller;
 
 import javax.validation.Valid;
+
+import com.minswap.hrms.model.Role;
+import com.minswap.hrms.repository.RoleRespository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.minswap.hrms.constants.CommonConstant;
 import com.minswap.hrms.dto.request.BasicRequest;
@@ -17,6 +17,8 @@ import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.model.TestResponse;
 import com.minswap.hrms.service.ServiceTest;
 
+import java.util.List;
+
 @RestController
 @RequestMapping(CommonConstant.ADMIN + "/account")
 public class TestController {
@@ -24,10 +26,8 @@ public class TestController {
   @Autowired
   private ServiceTest serviceTest;
 
-  
-    @PostMapping("/test")
-    @ServiceProcessingValidateAnnotation
-    public ResponseEntity<BaseResponse<TestResponse, Pageable>> checkAvailability(@RequestBody @Valid BasicRequest request,BindingResult bindingResult) {
-        return serviceTest.serviceTest(request.getRequestId());
+    @GetMapping ("/role")
+    public ResponseEntity<BaseResponse<List<Role>, Pageable>> checkAvailability() {
+      return serviceTest.serviceTest();
     }
 }
