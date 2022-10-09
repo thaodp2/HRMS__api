@@ -1,29 +1,25 @@
 package com.minswap.hrms.model;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import com.minswap.hrms.repository.RoleRespository;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+import javax.persistence.*;
+
+@Table(name = Role.TABLE_NAME)
 @Entity
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class Role {
+    public static final String TABLE_NAME = "role";
     @Id
-    @GeneratedValue
+    @Column(name = "role_id")
     private int RoleID;
+
+    @Column(name = "role_name")
     private String RoleName;
-
-    public int getRoleID() {
-        return RoleID;
-    }
-
-    public void setRoleID(int roleID) {
-        RoleID = roleID;
-    }
-
-    public String getRoleName() {
-        return RoleName;
-    }
-
-    public void setRoleName(String roleName) {
-        RoleName = roleName;
-    }
 }
