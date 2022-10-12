@@ -1,6 +1,8 @@
 package com.minswap.hrms.controller;
 
 import javax.validation.Valid;
+
+import com.minswap.hrms.exception.annotation.ServiceProcessingValidateAnnotation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -10,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.minswap.hrms.constants.CommonConstant;
-import com.minswap.hrms.exception.annotation.ServiceProcessingValidateAnnotation;
 import com.minswap.hrms.exception.model.Pagination;
 import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.request.BasicRequest;
