@@ -12,16 +12,14 @@ import lombok.experimental.Accessors;
 @AllArgsConstructor
 @NoArgsConstructor
 @Accessors(chain = true)
-public class Pageable {
-  @JsonProperty("records")
-  private int records;
+public class Pagination {
+	  @JsonProperty("page")
+	  private int page;
+	  
+	  @JsonProperty("limit")
+	  private int limit;
   
-  @JsonProperty("totalRecords")
-  private int totalRecords;
-  
-  @JsonProperty("limit")
-  private int limit;
-  
-  @JsonProperty("page")
-  private int page;
+	  @JsonProperty("totalRecords")
+	  private int totalRecords;
+
 }

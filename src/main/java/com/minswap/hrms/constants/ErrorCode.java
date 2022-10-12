@@ -6,27 +6,23 @@ import com.minswap.hrms.model.BusinessCode;
 
 public class ErrorCode {
     public static final BusinessCode INTERNAL_SERVER_ERROR = new BusinessCode(
-            "INTERNAL_SERVER_ERROR", "Internal server error", HttpStatus.INTERNAL_SERVER_ERROR);
-    public static final BusinessCode THIRD_PARTY_ERROR = new BusinessCode(
-            "THIRD_PARTY_ERROR", "Third party error", HttpStatus.INTERNAL_SERVER_ERROR);
+    		ErrorCodeEnum.INTERNAL_SERVER_ERROR.getValue(), "Internal server error", HttpStatus.INTERNAL_SERVER_ERROR);
 
     public static final BusinessCode INVALID_PARAMETERS = new BusinessCode(
-            "INVALID_PARAMETERS", "Invalid parameters", HttpStatus.BAD_REQUEST);
+    		ErrorCodeEnum.BAD_REQUEST.getValue(), "Invalid parameters", HttpStatus.BAD_REQUEST);
     public static final BusinessCode UNAUTHORIZED = new BusinessCode(
-            "UNAUTHORIZED", "Unauthorized", HttpStatus.UNAUTHORIZED);
+    		ErrorCodeEnum.UNAUTHORIZED.getValue(), "Unauthorized", HttpStatus.UNAUTHORIZED);
 
-    public static final BusinessCode RESOURCE_NOT_FOUND = new BusinessCode(
-            "RESOURCE_NOT_FOUND", "Resource not found", HttpStatus.NOT_FOUND);
 
     public static BusinessCode newErrorCode(String message) {
-        return new BusinessCode("INTERNAL_SERVER_ERROR", message, HttpStatus.INTERNAL_SERVER_ERROR);
+        return new BusinessCode(ErrorCodeEnum.INTERNAL_SERVER_ERROR.getValue(), message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    public static BusinessCode newErrorCode(String code,String message) {
+    public static BusinessCode newErrorCode(int code,String message) {
       return new BusinessCode(code, message, null);
     }
 
-    public static BusinessCode newErrorCode(String code,String message, HttpStatus httpStatus) {
+    public static BusinessCode newErrorCode(int code,String message, HttpStatus httpStatus) {
       return new BusinessCode(code, message, httpStatus);
     }
     private ErrorCode() {

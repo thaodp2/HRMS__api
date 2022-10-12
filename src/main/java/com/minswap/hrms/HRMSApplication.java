@@ -5,9 +5,6 @@ import java.net.UnknownHostException;
 import java.time.Duration;
 import java.util.Optional;
 
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -27,12 +24,7 @@ import com.minswap.hrms.exception.handler.RestTemplateErrorHandler;
  */
 @SpringBootApplication
 @ComponentScan("com.minswap.hrms")
-public class CybersourceProcessingApplication {
-
-	private static final Logger logger = LoggerFactory.getLogger(CybersourceProcessingApplication.class);
-
-	@Autowired
-	private RestTemplateBuilder restTemplateBuilder;
+public class HRMSApplication {
 
 	/**
 	 * The main method.
@@ -40,39 +32,10 @@ public class CybersourceProcessingApplication {
 	 * @param args the arguments
 	 */
 	public static void main(String[] args) {
-		SpringApplication app = new SpringApplication(CybersourceProcessingApplication.class);
-		Environment env = app.run(args).getEnvironment();
-		logApplicationStartup(env);
+		SpringApplication.run(HRMSApplication.class, args);
 	}
-
-	private static void logApplicationStartup(Environment env) {
-		String protocol = Optional.ofNullable(env.getProperty("server.ssl.key-store")).map(key -> "https").orElse("http");
-		String serverPort = env.getProperty("server.port");
-		String contextPath = Optional
-				.ofNullable(env.getProperty("server.servlet.context-path"))
-				.filter(StringUtils::isNotBlank)
-				.orElse("/");
-		String hostAddress = "localhost";
-		try {
-			hostAddress = InetAddress.getLocalHost().getHostAddress();
-		} catch (UnknownHostException e) {
-			logger.warn("The host name could not be determined, using `localhost` as fallback");
-		}
-		logger.info("----------------------------------------------------------");
-		logger.info("Application '{}' is running! Access URLs:",env.getProperty("spring.application.name"));
-		logger.info("Local:  {}://localhost:{}{} ",
-				protocol,
-				serverPort,
-				contextPath );
-		logger.info("External: {}://{}:{}{} ",
-				protocol,
-				hostAddress,
-				serverPort,
-				contextPath);
-		logger.info("Profile(s): {}",env.getActiveProfiles().length == 0 ? env.getDefaultProfiles() : env.getActiveProfiles());
-		logger.info("----------------------------------------------------------");
-	}
-
+	@Autowired
+	private RestTemplateBuilder restTemplateBuilder;
 	/**
 	 * Gets the rest template.
 	 *
@@ -84,7 +47,6 @@ public class CybersourceProcessingApplication {
 				.errorHandler(new RestTemplateErrorHandler())
 				.build();
 	}
-
 	@Bean public RequestContextListener requestContextListener(){
 		return new RequestContextListener();
 	}
