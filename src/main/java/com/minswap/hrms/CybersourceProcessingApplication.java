@@ -58,6 +58,7 @@ public class CybersourceProcessingApplication {
 		} catch (UnknownHostException e) {
 			logger.warn("The host name could not be determined, using `localhost` as fallback");
 		}
+
 		logger.info("----------------------------------------------------------");
 		logger.info("Application '{}' is running! Access URLs:",env.getProperty("spring.application.name"));
 		logger.info("Local:  {}://localhost:{}{} ",
