@@ -33,7 +33,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<BaseResponse<Void, Void>> handleException(Exception exception) {
         log.error(ExceptionUtils.getStackTrace(exception));
 
-        BusinessCode errorCode = new BusinessCode(null, exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        BusinessCode errorCode = new BusinessCode(500, exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         Meta<Void> meta = Meta.buildMeta(errorCode, null);
         return BaseResponse.ofFailed(meta, errorCode.getHttpStatus());
     }

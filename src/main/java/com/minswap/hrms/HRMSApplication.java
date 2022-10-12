@@ -2,8 +2,6 @@ package com.minswap.hrms;
 
 import java.time.Duration;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -22,12 +20,7 @@ import com.minswap.hrms.exception.handler.RestTemplateErrorHandler;
  */
 @SpringBootApplication
 @ComponentScan("com.minswap.hrms")
-public class CybersourceProcessingApplication {
-
-	private Logger logger = LoggerFactory.getLogger(this.getClass());
-
-	@Autowired
-	private RestTemplateBuilder restTemplateBuilder;
+public class HRMSApplication {
 
 	/**
 	 * The main method.
@@ -35,9 +28,10 @@ public class CybersourceProcessingApplication {
 	 * @param args the arguments
 	 */
 	public static void main(String[] args) {
-		SpringApplication.run(CybersourceProcessingApplication.class, args);
+		SpringApplication.run(HRMSApplication.class, args);
 	}
-
+	@Autowired
+	private RestTemplateBuilder restTemplateBuilder;
 	/**
 	 * Gets the rest template.
 	 *
@@ -49,7 +43,6 @@ public class CybersourceProcessingApplication {
 				.errorHandler(new RestTemplateErrorHandler())
 				.build();
 	}
-
 	@Bean public RequestContextListener requestContextListener(){
 		return new RequestContextListener();
 	}

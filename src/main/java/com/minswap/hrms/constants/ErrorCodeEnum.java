@@ -4,10 +4,10 @@ package com.minswap.hrms.constants;
 public enum ErrorCodeEnum {
 
   /** The success. */
-  SUCCESS(200000),
-  BAD_REQUEST(400000),
-  API_KEY_ERROR(400012),
-  INTERNAL_SERVER_ERROR(500001),
+  SUCCESS(200),
+  BAD_REQUEST(400),
+  INTERNAL_SERVER_ERROR(500),
+  UNAUTHORIZED(501),
   ;
 
   /** The value. */
