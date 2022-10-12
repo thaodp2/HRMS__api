@@ -1,4 +1,4 @@
-package com.minswap.hrms.controller;
+package com.minswap.hrms.controller.manager;
 
 import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;

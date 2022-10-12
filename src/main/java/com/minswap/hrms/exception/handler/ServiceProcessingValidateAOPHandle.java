@@ -1,13 +1,18 @@
 package com.minswap.hrms.exception.handler;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.annotation.Order;
+import org.springframework.core.env.AbstractEnvironment;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,11 +20,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.validation.BindingResult;
 
 import com.minswap.hrms.constants.ErrorCode;
-import com.minswap.hrms.dto.request.BasicRequest;
+import com.minswap.hrms.constants.ErrorCodeEnum;
 import com.minswap.hrms.exception.annotation.ServiceProcessingValidateAnnotation;
 import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.model.BusinessCode;
 import com.minswap.hrms.model.Meta;
+import com.minswap.hrms.request.BasicRequest;
 
 import net.logstash.logback.encoder.org.apache.commons.lang.math.NumberUtils;
 
@@ -27,14 +33,18 @@ import net.logstash.logback.encoder.org.apache.commons.lang.math.NumberUtils;
 @Aspect
 @Component
 @Order(value = 3)
+@PropertySource(value = "classpath:messages/message.properties", encoding = "UTF-8",
+name = "messageCode")
 public class ServiceProcessingValidateAOPHandle {
 
   /** The environment. */
   @Autowired private Environment environment;
-
+  public static Map<String, String> dfsErrorList;
   /** The response format util. */
 //  @Autowired private ResponseFormatUtil responseFormatUtil;
 
+  @Autowired
+  private Environment env;
   @Around("execution(* *(..)) && @annotation(hrmsValidateAnnotation)")
   public Object hrmsValidateAnnotation(
       ProceedingJoinPoint point, ServiceProcessingValidateAnnotation hrmsValidateAnnotation)
@@ -43,7 +53,10 @@ public class ServiceProcessingValidateAOPHandle {
     BasicRequest objectRequest = (BasicRequest) point.getArgs()[0];
     BindingResult bindingResult = (BindingResult) point.getArgs()[1];
     List<String> fieldDup = new ArrayList<>();
-
+    AbstractEnvironment ae = (AbstractEnvironment) env;
+    org.springframework.core.env.PropertySource dfsErrorSource =
+            ae.getPropertySources().get("messageCode");
+    Properties dfsProps = (Properties) dfsErrorSource.getSource();
     // Validate data
     if (bindingResult.hasErrors()) {
       BaseResponse responseBasicObj = new BaseResponse<>();
@@ -63,11 +76,8 @@ public class ServiceProcessingValidateAOPHandle {
                 fieldDup.add(f.getField());
 
                 String code = f.getDefaultMessage();
-                if (!NumberUtils.isNumber(code)) {
-                  BusinessCode businessCode = ErrorCode.newErrorCode("INVALID_PARAMETERS", code, HttpStatus.BAD_REQUEST);
-                  responseBasicObj.setMeta(Meta.buildMeta(businessCode, null));
-                  
-                }
+                BusinessCode businessCode = ErrorCode.newErrorCode(Integer.parseInt(code), dfsProps.get(code).toString(), HttpStatus.BAD_REQUEST);
+                responseBasicObj.setMeta(Meta.buildMeta(businessCode, null));
               });
       return formatResponse(responseBasicObj);
     } else {
@@ -75,14 +85,10 @@ public class ServiceProcessingValidateAOPHandle {
     }
   }
   public ResponseEntity<BaseResponse<String, Void>> formatResponse(BaseResponse responseBasicObj) {
-    if (!responseBasicObj.getMeta().getCode().equals("SUCCESS")) {
+    if (responseBasicObj.getMeta().getCode() != ErrorCodeEnum.SUCCESS.getValue()) {
       responseBasicObj.ofFailed(Meta.buildMeta(ErrorCode.INTERNAL_SERVER_ERROR, null), HttpStatus.INTERNAL_SERVER_ERROR);
     }
     
-    // Get http code
-//    HttpStatus httpCode = ;
-//    if (StringUtils.isEmpty(responseBasicObj.getMeta().getMessage()))
-//    responseBasicObj.setMeta(Meta.buildMeta(new BusinessCode(environment.getProperty(responseBasicObj.getMeta().getCode()),""),HttpStatus.INTERNAL_SERVER_ERROR));
     return new ResponseEntity<BaseResponse<String, Void>>(responseBasicObj, HttpStatus.BAD_REQUEST);
   }
 }

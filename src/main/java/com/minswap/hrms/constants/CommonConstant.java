@@ -22,7 +22,9 @@ public class CommonConstant {
     
     public static final String HEALTH_CHECK = "/actuator";
     
-    public static final String CYBERSOURCE_PROCESSING_SERVICE_ID = "HRMS";
+    public static final String HRMS_PROCESSING_SERVICE_ID = "HRMS";
     
-    public static final String ADMIN = "/admin";
+    public static final String MANAGER = "/manager";
+    
+    public static final String HR = "/hr";
 }

@@ -24,13 +24,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class Meta<R> {
 
-	/** The request id. */
-	@JsonProperty("request_id")
-	private String requestId;
 
 	/** The code. */
 	@JsonProperty("code")
-	private String code;
+	private int code;
 
 	/** The message. */
 	@JsonProperty("message")
@@ -45,20 +42,10 @@ public class Meta<R> {
 
 	public static <R> Meta<R> buildMeta(BusinessCode businessCode, R extraMeta) {
         Meta<R> meta = new Meta<>();
-//        try {
-//        	HttpServletRequest httpRequest = CommonUtil.getCurrentHttpRequest();
-//        	meta.setRequestId(StringUtils.isEmpty(httpRequest.getHeader(RequestHeaderConstant.REQUEST_ID_HEADER)) ? CommonUtil.getRequestId(httpRequest) : httpRequest.getHeader(RequestHeaderConstant.REQUEST_ID_HEADER));
-//        } catch (Exception e) {
-//            log.error(ExceptionUtils.getStackTrace(e));
-//        }
-
         meta.setCode(businessCode.getCode());
         meta.setMessage(businessCode.getMessage());
-        meta.setServiceId(CommonConstant.CYBERSOURCE_PROCESSING_SERVICE_ID);
+        meta.setServiceId(CommonConstant.HRMS_PROCESSING_SERVICE_ID);
         meta.setExtraMeta(extraMeta);
-//        if(meta.getRequestId().isEmpty()) {
-//          meta.setRequestId(UUIDUtil.generateUUID());         
-//        }
         return meta;
     }
 
