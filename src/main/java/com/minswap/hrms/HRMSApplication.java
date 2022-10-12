@@ -23,7 +23,6 @@ import com.minswap.hrms.exception.handler.RestTemplateErrorHandler;
  * The Class EWcashbackserviceApplication.
  */
 @SpringBootApplication
-@ComponentScan("com.minswap.hrms")
 public class HRMSApplication {
 
 	/**
