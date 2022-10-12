@@ -10,16 +10,16 @@ import java.io.Serializable;
 @Setter
 public class BusinessCode implements Serializable {
     private static final long serialVersionUID = -2005206237438722822L;
-    private final String code;
+    private final int code;
     private final String message;
     private HttpStatus httpStatus;
 
-    public BusinessCode(String code, String message) {
+    public BusinessCode(int code, String message) {
         this.code = code;
         this.message = message;
     }
 
-    public BusinessCode(String code, String message, HttpStatus status) {
+    public BusinessCode(int code, String message, HttpStatus status) {
         this.code = code;
         this.message = message;
         this.httpStatus = status;

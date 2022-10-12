@@ -17,7 +17,7 @@ public class BaseResponse<T, R> {
     private Meta<R> meta = new Meta<>();
     private T data;
 
-    private static final BusinessCode SUCCESS_BUSINESS_CODE = new BusinessCode("SUCCESS", "Success", HttpStatus.OK);
+    private static final BusinessCode SUCCESS_BUSINESS_CODE = new BusinessCode(200, "Success", HttpStatus.OK);
 
     public static <T, R> ResponseEntity<BaseResponse<T, R>> ofSucceeded(T data) {
         BaseResponse<T, R> response = new BaseResponse<>();

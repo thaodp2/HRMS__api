@@ -1,16 +1,13 @@
 package com.minswap.hrms.service;
 
-import com.minswap.hrms.model.Role;
 import org.springframework.http.ResponseEntity;
 
-import com.minswap.hrms.exception.model.Pageable;
+import com.minswap.hrms.exception.model.Pagination;
 import com.minswap.hrms.model.BaseResponse;
-import com.minswap.hrms.model.TestResponse;
-
-import java.util.List;
+import com.minswap.hrms.response.EmployeeInfoResponse;
 
 public interface ServiceTest {
   
-  ResponseEntity<BaseResponse<List<Role>, Pageable>> serviceTest();
+  ResponseEntity<BaseResponse<EmployeeInfoResponse, Pagination>> serviceTest(String text);
 
 }

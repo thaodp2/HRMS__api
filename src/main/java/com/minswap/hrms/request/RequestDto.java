@@ -1,4 +1,4 @@
-package com.minswap.hrms.dto.request;
+package com.minswap.hrms.request;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
