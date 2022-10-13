@@ -51,7 +51,7 @@ public class Person {
 	private String departmentId;
 
 	@Column(name = "manager_id")
-	private String managerId;
+	private int managerId;
 
 	@Column(name = "gender")
 	private String gender;
