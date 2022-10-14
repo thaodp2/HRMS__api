@@ -1,6 +1,7 @@
 package com.minswap.hrms.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.minswap.hrms.response.dto.PersonDto;
 import com.minswap.hrms.response.dto.RequestDto;
 import lombok.*;
@@ -12,7 +13,9 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonPropertyOrder({ "id", "requestType", "personName", "startTime", "endTime" ,"reason", "createDate","status"})
 public class RequestResponse {
+    @JsonProperty("id")
     private Integer requestId;
 
     private String requestType;

@@ -61,45 +61,32 @@ public class RequestServiceImpl implements RequestService{
         params.forEach(query::setParameter);
         return query;
     }
-    @Override
-    public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getAllRequest(int page, int limit) {
-        Query count = getQueryForRequestList("All",null,null,false,null,null);
+
+    public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getAllRequestByPermission(String type, Integer managerId, Integer personId, Integer page, Integer limit) {
+        Query count = getQueryForRequestList(type,managerId,personId,false,limit,page);
         Pagination pagination = new Pagination(page, limit);
         pagination.setTotalRecords(count.getResultList().size());
 
-        Query query = getQueryForRequestList("All",null,null,true,limit,page);
+        Query query = getQueryForRequestList(type,managerId,personId,true,limit,page);
         List<RequestDto> requestDtos = query.getResultList();
         List<RequestResponse> data = requestDtos.stream().map(RequestResponse::of).collect(Collectors.toList());
         ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> responseEntity = BaseResponse
                 .ofSucceededOffset(RequestResponse.RequestListResponse.of(data), pagination);
         return responseEntity;
+    }
+
+    @Override
+    public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getAllRequest(int page, int limit) {
+        return getAllRequestByPermission("All",null,null,page, limit);
     }
 
     @Override
     public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getSubordinateRequest(Integer managerId, int page, int limit) {
-        Query count = getQueryForRequestList("Subordinate",managerId,null,false,null,null);
-        Pagination pagination = new Pagination(page, limit);
-        pagination.setTotalRecords(count.getResultList().size());
-
-        Query query = getQueryForRequestList("Subordinate",managerId,null,true,limit,page);
-        List<RequestDto> requestDtos = query.getResultList();
-        List<RequestResponse> data = requestDtos.stream().map(RequestResponse::of).collect(Collectors.toList());
-        ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> responseEntity = BaseResponse
-                .ofSucceededOffset(RequestResponse.RequestListResponse.of(data), pagination);
-        return responseEntity;
+        return  getAllRequestByPermission("Subordinate",managerId,null,page,limit);
     }
 
     @Override
-    public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getMyRequest(Integer pesonId, int page, int limit) {
-        Query count = getQueryForRequestList("My",null,pesonId,false,null,null);
-        Pagination pagination = new Pagination(page, limit);
-        pagination.setTotalRecords(count.getResultList().size());
-
-        Query query = getQueryForRequestList("My",null,pesonId,true,limit,page);
-        List<RequestDto> requestDtos = query.getResultList();
-        List<RequestResponse> data = requestDtos.stream().map(RequestResponse::of).collect(Collectors.toList());
-        ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> responseEntity = BaseResponse
-                .ofSucceededOffset(RequestResponse.RequestListResponse.of(data), pagination);
-        return responseEntity;
+    public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getMyRequest(Integer personId, int page, int limit) {
+        return  getAllRequestByPermission("My",null,personId,page,limit);
     }
 }
