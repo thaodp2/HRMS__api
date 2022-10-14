@@ -30,4 +30,6 @@ public class CommonConstant {
     
     // vunt
     public static final String REQUEST = "/request";
+
+    public static final Long REQUEST_BORROW_DEVICE = Long.valueOf(11);
 }

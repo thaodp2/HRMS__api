@@ -11,11 +11,12 @@ import java.util.Date;
 @NoArgsConstructor
 public class RequestDetailDto {
 
-    public RequestDetailDto(Long requestId, String sender, String requestTypeName, Date startTime, Date endTime,
-                            String image, String reason, String status, String receiver, Date approvalDate) {
+    public RequestDetailDto(Long requestId, String sender, String requestTypeName, Date createDate, Date startTime,
+                            Date endTime, String image, String reason, String status, String receiver, Date approvalDate) {
         this.requestId = requestId;
         this.sender = sender;
         this.requestTypeName = requestTypeName;
+        this.createDate = createDate;
         this.startTime = startTime;
         this.endTime = endTime;
         this.image = image;
@@ -26,11 +27,10 @@ public class RequestDetailDto {
     }
 
     private Long requestId;
-
     private String sender;
-
     private String requestTypeName;
 
+    private Date createDate;
     private Date startTime;
 
     private Date endTime;
