@@ -1,6 +1,5 @@
 package com.minswap.hrms.model;
 
-import com.minswap.hrms.exception.model.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
