@@ -13,7 +13,7 @@ import java.util.List;
 public interface RequestDetailRepository extends JpaRepository<Request, Long>{
 
     @Query("select new com.minswap.hrms.response.dto.RequestDetailDto(" +
-            "p.fullName as sender, rt.requestTypeName as requestTypeName, r.startTime as startTime, r.endTime as endTime, e.image as image, " +
+            "r.requestId as requestId, p.fullName as sender, rt.requestTypeName as requestTypeName, r.startTime as startTime, r.endTime as endTime, e.image as image, " +
             "r.reason as reason, r.status as status, p2.fullName as receiver, r.approvalDate as approvalDate) " +
             "from Request r " +
             "left join Evidence e on " +

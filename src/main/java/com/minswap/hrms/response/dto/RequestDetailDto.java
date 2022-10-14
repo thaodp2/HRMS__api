@@ -10,8 +10,10 @@ import java.util.Date;
 @Setter
 @NoArgsConstructor
 public class RequestDetailDto {
-    public RequestDetailDto(String sender, String requestTypeName, Date startTime, Date endTime, String image,
-                            String reason, String status, String receiver, Date approvalDate) {
+
+    public RequestDetailDto(Long requestId, String sender, String requestTypeName, Date startTime, Date endTime,
+                            String image, String reason, String status, String receiver, Date approvalDate) {
+        this.requestId = requestId;
         this.sender = sender;
         this.requestTypeName = requestTypeName;
         this.startTime = startTime;
@@ -22,6 +24,9 @@ public class RequestDetailDto {
         this.receiver = receiver;
         this.approvalDate = approvalDate;
     }
+
+    private Long requestId;
+
     private String sender;
 
     private String requestTypeName;

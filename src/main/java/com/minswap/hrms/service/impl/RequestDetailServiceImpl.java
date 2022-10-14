@@ -16,20 +16,20 @@ public class RequestDetailServiceImpl implements RequestDetailService {
 
     @Override
     public ResponseEntity<BaseResponse<RequestDetailRespone, Void>> getEmployeeRequestDetail(Long id) {
-    try {
-        RequestDetailDto requestDetailDto = requestDetailRepository.getEmployeeRequestDetail(id);
-        RequestDetailRespone requestDetailRespone
-                = new RequestDetailRespone(requestDetailDto);
-        ResponseEntity<BaseResponse<RequestDetailRespone, Void>> responseEntity
-                = BaseResponse.ofSucceededOffset(requestDetailRespone, null);
-        return responseEntity;
-    }
-    catch (Exception e) {
         try {
-            throw new Exception(e.getMessage());
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
+            RequestDetailDto requestDetailDto = requestDetailRepository.getEmployeeRequestDetail(id);
+            RequestDetailRespone requestDetailRespone
+                    = new RequestDetailRespone(requestDetailDto);
+            ResponseEntity<BaseResponse<RequestDetailRespone, Void>> responseEntity
+                    = BaseResponse.ofSucceededOffset(requestDetailRespone, null);
+            return responseEntity;
         }
-    }
+        catch (Exception e) {
+            try {
+                throw new Exception(e.getMessage());
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
+        }
     }
 }
