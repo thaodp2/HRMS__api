@@ -3,40 +3,42 @@ package com.minswap.hrms.response.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
+import javax.persistence.*;
 import java.util.Date;
 
 @Getter
 @Setter
-@Builder
-@AllArgsConstructor
 @NoArgsConstructor
 public class RequestDetailDto {
-
-    @JsonProperty("sender")
+    public RequestDetailDto(String sender, String requestTypeName, Date startTime, Date endTime, String image,
+                            String reason, String status, String receiver, Date approvalDate) {
+        this.sender = sender;
+        this.requestTypeName = requestTypeName;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.image = image;
+        this.reason = reason;
+        this.status = status;
+        this.receiver = receiver;
+        this.approvalDate = approvalDate;
+    }
     private String sender;
 
-    @JsonProperty("requestTypeName")
     private String requestTypeName;
 
-    @JsonProperty("startTime")
     private Date startTime;
 
-    @JsonProperty("endTime")
     private Date endTime;
 
-    @JsonProperty("image")
     private String image;
 
-    @JsonProperty("reason")
     private String reason;
 
-    @JsonProperty("status")
     private String status;
 
-    @JsonProperty("receiver")
     private String receiver;
 
-    @JsonProperty("approvalDate")
     private Date approvalDate;
+
 
 }
