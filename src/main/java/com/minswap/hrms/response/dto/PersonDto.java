@@ -43,7 +43,7 @@ public class PersonDto {
   private String departmentId;
   
   @JsonProperty("managerId")
-  private String managerId;
+  private int managerId;
   
   @JsonProperty("gender")
   private String gender;
