@@ -12,7 +12,7 @@ import java.util.Date;
 public class RequestDetailDto {
 
     public RequestDetailDto(Long requestId, String sender, String requestTypeName, Date createDate, Date startTime,
-                            Date endTime, String image, String reason, String status, String receiver, Date approvalDate) {
+                            Date endTime, String image, String reason, String status, String receiver, String deviceTypeName, Date approvalDate) {
         this.requestId = requestId;
         this.sender = sender;
         this.requestTypeName = requestTypeName;
@@ -23,14 +23,18 @@ public class RequestDetailDto {
         this.reason = reason;
         this.status = status;
         this.receiver = receiver;
+        this.deviceTypeName = deviceTypeName;
         this.approvalDate = approvalDate;
     }
 
     private Long requestId;
+
     private String sender;
+
     private String requestTypeName;
 
     private Date createDate;
+
     private Date startTime;
 
     private Date endTime;
@@ -42,6 +46,8 @@ public class RequestDetailDto {
     private String status;
 
     private String receiver;
+
+    private String deviceTypeName;
 
     private Date approvalDate;
 
