@@ -10,4 +10,5 @@ public interface RequestDetailService {
 
     ResponseEntity<BaseResponse<RequestDetailRespone, Void>> getEmployeeRequestDetail (Long id);
 
+    ResponseEntity<BaseResponse<Void, Void>> updateRequestStatus (String status, Long id);
 }
