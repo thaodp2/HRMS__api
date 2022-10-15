@@ -30,4 +30,5 @@ public class CommonConstant {
     
     // vunt
     public static final String REQUEST = "/request";
+
 }
