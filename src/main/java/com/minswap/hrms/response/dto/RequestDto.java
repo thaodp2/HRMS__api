@@ -10,43 +10,37 @@ import org.springframework.beans.factory.annotation.Autowired;
 import javax.persistence.*;
 import java.util.Date;
 
-@Entity
 @Getter
 @Setter
-@Builder
 @NoArgsConstructor
-@AllArgsConstructor
-@SqlResultSetMapping(name = RequestDto.SQL_RESULT_SET_MAPPING,
-        classes = @ConstructorResult(
-                targetClass = RequestDto.class,
-                columns = {
-                        @ColumnResult(name = "request_id", type = Integer.class),
-                        @ColumnResult(name = "request_type_name", type = String.class),
-                        @ColumnResult(name = "full_name", type = String.class),
-                        @ColumnResult(name = "start_time", type = String.class),
-                        @ColumnResult(name = "end_time", type = String.class),
-                        @ColumnResult(name = "reason", type = String.class),
-                        @ColumnResult(name = "create_date", type = String.class),
-                        @ColumnResult(name = "status", type = String.class),
-                }))
 public class RequestDto {
-    public static final String SQL_RESULT_SET_MAPPING = "RequestDto";
+    public RequestDto(Long requestId, String personName, String requestTypeName, Date createDate, Date startTime,
+                      Date endTime, String image, String reason, String status, String receiver, String deviceTypeName, Date approvalDate) {
+        this.requestId = requestId;
+        this.personName = personName;
+        this.requestTypeName = requestTypeName;
+        this.createDate = createDate;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.image = image;
+        this.reason = reason;
+        this.status = status;
+        this.receiver = receiver;
+        this.deviceTypeName = deviceTypeName;
+        this.approvalDate = approvalDate;
+    }
 
-    @Id
-    private Integer requestId;
-
-    private String requestType;
-
+    private Long requestId;
     private String personName;
-
-    private String startTime;
-
-    private String endTime;
-
+    private String requestTypeName;
+    private Date createDate;
+    private Date startTime;
+    private Date endTime;
+    private String image;
     private String reason;
-
-    private String createDate;
-
     private String status;
+    private String receiver;
+    private String deviceTypeName;
+    private Date approvalDate;
 
 }

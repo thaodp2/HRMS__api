@@ -16,8 +16,8 @@ public class ManagerRequestController {
     private RequestService requestService;
 
 
-    @GetMapping("/{managerId}/request")
-    public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getListEmployee(@PathVariable Integer managerId, @RequestParam int page, @RequestParam int limit) {
-        return requestService.getSubordinateRequest(managerId,page, limit);
-    }
+//    @GetMapping("/{managerId}/request")
+//    public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getListEmployee(@PathVariable Integer managerId, @RequestParam int page, @RequestParam int limit) {
+//        return requestService.getSubordinateRequest(managerId,page, limit);
+//    }
 }

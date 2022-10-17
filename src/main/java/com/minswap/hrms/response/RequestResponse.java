@@ -1,62 +1,17 @@
 package com.minswap.hrms.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.minswap.hrms.response.dto.PersonDto;
 import com.minswap.hrms.response.dto.RequestDto;
 import lombok.*;
 
-import java.util.List;
-
-@Getter
-@Setter
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-@JsonPropertyOrder({ "id", "requestType", "personName", "startTime", "endTime" ,"reason", "createDate","status"})
+@Data
 public class RequestResponse {
-    @JsonProperty("id")
-    private Integer requestId;
 
-    private String requestType;
+    @JsonProperty(value = "items")
+    private RequestDto requestDto;
 
-    private String personName;
-
-    private String startTime;
-
-    private String endTime;
-
-    private String reason;
-
-    private String createDate;
-
-    private String status;
-
-    public static RequestResponse of(RequestDto requestDto) {
-        return RequestResponse.builder()
-                .requestId(requestDto.getRequestId())
-                .requestType(requestDto.getRequestType())
-                .personName(requestDto.getPersonName())
-                .startTime(requestDto.getStartTime())
-                .endTime(requestDto.getEndTime())
-                .reason(requestDto.getReason())
-                .createDate(requestDto.getCreateDate())
-                .status(requestDto.getStatus())
-                .build();
+    public RequestResponse(RequestDto requestDto) {
+        this.requestDto = requestDto;
     }
-    @Getter
-    @Setter
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class RequestListResponse {
-        @JsonProperty("requestList")
-        private List<RequestResponse> requestList;
 
-        public static RequestListResponse of(List<RequestResponse> requestResponses) {
-            return builder().requestList(requestResponses).build();
-        }
-    }
 }
-
-
