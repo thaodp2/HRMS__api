@@ -29,7 +29,9 @@ public class CommonConstant {
     public static final String HR = "/hr";
     
     // vunt
-    public static final String REQUEST = "/request";
+    public static final Integer UPDATE_SUCCESS = 1;
+
+    public static final Integer UPDATE_FAIL = 0;
 
     public static final String USER = "/user";
 }

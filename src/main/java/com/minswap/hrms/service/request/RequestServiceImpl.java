@@ -1,5 +1,6 @@
 package com.minswap.hrms.service.request;
 
+import com.minswap.hrms.constants.CommonConstant;
 import com.minswap.hrms.exception.model.Pagination;
 import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.repsotories.RequestRepository;
@@ -21,10 +22,6 @@ import java.util.stream.Collectors;
 public class RequestServiceImpl implements RequestService{
     @Autowired
     RequestRepository requestRepository;
-
-    private static final Integer UPDATE_SUCCESS = 1;
-
-    private static final Integer UPDATE_FAIL = 0;
 
     public Query getQueryForRequestList(String type, Integer managerId, Integer personId, Boolean isLimit, Integer limit, Integer page){
 //        HashMap<String, Object> params = new HashMap<>();
@@ -106,15 +103,15 @@ public class RequestServiceImpl implements RequestService{
 
     @Override
     public ResponseEntity<BaseResponse<Void, Void>> updateRequestStatus(String status, Long id) {
-//        Integer isUpdatedSuccess = requestRepository.updateRequest(status, id);
-//        ResponseEntity<BaseResponse<Void, Void>> responseEntity = null;
-//        if (isUpdatedSuccess == UPDATE_SUCCESS) {
-//            responseEntity = BaseResponse.ofSucceeded(null);
-//        }
-//        else {
-//            responseEntity = BaseResponse.ofFailedUpdate(null);
-//        }
-        return null;
+        Integer isUpdatedSuccess = requestRepository.updateRequest(status, id);
+        ResponseEntity<BaseResponse<Void, Void>> responseEntity = null;
+        if (isUpdatedSuccess == CommonConstant.UPDATE_SUCCESS) {
+            responseEntity = BaseResponse.ofSucceeded(null);
+        }
+        else {
+            responseEntity = BaseResponse.ofFailedUpdate(null);
+        }
+        return responseEntity;
     }
 
     @Override

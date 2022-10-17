@@ -1,4 +1,4 @@
-package com.minswap.hrms.response.dto;
+package com.minswap.hrms.request;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
