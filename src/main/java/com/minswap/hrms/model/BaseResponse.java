@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.List;
+
 @Data
 @Accessors(chain = true)
 @Slf4j
@@ -24,7 +26,7 @@ public class BaseResponse<T, R> {
         response.meta = Meta.buildMeta(SUCCESS_BUSINESS_CODE, null);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
-    public static <T, R> ResponseEntity<BaseResponse<T, R>> ofSucceededOffset(T data,  R extraMeta) {
+    public static <T, R> ResponseEntity<BaseResponse<T, R>> ofSucceededOffset(T data, R extraMeta) {
       BaseResponse<T, R> response = new BaseResponse<>();
       response.data = data;
       response.meta = Meta.buildMeta(SUCCESS_BUSINESS_CODE, extraMeta);
