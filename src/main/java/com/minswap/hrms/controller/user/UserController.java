@@ -2,7 +2,7 @@ package com.minswap.hrms.controller.user;
 
 import com.minswap.hrms.constants.CommonConstant;
 import com.minswap.hrms.model.BaseResponse;
-import com.minswap.hrms.request.UpdateUserDto;
+import com.minswap.hrms.request.UpdateUserRequest;
 import com.minswap.hrms.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,7 +17,7 @@ public class UserController {
     UserService userService;
 
     @PutMapping("/information")
-    public ResponseEntity<BaseResponse<HttpStatus, Void>> getRequestDetail(@RequestBody UpdateUserDto updateUserDto) throws Exception {
+    public ResponseEntity<BaseResponse<HttpStatus, Void>> getRequestDetail(@RequestBody UpdateUserRequest updateUserDto) throws Exception {
         return userService.updateUserInformation(updateUserDto);
     }
 }

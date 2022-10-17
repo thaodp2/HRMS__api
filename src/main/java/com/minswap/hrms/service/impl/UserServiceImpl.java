@@ -3,7 +3,7 @@ package com.minswap.hrms.service.impl;
 import com.minswap.hrms.entities.Person;
 import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.repsotories.PersonRepository;
-import com.minswap.hrms.request.UpdateUserDto;
+import com.minswap.hrms.request.UpdateUserRequest;
 import com.minswap.hrms.service.UserService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +19,7 @@ public class UserServiceImpl implements UserService {
     @Autowired
     PersonRepository personRepository;
     @Override
-    public ResponseEntity<BaseResponse<HttpStatus, Void>> updateUserInformation(UpdateUserDto updateUserDto) throws Exception{
+    public ResponseEntity<BaseResponse<HttpStatus, Void>> updateUserInformation(UpdateUserRequest updateUserDto) throws Exception{
         try {
             ModelMapper modelMapper = new ModelMapper();
             Optional<Person> personFromDB = personRepository.findPersonByPersonId(updateUserDto.getPersonId());
