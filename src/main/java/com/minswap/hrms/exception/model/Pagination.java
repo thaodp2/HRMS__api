@@ -42,4 +42,8 @@ public class Pagination extends PageRequest {
 	  public void setTotalRecords(Page pageInfo) {
 		  this.totalRecords = pageInfo.getTotalElements();
 	  }
+
+	public void setTotalRecords(int totalRecords) {
+		this.totalRecords = totalRecords;
+	}
 }
