@@ -27,4 +27,9 @@ public class CommonConstant {
     public static final String MANAGER = "/manager";
     
     public static final String HR = "/hr";
+    
+    // vunt
+    public static final String REQUEST = "/request";
+
+    public static final String USER = "/user";
 }

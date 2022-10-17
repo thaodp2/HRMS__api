@@ -18,6 +18,8 @@ public class BaseResponse<T, R> {
 
     private static final BusinessCode SUCCESS_BUSINESS_CODE = new BusinessCode(200, "Success", HttpStatus.OK);
 
+    private static final BusinessCode FAIL_BUSINESS_CODE = new BusinessCode(201, "Fail", HttpStatus.OK);
+
     public static <T, R> ResponseEntity<BaseResponse<T, R>> ofSucceeded(T data) {
         BaseResponse<T, R> response = new BaseResponse<>();
         response.data = data;
@@ -34,6 +36,14 @@ public class BaseResponse<T, R> {
         BaseResponse<Void, R> response = new BaseResponse<>();
         response.meta = meta;
         return new ResponseEntity<>(response, httpStatus);
-        }
-    
+    }
+
+    // Vunt
+    public static <T, R> ResponseEntity<BaseResponse<T, R>> ofFailedUpdate(T data) {
+        BaseResponse<T, R> response = new BaseResponse<>();
+        response.data = data;
+        response.meta = Meta.buildMeta(FAIL_BUSINESS_CODE, null);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
 }

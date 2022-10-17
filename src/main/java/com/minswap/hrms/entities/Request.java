@@ -1,25 +1,22 @@
 package com.minswap.hrms.entities;
 
-import lombok.*;
+import lombok.Data;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import java.sql.Timestamp;
+import java.util.Date;
 
 @Entity
-@Getter
-@Setter
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
+@Data
 @Table(name = Request.TABLE_NAME)
 public class Request {
     public static final String TABLE_NAME = "request";
+
     @Id
     @Column(name = "request_id")
-    private int requestId;
+    private Long requestId;
 
     @Column(name = "request_type_id")
     private int requestTypeId;
@@ -31,19 +28,19 @@ public class Request {
     private int deviceTypeId;
 
     @Column(name = "start_time")
-    private String startTime;
+    private Date startTime;
 
     @Column(name = "end_time")
-    private String endTime;
+    private Date endTime;
 
     @Column(name = "reason")
     private String reason;
 
     @Column(name = "create_date")
-    private String createDate;
+    private Date createDate;
 
     @Column(name = "approval_date")
-    private String approvalDate;
+    private Date approvalDate;
 
     @Column(name = "status")
     private String status;
