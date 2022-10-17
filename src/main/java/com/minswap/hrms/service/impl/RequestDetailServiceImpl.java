@@ -4,14 +4,18 @@ import com.minswap.hrms.constants.CommonConstant;
 import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.model.BusinessCode;
 import com.minswap.hrms.repsotories.RequestDetailRepository;
+import com.minswap.hrms.repsotories.RequestRepository;
 import com.minswap.hrms.repsotories.RequestStatusRepository;
 import com.minswap.hrms.response.RequestDetailRespone;
+import com.minswap.hrms.response.dto.ListRequestDto;
 import com.minswap.hrms.response.dto.RequestDetailDto;
 import com.minswap.hrms.service.RequestDetailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class RequestDetailServiceImpl implements RequestDetailService {
@@ -20,6 +24,8 @@ public class RequestDetailServiceImpl implements RequestDetailService {
     @Autowired
     RequestDetailRepository requestDetailRepository;
 
+    @Autowired
+    RequestRepository requestRepository;
     @Autowired
     RequestStatusRepository requestStatusRepository;
 
@@ -57,5 +63,15 @@ public class RequestDetailServiceImpl implements RequestDetailService {
             responseEntity = BaseResponse.ofFailedUpdate(null);
         }
         return responseEntity;
+    }
+
+    @Override
+    public ResponseEntity<BaseResponse<ListRequestDto, Void>> searchRequest(Long userId, String startDate, String endDate, Integer page,
+                                                                            Integer limit) {
+//        ListRequestDto listRequestDto = requestRepository.getListRequestBySearch(userId, startDate, endDate, page, limit);
+//
+//        ResponseEntity<BaseResponse<ListRequestDto, Void>> responseEntity
+//                = BaseResponse.ofSucceededOffset(listRequestDto, null);
+        return null;
     }
 }

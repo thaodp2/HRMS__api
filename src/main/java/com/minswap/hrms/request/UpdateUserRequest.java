@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 @Data
-public class UpdateUserDto {
+public class UpdateUserRequest {
 
     @JsonProperty("personId")
     private Integer personId;
@@ -48,7 +48,7 @@ public class UpdateUserDto {
     @JsonProperty("status")
     private String status;
 
-    public UpdateUserDto(Integer personId, String fullName, String address, String citizenIdentification, String phoneNumber, String email, String onBoardDate, String rankId, String departmentId, Integer managerId, String gender, String rollNumber, String dateOfBirth, String status) {
+    public UpdateUserRequest(Integer personId, String fullName, String address, String citizenIdentification, String phoneNumber, String email, String onBoardDate, String rankId, String departmentId, Integer managerId, String gender, String rollNumber, String dateOfBirth, String status) {
         this.personId = personId;
         this.fullName = fullName;
         this.address = address;
