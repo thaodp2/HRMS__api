@@ -1,0 +1,11 @@
+package com.minswap.hrms.request;
+
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@Setter
+@NoArgsConstructor
+public class EditDeviceRequest {
+}

@@ -1,8 +1,10 @@
 package com.minswap.hrms.service.request;
 
+import com.minswap.hrms.constants.CommonConstant;
 import com.minswap.hrms.exception.model.Pagination;
 import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.repsotories.RequestRepository;
+import com.minswap.hrms.request.EditLeaveBenefitRequest;
 import com.minswap.hrms.response.RequestResponse;
 import com.minswap.hrms.response.dto.ListRequestDto;
 import com.minswap.hrms.response.dto.RequestDto;
@@ -10,11 +12,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.Query;
+import org.springframework.data.domain.Pageable;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -25,10 +27,6 @@ import java.util.stream.Collectors;
 public class RequestServiceImpl implements RequestService{
     @Autowired
     RequestRepository requestRepository;
-
-    private static final Integer UPDATE_SUCCESS = 1;
-
-    private static final Integer UPDATE_FAIL = 0;
 
     public Query getQueryForRequestList(String type, Integer managerId, Integer personId, Boolean isLimit, Integer limit, Integer page){
 //        HashMap<String, Object> params = new HashMap<>();
@@ -92,9 +90,9 @@ public class RequestServiceImpl implements RequestService{
     @Override
     public ResponseEntity<BaseResponse<RequestResponse, Void>> getEmployeeRequestDetail(Long id) {
         try {
-            RequestDto requestDetailDto
-                    = requestRepository.getEmployeeRequestDetail(id);
-            RequestResponse requestResponse = new RequestResponse(requestDetailDto);
+            RequestDto requestDto = requestRepository.getEmployeeRequestDetail(id);
+            requestDto.setImage(requestRepository.getListImage(id));
+            RequestResponse requestResponse = new RequestResponse(requestDto);
             ResponseEntity<BaseResponse<RequestResponse, Void>> responseEntity
                     = BaseResponse.ofSucceededOffset(requestResponse, null);
             return responseEntity;
@@ -110,15 +108,15 @@ public class RequestServiceImpl implements RequestService{
 
     @Override
     public ResponseEntity<BaseResponse<Void, Void>> updateRequestStatus(String status, Long id) {
-//        Integer isUpdatedSuccess = requestRepository.updateRequest(status, id);
-//        ResponseEntity<BaseResponse<Void, Void>> responseEntity = null;
-//        if (isUpdatedSuccess == UPDATE_SUCCESS) {
-//            responseEntity = BaseResponse.ofSucceeded(null);
-//        }
-//        else {
-//            responseEntity = BaseResponse.ofFailedUpdate(null);
-//        }
-        return null;
+        Integer isUpdatedSuccess = requestRepository.updateRequest(status, id);
+        ResponseEntity<BaseResponse<Void, Void>> responseEntity = null;
+        if (isUpdatedSuccess == CommonConstant.UPDATE_SUCCESS) {
+            responseEntity = BaseResponse.ofSucceeded(null);
+        }
+        else {
+            responseEntity = BaseResponse.ofFailedUpdate(null);
+        }
+        return responseEntity;
     }
 
     @Override
