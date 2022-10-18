@@ -16,7 +16,7 @@ import lombok.Setter;
 public class PersonDto {
   
   @JsonProperty("personId")
-  private int personId;
+  private Long personId;
   
   @JsonProperty("fullName")
   private String fullName;
@@ -43,7 +43,7 @@ public class PersonDto {
   private String departmentId;
   
   @JsonProperty("managerId")
-  private int managerId;
+  private Long managerId;
   
   @JsonProperty("gender")
   private String gender;

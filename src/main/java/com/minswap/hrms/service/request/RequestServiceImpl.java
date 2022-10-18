@@ -8,11 +8,15 @@ import com.minswap.hrms.response.dto.ListRequestDto;
 import com.minswap.hrms.response.dto.RequestDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.Query;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -118,12 +122,26 @@ public class RequestServiceImpl implements RequestService{
     }
 
     @Override
-    public ResponseEntity<BaseResponse<ListRequestDto, Void>> searchRequest(Long userId, String startDate, String endDate, Integer page,
-                                                                            Integer limit) {
-//        ListRequestDto listRequestDto = requestRepository.getListRequestBySearch(userId, startDate, endDate, page, limit);
-//
-//        ResponseEntity<BaseResponse<ListRequestDto, Void>> responseEntity
-//                = BaseResponse.ofSucceededOffset(listRequestDto, null);
-        return null;
+    public ResponseEntity<BaseResponse<ListRequestDto, Pageable>> searchRequest(Long userId, String startDate,
+                                                                                String endDate, Integer page,
+                                                                                Integer limit) throws Exception {
+
+        ResponseEntity<BaseResponse<ListRequestDto, Pageable>> responseEntity = null;
+        try {
+
+            Pagination pagination = new Pagination(page, limit);
+            Date startDateFormat =new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(startDate);
+            Date endDateFormat =new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(endDate);
+
+            Page<RequestDto> listRequestDto = requestRepository.getListRequestBySearch(
+                    userId, startDateFormat, endDateFormat, pagination);
+            List<RequestDto> requestDtos = listRequestDto.getContent();
+            pagination.setTotalRecords(listRequestDto);
+
+             responseEntity = BaseResponse.ofSucceededOffset(ListRequestDto.of(requestDtos), pagination);
+        }catch(Exception ex){
+            throw new Exception(ex.getMessage());
+        }
+       return responseEntity;
     }
 }

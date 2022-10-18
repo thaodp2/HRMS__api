@@ -24,7 +24,7 @@ public class Person {
 
 	@Id
 	@Column(name = "person_id")
-	private Integer personId;
+	private Long personId;
 
 	@Column(name = "full_name")
 	private String fullName;
@@ -51,7 +51,7 @@ public class Person {
 	private String departmentId;
 
 	@Column(name = "manager_id")
-	private Integer managerId;
+	private Long managerId;
 
 	@Column(name = "gender")
 	private String gender;
