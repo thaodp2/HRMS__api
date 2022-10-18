@@ -1,6 +1,7 @@
 package com.minswap.hrms.service.request;
 
 import com.minswap.hrms.model.BaseResponse;
+import com.minswap.hrms.request.EditLeaveBenefitRequest;
 import com.minswap.hrms.response.RequestResponse;
 import com.minswap.hrms.response.dto.ListRequestDto;
 import org.springframework.data.domain.Pageable;

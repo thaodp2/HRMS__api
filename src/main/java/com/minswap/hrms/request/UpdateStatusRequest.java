@@ -8,11 +8,10 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class StatusDto {
+public class UpdateStatusRequest {
     private String status;
-
     @JsonCreator
-    public StatusDto(String status) {
+    public UpdateStatusRequest(String status) {
         this.status = status;
     }
 }
