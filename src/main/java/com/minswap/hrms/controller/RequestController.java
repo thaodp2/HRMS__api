@@ -30,13 +30,12 @@ public class RequestController {
         return requestService.updateRequestStatus(statusDto.getStatus(), id);
     }
 
-    @GetMapping("/request/{userId}")
+    @GetMapping("/request")
     public ResponseEntity<BaseResponse<ListRequestDto, Pageable>> searchRequest(@RequestParam Long userId,
                                                                                 @RequestParam String startDate,
                                                                                 @RequestParam String endDate,
                                                                                 @RequestParam Integer page,
-                                                                                @RequestParam Integer limit) {
-        // return requestDetailService.searchRequest(userId,startDate, endDate, page, limit);
-        return null;
+                                                                                @RequestParam Integer limit) throws Exception {
+         return requestService.searchRequest(userId,startDate, endDate, page, limit);
     }
 }

@@ -17,7 +17,7 @@ public class RequestType {
 
     @Id
     @Column(name = "request_type_id")
-    private int requestTypeId;
+    private Long requestTypeId;
 
     @Column(name = "request_type_name")
     private String requestTypeName;

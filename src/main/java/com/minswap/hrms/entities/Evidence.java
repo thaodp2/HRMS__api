@@ -19,7 +19,7 @@ public class Evidence {
     private int evidenceId;
 
     @Column(name = "request_id")
-    private int requestId;
+    private Long requestId;
 
     @Column(name = "image")
     private String image;

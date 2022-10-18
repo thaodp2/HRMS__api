@@ -19,13 +19,13 @@ public class Request {
     private Long requestId;
 
     @Column(name = "request_type_id")
-    private int requestTypeId;
+    private Long requestTypeId;
 
     @Column(name = "person_id")
-    private int personId;
+    private Long personId;
 
     @Column(name = "device_type_id")
-    private int deviceTypeId;
+    private Long deviceTypeId;
 
     @Column(name = "start_time")
     private Date startTime;
