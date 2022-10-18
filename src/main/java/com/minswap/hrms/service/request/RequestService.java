@@ -15,6 +15,6 @@ public interface RequestService {
 
     ResponseEntity<BaseResponse<Void, Void>> updateRequestStatus (String status, Long id);
 
-    ResponseEntity<BaseResponse<ListRequestDto, Void>> searchRequest (Long userId, String startDate, String endDate, Integer page,
-                                                                      Integer limit);
+    ResponseEntity<BaseResponse<ListRequestDto, Pageable>> searchRequest (Long userId, String startDate, String endDate,
+                                                                          Integer page, Integer limit) throws Exception;
 }

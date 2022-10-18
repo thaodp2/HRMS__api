@@ -1,10 +1,13 @@
 package com.minswap.hrms.controller;
 
+import com.minswap.hrms.constants.CommonConstant;
 import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.response.RequestResponse;
-import com.minswap.hrms.request.StatusDto;
+import com.minswap.hrms.response.dto.ListRequestDto;
+import com.minswap.hrms.response.dto.StatusDto;
 import com.minswap.hrms.service.request.RequestService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,13 +30,12 @@ public class RequestController {
         return requestService.updateRequestStatus(statusDto.getStatus(), id);
     }
 
-//    @GetMapping("/request/{userId}")
-//    public ResponseEntity<BaseResponse<ListRequestDto, Pageable>> searchRequest(@RequestParam Long userId,
-//                                                                                @RequestParam String startDate,
-//                                                                                @RequestParam String endDate,
-//                                                                                @RequestParam Integer page,
-//                                                                                @RequestParam Integer limit) {
-//        // return requestDetailService.searchRequest(userId,startDate, endDate, page, limit);
-//        return null;
-//    }
+    @GetMapping("/request")
+    public ResponseEntity<BaseResponse<ListRequestDto, Pageable>> searchRequest(@RequestParam Long userId,
+                                                                                @RequestParam String startDate,
+                                                                                @RequestParam String endDate,
+                                                                                @RequestParam Integer page,
+                                                                                @RequestParam Integer limit) throws Exception {
+         return requestService.searchRequest(userId,startDate, endDate, page, limit);
+    }
 }

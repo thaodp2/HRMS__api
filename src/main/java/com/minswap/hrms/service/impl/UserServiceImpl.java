@@ -17,7 +17,7 @@ import java.util.Optional;
 public class UserServiceImpl implements UserService {
 
     @Autowired
-    PersonRepository personRepository;
+    private PersonRepository personRepository;
     @Override
     public ResponseEntity<BaseResponse<HttpStatus, Void>> updateUserInformation(UpdateUserRequest updateUserDto) throws Exception{
         try {
