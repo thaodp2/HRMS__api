@@ -16,6 +16,9 @@ public interface RequestService {
 
     ResponseEntity<BaseResponse<Void, Void>> updateRequestStatus (String status, Long id);
 
+    ResponseEntity<BaseResponse<Void, Void>> editLeaveBenefitRequest (EditLeaveBenefitRequest editLeaveBenefitRequest,
+                                                                      Long id);
+
     ResponseEntity<BaseResponse<ListRequestDto, Pageable>> searchRequest (Long userId, String startDate, String endDate,
                                                                           Integer page, Integer limit) throws Exception;
 }

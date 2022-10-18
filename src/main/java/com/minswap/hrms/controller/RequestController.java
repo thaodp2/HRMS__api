@@ -1,6 +1,7 @@
 package com.minswap.hrms.controller;
 
 import com.minswap.hrms.model.BaseResponse;
+import com.minswap.hrms.request.EditLeaveBenefitRequest;
 import com.minswap.hrms.request.UpdateStatusRequest;
 import com.minswap.hrms.response.RequestResponse;
 import com.minswap.hrms.response.dto.ListRequestDto;
@@ -32,11 +33,12 @@ public class RequestController {
 //        return null;
 //    }
 //
-//    @PutMapping("request/leave-benefit-request/edit/{id}")
-//    public ResponseEntity<BaseResponse<Void, Void>> editUsualRequest(@RequestBody EditLeaveBenefitRequest editLeaveBenefitRequest,
-//                                                                     @PathVariable Long id) {
-//        return requestService.editUsualRequest(editLeaveBenefitRequest, id);
-//    }
+    @PutMapping("request/leave-benefit-request/edit/{id}")
+    public ResponseEntity<BaseResponse<Void, Void>> editLeaveBenefitRequest(@RequestBody EditLeaveBenefitRequest editLeaveBenefitRequest,
+                                                                     @PathVariable Long id) {
+        System.out.println(editLeaveBenefitRequest.getListEvidence());
+        return requestService.editLeaveBenefitRequest(editLeaveBenefitRequest, id);
+    }
 
     @GetMapping("/request")
     public ResponseEntity<BaseResponse<ListRequestDto, Pageable>> searchRequest(@RequestParam Long userId,

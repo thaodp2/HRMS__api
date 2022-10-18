@@ -1,11 +1,14 @@
 package com.minswap.hrms.service.request;
 
 import com.minswap.hrms.constants.CommonConstant;
+import com.minswap.hrms.entities.Evidence;
 import com.minswap.hrms.exception.model.Pagination;
 import com.minswap.hrms.model.BaseResponse;
+import com.minswap.hrms.repsotories.EvidenceRepository;
 import com.minswap.hrms.repsotories.RequestRepository;
 import com.minswap.hrms.request.EditLeaveBenefitRequest;
 import com.minswap.hrms.response.RequestResponse;
+import com.minswap.hrms.response.dto.EvidenceDto;
 import com.minswap.hrms.response.dto.ListRequestDto;
 import com.minswap.hrms.response.dto.RequestDto;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +20,8 @@ import org.springframework.stereotype.Service;
 
 import javax.persistence.Query;
 import org.springframework.data.domain.Pageable;
+
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -27,6 +32,9 @@ import java.util.stream.Collectors;
 public class RequestServiceImpl implements RequestService{
     @Autowired
     RequestRepository requestRepository;
+
+    @Autowired
+    EvidenceRepository evidenceRepository;
 
     public Query getQueryForRequestList(String type, Integer managerId, Integer personId, Boolean isLimit, Integer limit, Integer page){
 //        HashMap<String, Object> params = new HashMap<>();
@@ -91,7 +99,8 @@ public class RequestServiceImpl implements RequestService{
     public ResponseEntity<BaseResponse<RequestResponse, Void>> getEmployeeRequestDetail(Long id) {
         try {
             RequestDto requestDto = requestRepository.getEmployeeRequestDetail(id);
-            requestDto.setImage(requestRepository.getListImage(id));
+            List<EvidenceDto> listEvidence = evidenceRepository.getListEvidenceByRequest(id);
+            requestDto.setListEvidence(listEvidence);
             RequestResponse requestResponse = new RequestResponse(requestDto);
             ResponseEntity<BaseResponse<RequestResponse, Void>> responseEntity
                     = BaseResponse.ofSucceededOffset(requestResponse, null);
@@ -108,7 +117,7 @@ public class RequestServiceImpl implements RequestService{
 
     @Override
     public ResponseEntity<BaseResponse<Void, Void>> updateRequestStatus(String status, Long id) {
-        Integer isUpdatedSuccess = requestRepository.updateRequest(status, id);
+        Integer isUpdatedSuccess = requestRepository.updateStatusRequest(status, id);
         ResponseEntity<BaseResponse<Void, Void>> responseEntity = null;
         if (isUpdatedSuccess == CommonConstant.UPDATE_SUCCESS) {
             responseEntity = BaseResponse.ofSucceeded(null);
@@ -117,6 +126,55 @@ public class RequestServiceImpl implements RequestService{
             responseEntity = BaseResponse.ofFailedUpdate(null);
         }
         return responseEntity;
+    }
+
+    @Override
+    public ResponseEntity<BaseResponse<Void, Void>> editLeaveBenefitRequest(EditLeaveBenefitRequest editLeaveBenefitRequest,
+                                                                            Long id) {
+        try {
+            ResponseEntity<BaseResponse<Void, Void>> responseEntity = null;
+
+            Date createDate = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
+                                                    parse(editLeaveBenefitRequest.getCreateDate());
+            Date startTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
+                                                    parse(editLeaveBenefitRequest.getStartTime());
+            Date endTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
+                                                    parse(editLeaveBenefitRequest.getEndTime());
+            if (startTime.before(createDate)
+                    || endTime.before(createDate)
+                    || endTime.before(startTime)) {
+                responseEntity = BaseResponse.ofFailedUpdate(null);
+            }
+            else {
+                requestRepository.updateRequest
+                        (id,
+                        editLeaveBenefitRequest.getRequestTypeId(),
+                        startTime,
+                        endTime,
+                        editLeaveBenefitRequest.getReason());
+
+                List<EvidenceDto> listEvidence = editLeaveBenefitRequest.getListEvidence();
+                Integer deleteImage = evidenceRepository.deleteImageByRequestId(id);
+                if (deleteImage == CommonConstant.UPDATE_FAIL) {
+                    responseEntity = BaseResponse.ofFailedUpdate(null);
+                }
+                else {
+                    if (!listEvidence.isEmpty()) {
+                        for(EvidenceDto evidenceDto : listEvidence) {
+                            Evidence evidence = new Evidence(evidenceDto.getRequestId(),
+                                                             evidenceDto.getImage());
+                            evidenceRepository.save(evidence);
+                        }
+                    }
+                    responseEntity = BaseResponse.ofSucceeded(null);
+                }
+            }
+            return responseEntity;
+
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
     @Override

@@ -1,6 +1,8 @@
 package com.minswap.hrms.repsotories;
 
+import com.minswap.hrms.entities.Evidence;
 import com.minswap.hrms.entities.Request;
+import com.minswap.hrms.response.dto.EvidenceDto;
 import com.minswap.hrms.response.dto.RequestDto;
 import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.domain.Page;
@@ -16,9 +18,6 @@ import java.util.List;
 
 @Repository
 public interface RequestRepository extends JpaRepository<Request, Long> {
-
-    @Query("select e.image from Evidence e left join Request r on r.requestId = e.requestId where r.requestId =:id")
-    List<String> getListImage(@Param("id") Long id);
 
     @Query(" SELECT new com.minswap.hrms.response.dto.RequestDto(" +
         " r.requestId as requestId, p.fullName as sender, rt.requestTypeName as requestTypeName, r.createDate as createDate, " +
@@ -58,10 +57,18 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
     @Modifying
     @Transactional
     @Query("update Request r set r.status =:status where r.requestId =:id")
-    Integer updateRequest(@Param("status") String status, @Param("id") Long id);
-//
-//    Integer editUsualRequest(@Param("requestTypeId") Long requestTypeId,
-//                             @Param("startTime") Date startTime,
-//                             @Param("endTime") Date endTime,
-//                             @Param("reason") String reason);
+    Integer updateStatusRequest(@Param("status") String status, @Param("id") Long id);
+
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE Request r set r.requestTypeId =:requestTypeId, r.startTime =:startTime, r.endTime =:endTime, r.reason =:reason where r.requestId =:id")
+    Integer updateRequest(@Param("id") Long id,
+                          @Param("requestTypeId") Long requestTypeId,
+                          @Param("startTime") Date startTime,
+                          @Param("endTime") Date endTime,
+                          @Param("reason") String reason);
+
+
+
 }
