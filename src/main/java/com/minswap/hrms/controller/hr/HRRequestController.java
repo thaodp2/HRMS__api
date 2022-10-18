@@ -21,8 +21,8 @@ public class HRRequestController {
     private RequestService requestService;
 
 
-//    @GetMapping("/request")
-//    public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getListEmployee(@RequestParam int page, @RequestParam int limit) {
-//        return requestService.getAllRequest(page, limit);
-//    }
+    @GetMapping("/request")
+    public ResponseEntity<BaseResponse<RequestResponse, Pageable>> getListEmployee(@RequestParam int page, @RequestParam int limit) {
+        return requestService.getAllTimingRequest(page, limit);
+    }
 }

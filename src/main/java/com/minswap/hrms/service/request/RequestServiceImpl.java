@@ -8,6 +8,7 @@ import com.minswap.hrms.response.dto.ListRequestDto;
 import com.minswap.hrms.response.dto.RequestDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -84,6 +85,19 @@ public class RequestServiceImpl implements RequestService{
 //    public ResponseEntity<BaseResponse<RequestResponse.RequestResponse, Pageable>> getMyRequest(Integer personId, int page, int limit) {
 //        return  getAllRequestByPermission("My",null,personId,page,limit);
 //    }
+
+    @Override
+    public ResponseEntity<BaseResponse<RequestResponse, Pageable>> getAllTimingRequest(Integer page, Integer limit) {
+        //List<RequestDto> requestDtos = requestRepository.getAllTimingRequest(page*limit, limit);
+        List<RequestDto> requestDtos = requestRepository.getAllTimingRequest(PageRequest.of(page,limit));
+
+        Pagination pagination = new Pagination(page, limit);
+        pagination.setTotalRecords(requestDtos.size());
+        RequestResponse requestResponse = new RequestResponse(requestDtos);
+        ResponseEntity<BaseResponse<RequestResponse, Pageable>> response
+                = BaseResponse.ofSucceededOffset(requestResponse, pagination);
+        return response;
+    }
 
     @Override
     public ResponseEntity<BaseResponse<RequestResponse, Void>> getEmployeeRequestDetail(Long id) {

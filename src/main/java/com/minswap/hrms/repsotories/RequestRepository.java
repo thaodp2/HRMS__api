@@ -4,12 +4,14 @@ import com.minswap.hrms.entities.Request;
 import com.minswap.hrms.response.dto.ListRequestDto;
 import com.minswap.hrms.response.dto.RequestDto;
 import io.lettuce.core.dynamic.annotation.Param;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import javax.transaction.Transactional;
+import java.util.List;
 
 @Repository
 public interface RequestRepository extends JpaRepository<Request, Long> {
@@ -53,6 +55,38 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
             "r.deviceTypeId = dt.deviceTypeId " +
             "WHERE r.requestId =:id")
     RequestDto getEmployeeRequestDetail(@Param("id") Long id);
+
+    @Query("select new com.minswap.hrms.response.dto.RequestDto(" +
+            "r.requestId as requestId, p.fullName as personName, rt.requestTypeName as requestTypeName, r.createDate as createDate, " +
+            "r.startTime as startTime, r.endTime as endTime, e.image as image, " +
+            "r.reason as reason, r.status as status, p2.fullName as receiver, dt.deviceTypeName as deviceTypeName, r.approvalDate as approvalDate) " +
+            "from Request r " +
+            "left join Evidence e on " +
+            "r.requestId = e.requestId " +
+            "left join RequestType rt on " +
+            "r.requestTypeId = rt.requestTypeId " +
+            "left join Person p on " +
+            "p.personId = r.personId " +
+            "left join Person p2 on " +
+            "p2.personId = p.managerId " +
+            "left join DeviceType dt on " +
+            "r.deviceTypeId = dt.deviceTypeId " +
+            "WHERE rt.requestTypeId != 11")
+//    @Query(value = "select r.request_id as requestId, p.full_name as personName, rt.request_type_name as requestTypeName, r.create_date as createDate, " +
+//            "r.start_time as startTime, r.end_time as endTime, e.image as image, " +
+//            "r.reason as reason, r.status as status, p2.full_name as receiver, dt.device_type as deviceTypeName, r.approval_date as approvalDate " +
+//            "from request r " +
+//            "left join evidence e on " +
+//            "r.request_id = e.request_id " +
+//            "left join request_type rt on " +
+//            "r.request_type_id = rt.request_type_id " +
+//            "left join person p on " +
+//            "p.person_id = r.person_id " +
+//            "left join person p2 on " +
+//            "p2.person_id = p.manager_id " +
+//            "left join device_type dt on " +
+//            "r.device_type_id = dt.device_type_id where rt.request_type_id != 11", nativeQuery = true)
+    List<RequestDto> getAllTimingRequest(Pageable pageable);
 
 //    @Modifying
 //    @Transactional
