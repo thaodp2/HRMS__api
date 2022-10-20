@@ -12,15 +12,19 @@ public class RequestResponse {
     @JsonProperty(value = "item")
     private RequestDto requestDto;
 
-    @JsonProperty(value = "items")
-    private List<RequestDto> requestDtos;
-
     public RequestResponse(RequestDto requestDto) {
         this.requestDto = requestDto;
     }
 
-    public RequestResponse(List<RequestDto> requestDtos) {
-        this.requestDtos = requestDtos;
+
+
+    @Data
+    public static class RequestListResponse{
+        @JsonProperty(value = "items")
+        private List<RequestDto> requestDtos;
+        public RequestListResponse(List<RequestDto> requestDtos) {
+            this.requestDtos = requestDtos;
+        }
     }
 
 }
