@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface DeviceTypeRepository extends JpaRepository<DeviceType,Integer> {
+public interface DeviceTypeRepository extends JpaRepository<DeviceType,Long> {
 
     @Query("select dt.deviceTypeId from DeviceType dt")
     List<Long> getAllDeviceTypeId();
