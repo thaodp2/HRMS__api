@@ -34,4 +34,7 @@ public class CommonConstant {
     public static final Integer UPDATE_FAIL = 0;
 
     public static final String USER = "/user";
+    public static final String ALL = "All";
+    public static final String SUBORDINATE = "Subordinate";
+    public static final String MY = "My";
 }
