@@ -10,5 +10,9 @@ public interface DepartmentService {
     ResponseEntity<BaseResponse<ListDepartmentDto, Pageable>> getListDepartment (Integer page,
                                                                                  Integer limit,
                                                                                  String departmentName);
+    ResponseEntity<BaseResponse<Void, Void>> createDepartment (String departmentName);
+
+    ResponseEntity<BaseResponse<Void, Void>> editDepartment (Long id,
+                                                             String departmentName);
 
 }

@@ -13,7 +13,10 @@ public enum ErrorCodeEnum {
 
   RESULT_NOT_FOUND(404),
 
-  UPDATE_STATUS_FAIL(404),
+  UPDATE_FAIL(404),
+
+  UPDATE_DEPARTMENT_FAIL (208),
+
   ;
 
   /** The value. */

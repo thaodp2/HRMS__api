@@ -14,8 +14,11 @@ public class ErrorCode {
     public static final BusinessCode RESULT_NOT_FOUND = new BusinessCode(
             ErrorCodeEnum.RESULT_NOT_FOUND.getValue(), "Result not found", HttpStatus.NOT_FOUND);
 
-    public static final BusinessCode UPDATE_STATUS_FAIL = new BusinessCode(
-            ErrorCodeEnum.UPDATE_STATUS_FAIL.getValue(), "Update failed", HttpStatus.NOT_FOUND);
+    public static final BusinessCode UPDATE_FAIL = new BusinessCode(
+            ErrorCodeEnum.UPDATE_FAIL.getValue(), "Update failed", HttpStatus.NOT_FOUND);
+
+    public static final BusinessCode UPDATE_DEPARTMENT_FAIL = new BusinessCode(
+            ErrorCodeEnum.UPDATE_DEPARTMENT_FAIL.getValue(), "DepartmentName already exist", HttpStatus.ALREADY_REPORTED);
 
     public static final BusinessCode INVALID_PARAMETERS = new BusinessCode(
     		ErrorCodeEnum.BAD_REQUEST.getValue(), "Invalid parameters", HttpStatus.BAD_REQUEST);

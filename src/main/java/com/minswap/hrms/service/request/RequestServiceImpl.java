@@ -144,7 +144,7 @@ public class RequestServiceImpl implements RequestService{
             responseEntity = BaseResponse.ofSucceeded(null);
         }
         else {
-            throw new BaseException(ErrorCode.UPDATE_STATUS_FAIL);
+            throw new BaseException(ErrorCode.UPDATE_FAIL);
         }
         return responseEntity;
     }
@@ -220,7 +220,7 @@ public class RequestServiceImpl implements RequestService{
                         startTime,
                         editDeviceRequest.getReason());
                 if (updateDeviceRequest == CommonConstant.UPDATE_FAIL) {
-                    throw new BaseException(ErrorCode.UPDATE_STATUS_FAIL);
+                    throw new BaseException(ErrorCode.UPDATE_FAIL);
                 }
                 else {
                     responseEntity = BaseResponse.ofSucceeded(null);
