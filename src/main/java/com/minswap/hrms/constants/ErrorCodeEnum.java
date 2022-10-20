@@ -8,6 +8,12 @@ public enum ErrorCodeEnum {
   BAD_REQUEST(400),
   INTERNAL_SERVER_ERROR(500),
   UNAUTHORIZED(501),
+
+  DATE_INVALID(405),
+
+  RESULT_NOT_FOUND(404),
+
+  UPDATE_STATUS_FAIL(404),
   ;
 
   /** The value. */

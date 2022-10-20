@@ -63,11 +63,19 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
     @Modifying
     @Transactional
     @Query("UPDATE Request r set r.requestTypeId =:requestTypeId, r.startTime =:startTime, r.endTime =:endTime, r.reason =:reason where r.requestId =:id")
-    Integer updateRequest(@Param("id") Long id,
-                          @Param("requestTypeId") Long requestTypeId,
-                          @Param("startTime") Date startTime,
-                          @Param("endTime") Date endTime,
-                          @Param("reason") String reason);
+    Integer updateLeaveBenefitRequest(@Param("id") Long id,
+                                      @Param("requestTypeId") Long requestTypeId,
+                                      @Param("startTime") Date startTime,
+                                      @Param("endTime") Date endTime,
+                                      @Param("reason") String reason);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE Request r set r.deviceTypeId =:deviceTypeId, r.startTime =:startTime, r.reason =:reason where r.requestId =:id")
+    Integer updateDeviceRequest(@Param("id") Long id,
+                                @Param("deviceTypeId") Long deviceTypeId,
+                                @Param("startTime") Date startTime,
+                                @Param("reason") String reason);
 
 
 
