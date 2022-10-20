@@ -3,6 +3,7 @@ package com.minswap.hrms.response.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.minswap.hrms.constants.CommonConstant;
+import com.minswap.hrms.entities.Evidence;
 import com.minswap.hrms.entities.Person;
 import com.minswap.hrms.entities.Request;
 import com.minswap.hrms.repsotories.RequestTypeRepository;
@@ -41,7 +42,7 @@ public class RequestDto {
     private Date createDate;
     private Date startTime;
     private Date endTime;
-    private List<String> image;
+    private List<EvidenceDto> listEvidence;
     private String reason;
     private String status;
     private String receiver;

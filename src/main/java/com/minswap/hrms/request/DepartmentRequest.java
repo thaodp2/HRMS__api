@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.checkerframework.checker.regex.qual.Regex;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
@@ -12,13 +11,15 @@ import javax.validation.constraints.Pattern;
 @Getter
 @Setter
 @NoArgsConstructor
-public class UpdateStatusRequest extends BasicRequest{
+public class DepartmentRequest extends BasicRequest{
 
-    @NotNull(message = "409")
-    @Pattern(regexp = "(?:Approved|Rejected|Pending)", message = "410")
-    private String status;
+    @NotNull(message = "415")
+    @Pattern(regexp = "(.|\\s)*\\S(.|\\s)*", message = "415")
+    private String departmentName;
+
     @JsonCreator
-    public UpdateStatusRequest(String status) {
-        this.status = status;
+    public DepartmentRequest(String departmentName) {
+        this.departmentName = departmentName;
     }
+
 }

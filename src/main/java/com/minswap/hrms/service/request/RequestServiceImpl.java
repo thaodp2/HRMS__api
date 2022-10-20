@@ -2,16 +2,25 @@ package com.minswap.hrms.service.request;
 
 import com.minswap.hrms.constants.CommonConstant;
 import com.minswap.hrms.constants.ErrorCode;
+import com.minswap.hrms.constants.ErrorCode;
+import com.minswap.hrms.entities.Evidence;
+import com.minswap.hrms.exception.model.BaseException;
 import com.minswap.hrms.exception.model.Pagination;
 import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.model.BusinessCode;
 import com.minswap.hrms.model.Meta;
+import com.minswap.hrms.repsotories.DeviceTypeRepository;
+import com.minswap.hrms.repsotories.EvidenceRepository;
 import com.minswap.hrms.repsotories.RequestRepository;
+import com.minswap.hrms.repsotories.RequestTypeRepository;
+import com.minswap.hrms.request.EditDeviceRequest;
 import com.minswap.hrms.request.EditLeaveBenefitRequest;
 import com.minswap.hrms.response.RequestResponse;
+import com.minswap.hrms.response.dto.EvidenceDto;
 import com.minswap.hrms.response.dto.ListRequestDto;
 import com.minswap.hrms.response.dto.RequestDto;
 import com.minswap.hrms.util.DateTimeUtil;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Hibernate;
 import org.hibernate.Session;
@@ -31,6 +40,8 @@ import javax.persistence.TemporalType;
 
 import org.springframework.data.domain.Pageable;
 
+import java.text.ParseException;
+
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -49,11 +60,16 @@ public class RequestServiceImpl implements RequestService{
     @Autowired
     EntityManager entityManager;
 
+    @Autowired
+    RequestTypeRepository requestTypeRepository;
+
+    @Autowired
+    DeviceTypeRepository deviceTypeRepository;
+
+    @Autowired
+    EvidenceRepository evidenceRepository;
+
     Session session;
-
-    private static final Integer UPDATE_SUCCESS = 1;
-
-    private static final Integer UPDATE_FAIL = 0;
 
     public List<RequestDto> getQueryForRequestList(String type, Long managerId, Long personId, Boolean isDeviceRequest, Boolean isLimit, Integer limit, Integer page, Boolean isSearch, String createDateFrom, String createDateTo, Long requestTypeId) throws ParseException {
         HashMap<String, Object> params = new HashMap<>();
@@ -177,15 +193,24 @@ public class RequestServiceImpl implements RequestService{
         return getRequestByPermission(CommonConstant.MY,null,personId,true,page,limit,isSearch,createDateFrom,createDateTo,requestTypeId);
     }
 
+
     @Override
     public ResponseEntity<BaseResponse<RequestResponse, Void>> getEmployeeRequestDetail(Long id) {
         try {
+
             RequestDto requestDto = requestRepository.getEmployeeRequestDetail(id);
-            requestDto.setImage(requestRepository.getListImage(id));
+            if (requestDto == null) {
+                throw new NullPointerException();
+            }
+            List<EvidenceDto> listEvidence = evidenceRepository.getListEvidenceByRequest(id);
+            requestDto.setListEvidence(listEvidence);
             RequestResponse requestResponse = new RequestResponse(requestDto);
             ResponseEntity<BaseResponse<RequestResponse, Void>> responseEntity
                     = BaseResponse.ofSucceededOffset(requestResponse, null);
             return responseEntity;
+        }
+        catch (NullPointerException nullPointerException) {
+            throw new BaseException(ErrorCode.RESULT_NOT_FOUND);
         }
         catch (Exception e) {
             try {
@@ -193,20 +218,104 @@ public class RequestServiceImpl implements RequestService{
             } catch (Exception ex) {
                 throw new RuntimeException(ex);
             }
+
         }
     }
 
     @Override
     public ResponseEntity<BaseResponse<Void, Void>> updateRequestStatus(String status, Long id) {
-        Integer isUpdatedSuccess = requestRepository.updateRequest(status, id);
+        Integer isUpdatedSuccess = requestRepository.updateStatusRequest(status, id);
         ResponseEntity<BaseResponse<Void, Void>> responseEntity = null;
         if (isUpdatedSuccess == CommonConstant.UPDATE_SUCCESS) {
             responseEntity = BaseResponse.ofSucceeded(null);
         }
         else {
-            responseEntity = BaseResponse.ofFailedUpdate(null);
+            throw new BaseException(ErrorCode.UPDATE_FAIL);
         }
         return responseEntity;
+    }
+
+    @Override
+    public ResponseEntity<BaseResponse<Void, Void>> editLeaveBenefitRequest(EditLeaveBenefitRequest editLeaveBenefitRequest,
+                                                                            Long id) {
+        try {
+            ResponseEntity<BaseResponse<Void, Void>> responseEntity = null;
+
+            Date createDate = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
+                                                    parse(editLeaveBenefitRequest.getCreateDate());
+            Date startTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
+                                                    parse(editLeaveBenefitRequest.getStartTime());
+            Date endTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
+                                                    parse(editLeaveBenefitRequest.getEndTime());
+            Long requestTypeId = editLeaveBenefitRequest.getRequestTypeId();
+            List<Long> listRequestTypeId = requestTypeRepository.getAllRequestTypeId();
+            if (startTime.before(createDate)
+                    || endTime.before(createDate)
+                    || endTime.before(startTime)) {
+                throw new BaseException(ErrorCode.DATE_INVALID);
+            }
+            else if (!listRequestTypeId.contains(requestTypeId)) {
+                throw new BaseException(ErrorCode.RESULT_NOT_FOUND);
+            }
+            else {
+                requestRepository.updateLeaveBenefitRequest
+                        (id,
+                        requestTypeId,
+                        startTime,
+                        endTime,
+                        editLeaveBenefitRequest.getReason());
+                List<EvidenceDto> listEvidence = editLeaveBenefitRequest.getListEvidence();
+                evidenceRepository.deleteImageByRequestId(id);
+                if (!listEvidence.isEmpty()) {
+                    for(EvidenceDto evidenceDto : listEvidence) {
+                        Evidence evidence = new Evidence(evidenceDto.getRequestId(),
+                                                         evidenceDto.getImage());
+                        evidenceRepository.save(evidence);
+                    }
+                }
+                responseEntity = BaseResponse.ofSucceeded(null);
+            }
+            return responseEntity;
+
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    @Override
+    public ResponseEntity<BaseResponse<Void, Void>> editDeviceRequest(EditDeviceRequest editDeviceRequest, Long id) {
+        try {
+            ResponseEntity<BaseResponse<Void, Void>> responseEntity = null;
+            Date createDate = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
+                    parse(editDeviceRequest.getCreateDate());
+            Date startTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
+                    parse(editDeviceRequest.getStartTime());
+            List<Long> listDeviceTypeId = deviceTypeRepository.getAllDeviceTypeId();
+            Long deviceTypeId = editDeviceRequest.getDeviceTypeId();
+            if (startTime.before(createDate)) {
+                throw new BaseException(ErrorCode.DATE_INVALID);
+            }
+            else if (!listDeviceTypeId.contains(deviceTypeId)) {
+                throw new BaseException(ErrorCode.RESULT_NOT_FOUND);
+            }
+            else {
+                Integer updateDeviceRequest = requestRepository.updateDeviceRequest
+                        (id,
+                        deviceTypeId,
+                        startTime,
+                        editDeviceRequest.getReason());
+                if (updateDeviceRequest == CommonConstant.UPDATE_FAIL) {
+                    throw new BaseException(ErrorCode.UPDATE_FAIL);
+                }
+                else {
+                    responseEntity = BaseResponse.ofSucceeded(null);
+                }
+            }
+            return responseEntity;
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
