@@ -7,7 +7,7 @@ import lombok.Data;
 public class UpdateUserRequest {
 
     @JsonProperty("personId")
-    private Integer personId;
+    private Long personId;
 
     @JsonProperty("fullName")
     private String fullName;
@@ -48,7 +48,7 @@ public class UpdateUserRequest {
     @JsonProperty("status")
     private String status;
 
-    public UpdateUserRequest(Integer personId, String fullName, String address, String citizenIdentification, String phoneNumber, String email, String onBoardDate, String rankId, String departmentId, Integer managerId, String gender, String rollNumber, String dateOfBirth, String status) {
+    public UpdateUserRequest(Long personId, String fullName, String address, String citizenIdentification, String phoneNumber, String email, String onBoardDate, String rankId, String departmentId, Integer managerId, String gender, String rollNumber, String dateOfBirth, String status) {
         this.personId = personId;
         this.fullName = fullName;
         this.address = address;
