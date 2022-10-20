@@ -60,11 +60,16 @@ public class RequestServiceImpl implements RequestService{
     @Autowired
     EntityManager entityManager;
 
+    @Autowired
+    RequestTypeRepository requestTypeRepository;
+
+    @Autowired
+    DeviceTypeRepository deviceTypeRepository;
+
+    @Autowired
+    EvidenceRepository evidenceRepository;
+
     Session session;
-
-    private static final Integer UPDATE_SUCCESS = 1;
-
-    private static final Integer UPDATE_FAIL = 0;
 
     public List<RequestDto> getQueryForRequestList(String type, Long managerId, Long personId, Boolean isDeviceRequest, Boolean isLimit, Integer limit, Integer page, Boolean isSearch, String createDateFrom, String createDateTo, Long requestTypeId) throws ParseException {
         HashMap<String, Object> params = new HashMap<>();
@@ -136,45 +141,6 @@ public class RequestServiceImpl implements RequestService{
                 .addScalar("deviceTypeName", StringType.INSTANCE)
                 .addScalar("approvalDate", new TimestampType())
                 .setResultTransformer(Transformers.aliasToBean(RequestDto.class));
-    @Autowired
-    DeviceTypeRepository deviceTypeRepository;
-
-    @Autowired
-    RequestTypeRepository requestTypeRepository;
-
-    @Autowired
-    EvidenceRepository evidenceRepository;
-
-    public Query getQueryForRequestList(String type, Integer managerId, Integer personId, Boolean isLimit, Integer limit, Integer page){
-//        HashMap<String, Object> params = new HashMap<>();
-//        StringBuilder queryAllRequest = new StringBuilder("SELECT r.request_id as request_id, rt.request_type_name as request_type_name, p.full_name as full_name, r.start_time as start_time, r.end_time as end_time, r.reason as reason, r.create_date as create_date,r.status as status ");
-//        queryAllRequest.append("FROM request r, request_type rt, person p ");
-//        StringBuilder whereBuild = new StringBuilder("WHERE r.request_type_id  = rt.request_type_id and r.person_id  = p.person_id ");
-//        switch (type){
-//            case "All":
-//                break;
-//            case "Subordinate":
-//                whereBuild.append("and p.manager_id = :managerId ");
-//                params.put("managerId", managerId);
-//                break;
-//            case "My":
-//                whereBuild.append("and p.person_id = :personId ");
-//                params.put("personId", personId);
-//                break;
-//            default:
-//                break;
-//        }
-//        queryAllRequest.append(whereBuild);
-//        if(isLimit){
-//            queryAllRequest = queryAllRequest.append("LIMIT :offset, :limit");
-//            params.put("limit", limit);
-//            params.put("offset", page * limit);
-//        }
-//        Query query = entityManager.createNativeQuery(queryAllRequest.toString(), RequestDto.SQL_RESULT_SET_MAPPING);
-//        params.forEach(query::setParameter);
-//        return query;
-        return null;
-    }
 
         params.forEach(query::setParameter);
         List<RequestDto> dtos = query.getResultList();
