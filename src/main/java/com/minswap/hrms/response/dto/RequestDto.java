@@ -42,7 +42,7 @@ public class RequestDto {
     private Date createDate;
     private Date startTime;
     private Date endTime;
-    private List<EvidenceDto> listEvidence;
+    private List<String> listEvidence;
     private String reason;
     private String status;
     private String receiver;

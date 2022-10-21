@@ -2,7 +2,6 @@ package com.minswap.hrms.service.request;
 
 import com.minswap.hrms.constants.CommonConstant;
 import com.minswap.hrms.constants.ErrorCode;
-import com.minswap.hrms.constants.ErrorCode;
 import com.minswap.hrms.entities.Evidence;
 import com.minswap.hrms.exception.model.BaseException;
 import com.minswap.hrms.exception.model.Pagination;
@@ -16,40 +15,29 @@ import com.minswap.hrms.repsotories.RequestTypeRepository;
 import com.minswap.hrms.request.EditDeviceRequest;
 import com.minswap.hrms.request.EditLeaveBenefitRequest;
 import com.minswap.hrms.response.RequestResponse;
-import com.minswap.hrms.response.dto.EvidenceDto;
 import com.minswap.hrms.response.dto.ListRequestDto;
 import com.minswap.hrms.response.dto.RequestDto;
-import com.minswap.hrms.util.DateTimeUtil;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.Hibernate;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.hibernate.transform.Transformers;
 import org.hibernate.type.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
-import javax.persistence.TemporalType;
 
 import org.springframework.data.domain.Pageable;
 
 import java.text.ParseException;
 
-import java.sql.Timestamp;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -202,8 +190,8 @@ public class RequestServiceImpl implements RequestService{
             if (requestDto == null) {
                 throw new NullPointerException();
             }
-            List<EvidenceDto> listEvidence = evidenceRepository.getListEvidenceByRequest(id);
-            requestDto.setListEvidence(listEvidence);
+            List<String> listImage = evidenceRepository.getListImageByRequest(id);
+            requestDto.setListEvidence(listImage);
             RequestResponse requestResponse = new RequestResponse(requestDto);
             ResponseEntity<BaseResponse<RequestResponse, Void>> responseEntity
                     = BaseResponse.ofSucceededOffset(requestResponse, null);
@@ -264,12 +252,11 @@ public class RequestServiceImpl implements RequestService{
                         startTime,
                         endTime,
                         editLeaveBenefitRequest.getReason());
-                List<EvidenceDto> listEvidence = editLeaveBenefitRequest.getListEvidence();
+                List<String> listImage = editLeaveBenefitRequest.getListImage();
                 evidenceRepository.deleteImageByRequestId(id);
-                if (!listEvidence.isEmpty()) {
-                    for(EvidenceDto evidenceDto : listEvidence) {
-                        Evidence evidence = new Evidence(evidenceDto.getRequestId(),
-                                                         evidenceDto.getImage());
+                if (!listImage.isEmpty()) {
+                    for(String image : listImage) {
+                        Evidence evidence = new Evidence(id, image);
                         evidenceRepository.save(evidence);
                     }
                 }

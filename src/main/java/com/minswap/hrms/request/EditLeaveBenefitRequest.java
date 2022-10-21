@@ -1,13 +1,10 @@
 package com.minswap.hrms.request;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.minswap.hrms.entities.Evidence;
-import com.minswap.hrms.response.dto.EvidenceDto;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.swing.text.html.parser.Entity;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import java.util.List;
@@ -32,16 +29,16 @@ public class EditLeaveBenefitRequest extends BasicRequest{
     private String endTime;
     private String reason;
     @NotNull(message = "413")
-    private List<EvidenceDto> listEvidence;
+    private List<String> listImage;
 
     @JsonCreator
     public EditLeaveBenefitRequest(Long requestTypeId, String createDate, String startTime,
-                                   String endTime, String reason, List<EvidenceDto> listEvidence) {
+                                   String endTime, String reason, List<String> listImage) {
         this.requestTypeId = requestTypeId;
         this.createDate = createDate;
         this.startTime = startTime;
         this.endTime = endTime;
         this.reason = reason;
-        this.listEvidence = listEvidence;
+        this.listImage = listImage;
     }
 }
