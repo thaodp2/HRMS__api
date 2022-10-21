@@ -1,9 +1,6 @@
 package com.minswap.hrms.repsotories;
-
-import com.minswap.hrms.entities.Evidence;
 import com.minswap.hrms.entities.Request;
 import com.minswap.hrms.response.dto.ListRequestDto;
-import com.minswap.hrms.response.dto.EvidenceDto;
 import com.minswap.hrms.response.dto.RequestDto;
 import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.domain.Page;
