@@ -14,5 +14,7 @@ public interface DepartmentService {
 
     ResponseEntity<BaseResponse<Void, Void>> editDepartment (Long id,
                                                              String departmentName);
+    ResponseEntity<BaseResponse<Void, Void>> deleteDepartment (Long id);
+
 
 }

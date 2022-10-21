@@ -72,4 +72,18 @@ public class DepartmentServiceImpl implements DepartmentService{
         return responseEntity;
     }
 
+    @Override
+    public ResponseEntity<BaseResponse<Void, Void>> deleteDepartment(Long id) {
+        ResponseEntity<BaseResponse<Void, Void>> responseEntity = null;
+        try {
+            departmentRepository.deleteById(id);
+            responseEntity = BaseResponse.ofSucceeded(null);
+            return responseEntity;
+        }
+        catch (Exception e) {
+            throw new BaseException(ErrorCode.DELETE_FAIL);
+        }
+
+    }
+
 }
