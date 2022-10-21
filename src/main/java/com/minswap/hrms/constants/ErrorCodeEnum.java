@@ -15,6 +15,8 @@ public enum ErrorCodeEnum {
 
   UPDATE_FAIL(404),
 
+  DELETE_FAIL(404),
+
   UPDATE_DEPARTMENT_FAIL (208),
 
   ;

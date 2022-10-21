@@ -47,5 +47,10 @@ public class HRDepartmentController {
         return departmentService.editDepartment(id, departmentRequest.getDepartmentName());
     }
 
+    @DeleteMapping("department/{id}")
+    public ResponseEntity<BaseResponse<Void, Void>> deleteDepartment(@PathVariable Long id) {
+        return departmentService.deleteDepartment(id);
+    }
+
 
 }
