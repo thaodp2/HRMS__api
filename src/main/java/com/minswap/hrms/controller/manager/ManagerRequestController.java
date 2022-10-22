@@ -7,12 +7,14 @@ import com.minswap.hrms.service.request.RequestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.Pattern;
 
 @RestController
 @RequestMapping(CommonConstant.MANAGER + "/")
+@Validated
 public class ManagerRequestController {
     @Autowired
     private RequestService requestService;

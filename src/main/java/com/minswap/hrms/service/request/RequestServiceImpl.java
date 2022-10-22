@@ -59,7 +59,7 @@ public class RequestServiceImpl implements RequestService {
 
     Session session;
 
-    public List<RequestDto> getQueryForRequestList(String type, Long managerId, Long personId, Boolean isDeviceRequest, Boolean isLimit, Integer limit, Integer page, Boolean isSearch, String createDateFrom, String createDateTo, Long requestTypeId) throws ParseException {
+    public List<RequestDto> getQueryForRequestList(String type, Long managerId, Long personId, Boolean isLimit, Integer limit, Integer page, Boolean isSearch, String createDateFrom, String createDateTo, Long requestTypeId) throws ParseException {
         HashMap<String, Object> params = new HashMap<>();
         StringBuilder queryAllRequest = new StringBuilder("select r.request_id as requestId, p.full_name as personName, rt.request_type_name as requestTypeName, r.create_date as createDate, r.start_time as startTime, r.end_time as endTime, r.reason as reason, r.status as status, p2.full_name as receiver, dt.device_type as deviceTypeName, r.approval_date as approvalDate ");
         queryAllRequest.append("from request r " +
@@ -140,9 +140,9 @@ public class RequestServiceImpl implements RequestService {
                     = BaseResponse.ofSucceededOffset(response, pagination);
             return responseEntity;
         } catch (Exception e) {
-            ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> responseEntity =
-                    BaseResponse.ofFailedNew(Meta.buildMeta(new BusinessCode(405, "Fail", HttpStatus.BAD_REQUEST), null), HttpStatus.BAD_REQUEST);
-            return responseEntity;
+//            ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> responseEntity =
+//                    BaseResponse.ofFailedNew(Meta.buildMeta(new BusinessCode(405, "Fail", HttpStatus.BAD_REQUEST), null), HttpStatus.BAD_REQUEST);
+            return null;
         }
     }
 

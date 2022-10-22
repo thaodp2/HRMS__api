@@ -19,6 +19,10 @@ public enum ErrorCodeEnum {
 
   UPDATE_DEPARTMENT_FAIL (208),
 
+  DUPLICATE_DEVICE_TYPE(416),
+
+  NOT_FOUND_DEVICE_TYPE(416),
+
   ;
 
   /** The value. */
