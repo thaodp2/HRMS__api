@@ -2,10 +2,7 @@ package com.minswap.hrms.controller;
 
 import com.minswap.hrms.exception.annotation.ServiceProcessingValidateAnnotation;
 import com.minswap.hrms.model.BaseResponse;
-import com.minswap.hrms.request.EditLeaveBenefitRequest;
-import com.minswap.hrms.request.EditDeviceRequest;
-import com.minswap.hrms.request.EditLeaveBenefitRequest;
-import com.minswap.hrms.request.UpdateStatusRequest;
+import com.minswap.hrms.request.*;
 import com.minswap.hrms.response.RequestResponse;
 import com.minswap.hrms.response.dto.ListRequestDto;
 import com.minswap.hrms.service.request.RequestService;
@@ -44,33 +41,14 @@ public class RequestController {
         return requestService.updateRequestStatus(updateStatusRequest.getStatus(), id);
     }
 
-//    @GetMapping("/request")
-//    public ResponseEntity<BaseResponse<ListRequestDto, Pageable>> searchRequest(@RequestParam Long userId,
-//                                                                                @RequestParam String startDate,
-//                                                                                @RequestParam String endDate,
-//                                                                                @RequestParam Integer page,
-//                                                                                @RequestParam Integer limit) throws Exception {
-//         return requestService.searchRequest(userId, startDate, endDate, page, limit);
-//    }
-    @PutMapping("request/device-request/edit/{id}")
+    @PutMapping("request/edit/{id}")
     @ServiceProcessingValidateAnnotation
-    public ResponseEntity<BaseResponse<Void, Void>> editBorrowRequest(@RequestBody
-                                                                      @Valid
-                                                                      EditDeviceRequest editDeviceRequest,
-                                                                      BindingResult bindingResult,
-                                                                      @PathVariable Long id
-                                                                      ) {
-        return  requestService.editDeviceRequest(editDeviceRequest, id);
-    }
-
-    @PutMapping("request/leave-benefit-request/edit/{id}")
-    @ServiceProcessingValidateAnnotation
-    public ResponseEntity<BaseResponse<Void, Void>> editLeaveBenefitRequest(@RequestBody
-                                                                            @Valid
-                                                                            EditLeaveBenefitRequest editLeaveBenefitRequest,
-                                                                            BindingResult bindingResult,
-                                                                            @PathVariable Long id) {
-        return requestService.editLeaveBenefitRequest(editLeaveBenefitRequest, id);
+    public ResponseEntity<BaseResponse<Void, Void>> editRequest(@RequestBody
+                                                                @Valid
+                                                                EditRequest editRequest,
+                                                                BindingResult bindingResult,
+                                                                @PathVariable Long id) {
+        return requestService.editRequest(editRequest, id);
     }
 
     @GetMapping("/request")

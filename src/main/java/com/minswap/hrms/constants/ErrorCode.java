@@ -9,7 +9,7 @@ public class ErrorCode {
     		ErrorCodeEnum.INTERNAL_SERVER_ERROR.getValue(), "Internal server error", HttpStatus.INTERNAL_SERVER_ERROR);
 
     public static final BusinessCode DATE_INVALID = new BusinessCode(
-            ErrorCodeEnum.DATE_INVALID.getValue(), "CreateDate must be before StartTime", HttpStatus.BAD_REQUEST);
+            ErrorCodeEnum.DATE_INVALID.getValue(), "CreateDate must be before StartTime and StartTime must be before EndTime", HttpStatus.BAD_REQUEST);
 
     public static final BusinessCode RESULT_NOT_FOUND = new BusinessCode(
             ErrorCodeEnum.RESULT_NOT_FOUND.getValue(), "Result not found", HttpStatus.NOT_FOUND);
