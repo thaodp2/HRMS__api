@@ -36,13 +36,13 @@ public class TimeCheckServiceImpl implements TimeCheckService{
                 startDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(startDate);
                 endDateFormat =new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(endDate);
             } else if (startDate != null  & endDate == null) {
+                startDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(startDate);
                 LocalDate now = LocalDate.now();
-                endDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(now.toString());
+                endDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(now.toString() + " 23:59:59");
             } else if (startDate == null  & endDate != null){
                 startDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse("1899-01-01 00:00:00");
                 endDateFormat =new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(endDate);
             }
-
 
             Page<TimeCheckDto> timeCheckPage = timeCheckRepository.getListMyTimeCheck(
                     personId, startDateFormat, endDateFormat, pagination);
