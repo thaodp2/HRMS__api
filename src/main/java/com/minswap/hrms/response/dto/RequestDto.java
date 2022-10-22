@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.minswap.hrms.constants.CommonConstant;
+import com.minswap.hrms.entities.Evidence;
 import com.minswap.hrms.entities.Person;
 import com.minswap.hrms.entities.Request;
 import com.minswap.hrms.repsotories.RequestTypeRepository;
@@ -45,7 +46,7 @@ public class RequestDto {
     private Date startTime;
     @JsonFormat(pattern = CommonConstant.YYYY_MM_DD_HH_MM_SS, shape = JsonFormat.Shape.STRING)
     private Date endTime;
-    private List<String> image;
+    private List<String> listEvidence;
     private String reason;
     private String status;
     private String receiver;

@@ -1,5 +1,4 @@
 package com.minswap.hrms.repsotories;
-
 import com.minswap.hrms.entities.Request;
 import com.minswap.hrms.response.dto.ListRequestDto;
 import com.minswap.hrms.response.dto.RequestDto;
@@ -17,9 +16,6 @@ import java.util.List;
 
 @Repository
 public interface RequestRepository extends JpaRepository<Request, Long> {
-
-    @Query("select e.image from Evidence e left join Request r on r.requestId = e.requestId where r.requestId =:id")
-    List<String> getListImage(@Param("id") Long id);
 
     @Query(" SELECT new com.minswap.hrms.response.dto.RequestDto(" +
             " r.requestId as requestId, p.fullName as sender, rt.requestTypeName as requestTypeName, r.createDate as createDate, " +
@@ -59,10 +55,26 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
     @Modifying
     @Transactional
     @Query("update Request r set r.status =:status where r.requestId =:id")
-    Integer updateRequest(@Param("status") String status, @Param("id") Long id);
+    Integer updateStatusRequest(@Param("status") String status, @Param("id") Long id);
 
-//    Integer editUsualRequest(@Param("requestTypeId") Long requestTypeId,
-//                             @Param("startTime") Date startTime,
-//                             @Param("endTime") Date endTime,
-//                             @Param("reason") String reason);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE Request r set r.requestTypeId =:requestTypeId, r.startTime =:startTime, r.endTime =:endTime, r.reason =:reason where r.requestId =:id")
+    Integer updateLeaveBenefitRequest(@Param("id") Long id,
+                                      @Param("requestTypeId") Long requestTypeId,
+                                      @Param("startTime") Date startTime,
+                                      @Param("endTime") Date endTime,
+                                      @Param("reason") String reason);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE Request r set r.deviceTypeId =:deviceTypeId, r.startTime =:startTime, r.reason =:reason where r.requestId =:id")
+    Integer updateDeviceRequest(@Param("id") Long id,
+                                @Param("deviceTypeId") Long deviceTypeId,
+                                @Param("startTime") Date startTime,
+                                @Param("reason") String reason);
+
+
+
 }

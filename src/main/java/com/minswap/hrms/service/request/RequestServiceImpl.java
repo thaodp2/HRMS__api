@@ -2,43 +2,42 @@ package com.minswap.hrms.service.request;
 
 import com.minswap.hrms.constants.CommonConstant;
 import com.minswap.hrms.constants.ErrorCode;
+import com.minswap.hrms.entities.Evidence;
+import com.minswap.hrms.exception.model.BaseException;
 import com.minswap.hrms.exception.model.Pagination;
 import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.model.BusinessCode;
 import com.minswap.hrms.model.Meta;
+import com.minswap.hrms.repsotories.DeviceTypeRepository;
+import com.minswap.hrms.repsotories.EvidenceRepository;
 import com.minswap.hrms.repsotories.RequestRepository;
+import com.minswap.hrms.repsotories.RequestTypeRepository;
+import com.minswap.hrms.request.EditDeviceRequest;
 import com.minswap.hrms.request.EditLeaveBenefitRequest;
 import com.minswap.hrms.response.RequestResponse;
 import com.minswap.hrms.response.dto.ListRequestDto;
 import com.minswap.hrms.response.dto.RequestDto;
-import com.minswap.hrms.util.DateTimeUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.Hibernate;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.hibernate.transform.Transformers;
 import org.hibernate.type.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
-import javax.persistence.TemporalType;
 
 import org.springframework.data.domain.Pageable;
 
-import java.sql.Timestamp;
 import java.text.ParseException;
+
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -49,13 +48,18 @@ public class RequestServiceImpl implements RequestService {
     @Autowired
     EntityManager entityManager;
 
+    @Autowired
+    RequestTypeRepository requestTypeRepository;
+
+    @Autowired
+    DeviceTypeRepository deviceTypeRepository;
+
+    @Autowired
+    EvidenceRepository evidenceRepository;
+
     Session session;
 
-    private static final Integer UPDATE_SUCCESS = 1;
-
-    private static final Integer UPDATE_FAIL = 0;
-
-    public List<RequestDto> getQueryForRequestList(String type, Long managerId, Long personId, Boolean isLimit, Integer limit, Integer page, Boolean isSearch, String createDateFrom, String createDateTo, Long requestTypeId) throws ParseException {
+    public List<RequestDto> getQueryForRequestList(String type, Long managerId, Long personId, Boolean isDeviceRequest, Boolean isLimit, Integer limit, Integer page, Boolean isSearch, String createDateFrom, String createDateTo, Long requestTypeId) throws ParseException {
         HashMap<String, Object> params = new HashMap<>();
         StringBuilder queryAllRequest = new StringBuilder("select r.request_id as requestId, p.full_name as personName, rt.request_type_name as requestTypeName, r.create_date as createDate, r.start_time as startTime, r.end_time as endTime, r.reason as reason, r.status as status, p2.full_name as receiver, dt.device_type as deviceTypeName, r.approval_date as approvalDate ");
         queryAllRequest.append("from request r " +
@@ -157,34 +161,128 @@ public class RequestServiceImpl implements RequestService {
         return getRequestByPermission(CommonConstant.MY, null, personId, page, limit, isSearch, createDateFrom, createDateTo, requestTypeId);
     }
 
+
     @Override
     public ResponseEntity<BaseResponse<RequestResponse, Void>> getEmployeeRequestDetail(Long id) {
         try {
+
             RequestDto requestDto = requestRepository.getEmployeeRequestDetail(id);
-            requestDto.setImage(requestRepository.getListImage(id));
+            if (requestDto == null) {
+                throw new NullPointerException();
+            }
+            List<String> listImage = evidenceRepository.getListImageByRequest(id);
+            requestDto.setListEvidence(listImage);
             RequestResponse requestResponse = new RequestResponse(requestDto);
             ResponseEntity<BaseResponse<RequestResponse, Void>> responseEntity
                     = BaseResponse.ofSucceededOffset(requestResponse, null);
             return responseEntity;
-        } catch (Exception e) {
+        }
+        catch (NullPointerException nullPointerException) {
+            throw new BaseException(ErrorCode.RESULT_NOT_FOUND);
+        }
+        catch (Exception e) {
             try {
                 throw new Exception(e.getMessage());
             } catch (Exception ex) {
                 throw new RuntimeException(ex);
             }
+
         }
     }
 
     @Override
     public ResponseEntity<BaseResponse<Void, Void>> updateRequestStatus(String status, Long id) {
-        Integer isUpdatedSuccess = requestRepository.updateRequest(status, id);
+        Integer isUpdatedSuccess = requestRepository.updateStatusRequest(status, id);
         ResponseEntity<BaseResponse<Void, Void>> responseEntity = null;
         if (isUpdatedSuccess == CommonConstant.UPDATE_SUCCESS) {
             responseEntity = BaseResponse.ofSucceeded(null);
-        } else {
-            responseEntity = BaseResponse.ofFailedUpdate(null);
+        }
+        else {
+            throw new BaseException(ErrorCode.UPDATE_FAIL);
         }
         return responseEntity;
+    }
+
+    @Override
+    public ResponseEntity<BaseResponse<Void, Void>> editLeaveBenefitRequest(EditLeaveBenefitRequest editLeaveBenefitRequest,
+                                                                            Long id) {
+        try {
+            ResponseEntity<BaseResponse<Void, Void>> responseEntity = null;
+
+            Date createDate = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
+                                                    parse(editLeaveBenefitRequest.getCreateDate());
+            Date startTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
+                                                    parse(editLeaveBenefitRequest.getStartTime());
+            Date endTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
+                                                    parse(editLeaveBenefitRequest.getEndTime());
+            Long requestTypeId = editLeaveBenefitRequest.getRequestTypeId();
+            List<Long> listRequestTypeId = requestTypeRepository.getAllRequestTypeId();
+            if (startTime.before(createDate)
+                    || endTime.before(createDate)
+                    || endTime.before(startTime)) {
+                throw new BaseException(ErrorCode.DATE_INVALID);
+            }
+            else if (!listRequestTypeId.contains(requestTypeId)) {
+                throw new BaseException(ErrorCode.RESULT_NOT_FOUND);
+            }
+            else {
+                requestRepository.updateLeaveBenefitRequest
+                        (id,
+                        requestTypeId,
+                        startTime,
+                        endTime,
+                        editLeaveBenefitRequest.getReason());
+                List<String> listImage = editLeaveBenefitRequest.getListImage();
+                evidenceRepository.deleteImageByRequestId(id);
+                if (!listImage.isEmpty()) {
+                    for(String image : listImage) {
+                        Evidence evidence = new Evidence(id, image);
+                        evidenceRepository.save(evidence);
+                    }
+                }
+                responseEntity = BaseResponse.ofSucceeded(null);
+            }
+            return responseEntity;
+
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    @Override
+    public ResponseEntity<BaseResponse<Void, Void>> editDeviceRequest(EditDeviceRequest editDeviceRequest, Long id) {
+        try {
+            ResponseEntity<BaseResponse<Void, Void>> responseEntity = null;
+            Date createDate = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
+                    parse(editDeviceRequest.getCreateDate());
+            Date startTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
+                    parse(editDeviceRequest.getStartTime());
+            List<Long> listDeviceTypeId = deviceTypeRepository.getAllDeviceTypeId();
+            Long deviceTypeId = editDeviceRequest.getDeviceTypeId();
+            if (startTime.before(createDate)) {
+                throw new BaseException(ErrorCode.DATE_INVALID);
+            }
+            else if (!listDeviceTypeId.contains(deviceTypeId)) {
+                throw new BaseException(ErrorCode.RESULT_NOT_FOUND);
+            }
+            else {
+                Integer updateDeviceRequest = requestRepository.updateDeviceRequest
+                        (id,
+                        deviceTypeId,
+                        startTime,
+                        editDeviceRequest.getReason());
+                if (updateDeviceRequest == CommonConstant.UPDATE_FAIL) {
+                    throw new BaseException(ErrorCode.UPDATE_FAIL);
+                }
+                else {
+                    responseEntity = BaseResponse.ofSucceeded(null);
+                }
+            }
+            return responseEntity;
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 //    @Override
