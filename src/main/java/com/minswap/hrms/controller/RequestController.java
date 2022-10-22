@@ -101,4 +101,9 @@ public class RequestController {
             return requestService.getMyDeviceRequest(id,page,limit,true,createDateFrom,createDateTo,requestTypeId);
         }
     }
+
+    @DeleteMapping("/request/{id}")
+    public ResponseEntity<BaseResponse<Void, Void>> cancelRequest(@PathVariable Long id) {
+        return requestService.cancelRequest(id);
+    }
 }

@@ -75,6 +75,7 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
                                 @Param("startTime") Date startTime,
                                 @Param("reason") String reason);
 
-
+    @Query("select r.status from Request r where r.requestId =:id")
+    String getStatusOfRequestById(@Param("id") Long id);
 
 }

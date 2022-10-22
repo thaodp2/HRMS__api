@@ -35,4 +35,6 @@ public interface RequestService {
 
     ResponseEntity<BaseResponse<ListRequestDto, Pageable>> searchRequest (Long userId, String startDate, String endDate,
                                                                           Integer page, Integer limit) throws Exception;
+    ResponseEntity<BaseResponse<Void, Void>> cancelRequest (Long id);
+
 }
