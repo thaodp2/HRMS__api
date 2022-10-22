@@ -130,8 +130,7 @@ public class RequestServiceImpl implements RequestService {
         return dtos;
     }
 
-    public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getRequestByPermission(String type, Long managerId, Long personId, Integer page, Integer limit, Boolean isSearch, String createDateFrom, String createDateTo, Long requestTypeId) {
-        try {
+    public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getRequestByPermission(String type, Long managerId, Long personId, Integer page, Integer limit, Boolean isSearch, String createDateFrom, String createDateTo, Long requestTypeId) throws ParseException {
             Pagination pagination = new Pagination(page, limit);
             pagination.setTotalRecords(getQueryForRequestList(type, managerId, personId, false, limit, page, isSearch, createDateFrom, createDateTo, requestTypeId).size());
             List<RequestDto> requestDtos = getQueryForRequestList(type, managerId, personId, true, limit, page, isSearch, createDateFrom, createDateTo, requestTypeId);
@@ -139,25 +138,20 @@ public class RequestServiceImpl implements RequestService {
             ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> responseEntity
                     = BaseResponse.ofSucceededOffset(response, pagination);
             return responseEntity;
-        } catch (Exception e) {
-//            ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> responseEntity =
-//                    BaseResponse.ofFailedNew(Meta.buildMeta(new BusinessCode(405, "Fail", HttpStatus.BAD_REQUEST), null), HttpStatus.BAD_REQUEST);
-            return null;
-        }
     }
 
     @Override
-    public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getAllRequest(Integer page, Integer limit, Boolean isSearch, String createDateFrom, String createDateTo, Long requestTypeId) {
+    public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getAllRequest(Integer page, Integer limit, Boolean isSearch, String createDateFrom, String createDateTo, Long requestTypeId) throws ParseException {
         return getRequestByPermission(CommonConstant.ALL, null, null, page, limit, isSearch, createDateFrom, createDateTo, requestTypeId);
     }
 
     @Override
-    public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getSubordinateRequest(Long managerId, Integer page, Integer limit, Boolean isSearch, String createDateFrom, String createDateTo, Long requestTypeId) {
+    public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getSubordinateRequest(Long managerId, Integer page, Integer limit, Boolean isSearch, String createDateFrom, String createDateTo, Long requestTypeId) throws ParseException {
         return getRequestByPermission(CommonConstant.SUBORDINATE, managerId, null, page, limit, isSearch, createDateFrom, createDateTo, requestTypeId);
     }
 
     @Override
-    public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getMyRequest(Long personId, Integer page, Integer limit, Boolean isSearch, String createDateFrom, String createDateTo, Long requestTypeId) {
+    public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getMyRequest(Long personId, Integer page, Integer limit, Boolean isSearch, String createDateFrom, String createDateTo, Long requestTypeId) throws ParseException {
         return getRequestByPermission(CommonConstant.MY, null, personId, page, limit, isSearch, createDateFrom, createDateTo, requestTypeId);
     }
 
