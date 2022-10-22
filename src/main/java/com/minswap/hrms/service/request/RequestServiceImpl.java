@@ -65,7 +65,7 @@ public class RequestServiceImpl implements RequestService {
 
     Session session;
 
-    public List<RequestDto> getQueryForRequestList(String type, Long managerId, Long personId, Boolean isDeviceRequest, Boolean isLimit, Integer limit, Integer page, Boolean isSearch, String createDateFrom, String createDateTo, Long requestTypeId) throws ParseException {
+    public List<RequestDto> getQueryForRequestList(String type, Long managerId, Long personId, Boolean isLimit, Integer limit, Integer page, Boolean isSearch, String createDateFrom, String createDateTo, Long requestTypeId) throws ParseException {
         HashMap<String, Object> params = new HashMap<>();
         StringBuilder queryAllRequest = new StringBuilder("select r.request_id as requestId, p.full_name as personName, rt.request_type_name as requestTypeName, r.create_date as createDate, r.start_time as startTime, r.end_time as endTime, r.reason as reason, r.status as status, p2.full_name as receiver, dt.device_type as deviceTypeName, r.approval_date as approvalDate ");
         queryAllRequest.append("from request r " +
@@ -77,12 +77,7 @@ public class RequestServiceImpl implements RequestService {
                 "r.person_id = p2.manager_id " +
                 "left join device_type dt on " +
                 "r.device_type_id = dt.device_type_id ");
-        StringBuilder whereBuild = new StringBuilder("WHERE ");
-        if (isDeviceRequest) {
-            whereBuild.append("rt.request_type_id = 11 ");
-        } else {
-            whereBuild.append("rt.request_type_id != 11 ");
-        }
+        StringBuilder whereBuild = new StringBuilder("WHERE 1=1 ");
         if (isSearch) {
             if (createDateFrom != null && createDateTo == null) {
                 whereBuild.append("and create_date >= :createDateFrom ");
@@ -141,50 +136,29 @@ public class RequestServiceImpl implements RequestService {
         return dtos;
     }
 
-    public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getRequestByPermission(String type, Long managerId, Long personId, Boolean isDeviceRequest, Integer page, Integer limit, Boolean isSearch, String createDateFrom, String createDateTo, Long requestTypeId) {
-        try {
+    public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getRequestByPermission(String type, Long managerId, Long personId, Integer page, Integer limit, Boolean isSearch, String createDateFrom, String createDateTo, Long requestTypeId) throws ParseException {
             Pagination pagination = new Pagination(page, limit);
-            pagination.setTotalRecords(getQueryForRequestList(type, managerId, personId, isDeviceRequest, false, limit, page, isSearch, createDateFrom, createDateTo, requestTypeId).size());
-            List<RequestDto> requestDtos = getQueryForRequestList(type, managerId, personId, isDeviceRequest, true, limit, page, isSearch, createDateFrom, createDateTo, requestTypeId);
+            pagination.setTotalRecords(getQueryForRequestList(type, managerId, personId, false, limit, page, isSearch, createDateFrom, createDateTo, requestTypeId).size());
+            List<RequestDto> requestDtos = getQueryForRequestList(type, managerId, personId, true, limit, page, isSearch, createDateFrom, createDateTo, requestTypeId);
             RequestResponse.RequestListResponse response = new RequestResponse.RequestListResponse(requestDtos);
             ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> responseEntity
                     = BaseResponse.ofSucceededOffset(response, pagination);
             return responseEntity;
-        } catch (Exception e) {
-            ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> responseEntity =
-                    BaseResponse.ofFailedNew(Meta.buildMeta(new BusinessCode(405, "Fail", HttpStatus.BAD_REQUEST), null), HttpStatus.BAD_REQUEST);
-            return responseEntity;
-        }
     }
 
     @Override
-    public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getAllLeaveBenefitRequest(Integer page, Integer limit, Boolean isSearch, String createDateFrom, String createDateTo, Long requestTypeId) {
-        return getRequestByPermission(CommonConstant.ALL, null, null, false, page, limit, isSearch, createDateFrom, createDateTo, requestTypeId);
+    public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getAllRequest(Integer page, Integer limit, Boolean isSearch, String createDateFrom, String createDateTo, Long requestTypeId) throws ParseException {
+        return getRequestByPermission(CommonConstant.ALL, null, null, page, limit, isSearch, createDateFrom, createDateTo, requestTypeId);
     }
 
     @Override
-    public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getAllDeviceRequest(Integer page, Integer limit, Boolean isSearch, String createDateFrom, String createDateTo, Long requestTypeId) {
-        return getRequestByPermission(CommonConstant.ALL, null, null, true, page, limit, isSearch, createDateFrom, createDateTo, requestTypeId);
+    public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getSubordinateRequest(Long managerId, Integer page, Integer limit, Boolean isSearch, String createDateFrom, String createDateTo, Long requestTypeId) throws ParseException {
+        return getRequestByPermission(CommonConstant.SUBORDINATE, managerId, null, page, limit, isSearch, createDateFrom, createDateTo, requestTypeId);
     }
 
     @Override
-    public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getSubordinateLeaveBenefitRequest(Long managerId, Integer page, Integer limit, Boolean isSearch, String createDateFrom, String createDateTo, Long requestTypeId) {
-        return getRequestByPermission(CommonConstant.SUBORDINATE, managerId, null, false, page, limit, isSearch, createDateFrom, createDateTo, requestTypeId);
-    }
-
-    @Override
-    public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getSubordinateDeviceRequest(Long managerId, Integer page, Integer limit, Boolean isSearch, String createDateFrom, String createDateTo, Long requestTypeId) {
-        return getRequestByPermission(CommonConstant.SUBORDINATE, managerId, null, true, page, limit, isSearch, createDateFrom, createDateTo, requestTypeId);
-    }
-
-    @Override
-    public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getMyLeaveBenefitRequest(Long personId, Integer page, Integer limit, Boolean isSearch, String createDateFrom, String createDateTo, Long requestTypeId) {
-        return getRequestByPermission(CommonConstant.MY, null, personId, false, page, limit, isSearch, createDateFrom, createDateTo, requestTypeId);
-    }
-
-    @Override
-    public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getMyDeviceRequest(Long personId, Integer page, Integer limit, Boolean isSearch, String createDateFrom, String createDateTo, Long requestTypeId) {
-        return getRequestByPermission(CommonConstant.MY, null, personId, true, page, limit, isSearch, createDateFrom, createDateTo, requestTypeId);
+    public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getMyRequest(Long personId, Integer page, Integer limit, Boolean isSearch, String createDateFrom, String createDateTo, Long requestTypeId) throws ParseException {
+        return getRequestByPermission(CommonConstant.MY, null, personId, page, limit, isSearch, createDateFrom, createDateTo, requestTypeId);
     }
 
 
@@ -256,7 +230,7 @@ public class RequestServiceImpl implements RequestService {
                 List<String> listImage = editLeaveBenefitRequest.getListImage();
                 evidenceRepository.deleteImageByRequestId(id);
                 if (!listImage.isEmpty()) {
-                    for (String image : listImage) {
+                    for(String image : listImage) {
                         Evidence evidence = new Evidence(id, image);
                         evidenceRepository.save(evidence);
                     }
@@ -303,29 +277,29 @@ public class RequestServiceImpl implements RequestService {
         }
     }
 
-    @Override
-    public ResponseEntity<BaseResponse<ListRequestDto, Pageable>> searchRequest(Long userId, String startDate,
-                                                                                String endDate, Integer page,
-                                                                                Integer limit) throws Exception {
-
-        ResponseEntity<BaseResponse<ListRequestDto, Pageable>> responseEntity = null;
-        try {
-
-            Pagination pagination = new Pagination(page, limit);
-            Date startDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(startDate);
-            Date endDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(endDate);
-
-            Page<RequestDto> listRequestDto = requestRepository.getListRequestBySearch(
-                    userId, startDateFormat, endDateFormat, pagination);
-            List<RequestDto> requestDtos = listRequestDto.getContent();
-            pagination.setTotalRecords(listRequestDto);
-
-            responseEntity = BaseResponse.ofSucceededOffset(ListRequestDto.of(requestDtos), pagination);
-        } catch (Exception ex) {
-            throw new Exception(ex.getMessage());
-        }
-        return responseEntity;
-    }
+//    @Override
+//    public ResponseEntity<BaseResponse<ListRequestDto, Pageable>> searchRequest(Long userId, String startDate,
+//                                                                                String endDate, Integer page,
+//                                                                                Integer limit) throws Exception {
+//
+//        ResponseEntity<BaseResponse<ListRequestDto, Pageable>> responseEntity = null;
+//        try {
+//
+//            Pagination pagination = new Pagination(page, limit);
+//            Date startDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(startDate);
+//            Date endDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(endDate);
+//
+//            Page<RequestDto> listRequestDto = requestRepository.getListRequestBySearch(
+//                    userId, startDateFormat, endDateFormat, pagination);
+//            List<RequestDto> requestDtos = listRequestDto.getContent();
+//            pagination.setTotalRecords(listRequestDto);
+//
+//            responseEntity = BaseResponse.ofSucceededOffset(ListRequestDto.of(requestDtos), pagination);
+//        } catch (Exception ex) {
+//            throw new Exception(ex.getMessage());
+//        }
+//        return responseEntity;
+//    }
 
     @Override
     public ResponseEntity<BaseResponse<Void, Void>> cancelRequest(Long id) {

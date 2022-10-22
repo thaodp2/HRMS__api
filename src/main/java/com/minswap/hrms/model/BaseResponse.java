@@ -38,12 +38,6 @@ public class BaseResponse<T, R> {
         return new ResponseEntity<>(response, httpStatus);
     }
 
-    public static <T,R> ResponseEntity<BaseResponse<T, R>> ofFailedNew(Meta<R> meta, HttpStatus httpStatus) {
-        BaseResponse<T, R> response = new BaseResponse<>();
-        response.meta = meta;
-        return new ResponseEntity<>(response, httpStatus);
-    }
-
     // Vunt
     public static <T, R> ResponseEntity<BaseResponse<T, R>> ofFailedUpdate(T data) {
         BaseResponse<T, R> response = new BaseResponse<>();

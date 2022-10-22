@@ -31,6 +31,11 @@ public class ErrorCode {
     		ErrorCodeEnum.BAD_REQUEST.getValue(), "Invalid parameters", HttpStatus.BAD_REQUEST);
     public static final BusinessCode UNAUTHORIZED = new BusinessCode(
     		ErrorCodeEnum.UNAUTHORIZED.getValue(), "Unauthorized", HttpStatus.UNAUTHORIZED);
+    public static final BusinessCode DUPLICATE_DEVICE_TYPE = new BusinessCode(
+            ErrorCodeEnum.DUPLICATE_DEVICE_TYPE.getValue(), "Duplicate device type", HttpStatus.BAD_REQUEST);
+
+    public static final BusinessCode NOT_FOUND_DEVICE_TYPE = new BusinessCode(
+            ErrorCodeEnum.NOT_FOUND_DEVICE_TYPE.getValue(), "Not found device type", HttpStatus.NOT_FOUND);
 
 
     public static BusinessCode newErrorCode(String message) {

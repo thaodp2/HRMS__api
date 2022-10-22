@@ -1,5 +1,6 @@
 package com.minswap.hrms.response.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.minswap.hrms.constants.CommonConstant;
@@ -39,14 +40,18 @@ public class RequestDto {
     private Long requestId;
     private String personName;
     private String requestTypeName;
+    @JsonFormat(pattern = CommonConstant.YYYY_MM_DD_HH_MM_SS, shape = JsonFormat.Shape.STRING)
     private Date createDate;
+    @JsonFormat(pattern = CommonConstant.YYYY_MM_DD_HH_MM_SS, shape = JsonFormat.Shape.STRING)
     private Date startTime;
+    @JsonFormat(pattern = CommonConstant.YYYY_MM_DD_HH_MM_SS, shape = JsonFormat.Shape.STRING)
     private Date endTime;
     private List<String> listEvidence;
     private String reason;
     private String status;
     private String receiver;
     private String deviceTypeName;
+    @JsonFormat(pattern = CommonConstant.YYYY_MM_DD_HH_MM_SS, shape = JsonFormat.Shape.STRING)
     private Date approvalDate;
 
 }
