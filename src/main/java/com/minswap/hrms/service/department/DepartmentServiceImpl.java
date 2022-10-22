@@ -10,6 +10,7 @@ import com.minswap.hrms.repsotories.DepartmentRepository;
 import com.minswap.hrms.response.dto.DepartmentDto;
 import com.minswap.hrms.response.dto.ListDepartmentDto;
 import com.minswap.hrms.response.dto.ListRequestDto;
+import io.lettuce.core.dynamic.annotation.Param;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -85,5 +86,6 @@ public class DepartmentServiceImpl implements DepartmentService{
         }
 
     }
+
 
 }
