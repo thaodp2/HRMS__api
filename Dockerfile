@@ -1,4 +1,12 @@
-FROM asia.gcr.io/minswap-devops/openjdk:8-jre-alpine
+FROM maven:3.5-jdk-8-alpine as builder
+
+COPY . /app
+
+WORKDIR /app
+
+RUN mvn -f /app/pom.xml clean package
+
+FROM openjdk:8-jre-alpine as runner
 
 RUN apk add --update \
     curl \
@@ -6,21 +14,11 @@ RUN apk add --update \
     tzdata \
     && rm -rf /var/cache/apk/*
 
-RUN cp -r -f /usr/share/zoneinfo/Asia/Saigon /etc/localtime
+WORKDIR /app
 
-COPY trust-certs/* /usr/local/share/ca-certificates/
-RUN chmod -R 755 /usr/local/share/ca-certificates/
-RUN update-ca-certificates 
+RUN chmod -R 755 /app/
 
-# Set the location of the verticles
-WORKDIR /usr/app
-
-COPY temp/*.jar /usr/app/app.jar
-COPY src/main/resources/monitor/* /usr/app/conf/
-RUN ls -l /usr/app/conf/
-COPY start.sh /usr/app/
-
-RUN chmod -R 755 /usr/app/
-
+COPY --from=builder /app/target/HRMS__api-0.0.1-SNAPSHOT.jar /app/HRMS__api.jar
+ENTRYPOINT ["java", "-Dlog4j2.formatMsgNoLookups=false", "-Dspring.profiles.active=backup", "-jar", "HRMS__api.jar"]
 # Launch the verticle
-ENTRYPOINT java $JAVA_OPTS -Dlog4j2.formatMsgNoLookups=true -jar app.jar
+#ENTRYPOINT java $JAVA_OPTS -Dlog4j2.formatMsgNoLookups=true -jar /app/HRMS__api.jar
