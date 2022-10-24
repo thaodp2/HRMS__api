@@ -11,6 +11,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +19,8 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
-
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -57,9 +59,12 @@ public class CorsFilter implements Filter {
 			throws IOException, ServletException {
 		HttpServletResponse response = (HttpServletResponse) res;
 		HttpServletRequest request = (HttpServletRequest) req;
-
-		ApiKeyVerifiRequestWrapper requestWrapper = new ApiKeyVerifiRequestWrapper(request);
 		try {
+		ApiKeyVerifiRequestWrapper requestWrapper = new ApiKeyVerifiRequestWrapper(request);
+		JSONParser parser = new JSONParser();
+		JSONObject dataRequest = StringUtils.isEmpty(requestWrapper.getBody()) ? new JSONObject()
+				: (JSONObject) parser.parse(requestWrapper.getBody());
+		requestWrapper.setBody(dataRequest.toString());
 			chain.doFilter(requestWrapper, res);
 		} catch (Exception e) {
 			e.printStackTrace();
