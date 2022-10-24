@@ -19,6 +19,6 @@ WORKDIR /app
 RUN chmod -R 755 /app/
 
 COPY --from=builder /app/target/HRMS__api-0.0.1-SNAPSHOT.jar /app/HRMS__api.jar
-ENTRYPOINT ["java", "-Dlog4j2.formatMsgNoLookups=false", "-Dspring.profiles.active=", "-jar", "HRMS__api.jar"]
+ENTRYPOINT ["java", "-Dlog4j2.formatMsgNoLookups=false", "-Dspring.profiles.active=prod", "-jar", "HRMS__api.jar"]
 # Launch the verticle
 #ENTRYPOINT java $JAVA_OPTS -Dlog4j2.formatMsgNoLookups=true -jar /app/HRMS__api.jar
