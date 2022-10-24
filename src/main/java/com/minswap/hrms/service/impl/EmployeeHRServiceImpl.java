@@ -27,10 +27,12 @@ public class EmployeeHRServiceImpl implements EmployeeHRService {
 
 	@Override
 	public ResponseEntity<BaseResponse<EmployeeInfoResponse, Pageable>> getListEmployee(int page, int limit) {
+		page = page - 1;
 		Pagination pagination = new Pagination(page, limit);
 		Page<EmployeeListDto> pageInfo = personRepository.getListPerson(pagination);
 		List<EmployeeListDto> employeeListDtos = pageInfo.getContent();
 		pagination.setTotalRecords(pageInfo);
+		pagination.setPage(page + 1);
 		ResponseEntity<BaseResponse<EmployeeInfoResponse, Pageable>> responseEntity = BaseResponse
 				.ofSucceededOffset(EmployeeInfoResponse.of(employeeListDtos), pagination);
 		return responseEntity;

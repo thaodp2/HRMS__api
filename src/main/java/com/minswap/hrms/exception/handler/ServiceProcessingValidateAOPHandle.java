@@ -60,7 +60,7 @@ public class ServiceProcessingValidateAOPHandle {
     // Validate data
     if (bindingResult.hasErrors()) {
       BaseResponse responseBasicObj = new BaseResponse<>();
-      responseBasicObj.setMeta(Meta.buildMeta(ErrorCode.INVALID_PARAMETERS, null));
+      responseBasicObj.setMetadata(Meta.buildMeta(ErrorCode.INVALID_PARAMETERS, null));
 //              objectRequest.getRequestId(), ErrorCodeEnum.BAD_REQUEST.getValue(), null, null);
       bindingResult
           .getFieldErrors()
@@ -77,7 +77,7 @@ public class ServiceProcessingValidateAOPHandle {
 
                 String code = f.getDefaultMessage();
                 BusinessCode businessCode = ErrorCode.newErrorCode(Integer.parseInt(code), dfsProps.get(code).toString(), HttpStatus.BAD_REQUEST);
-                responseBasicObj.setMeta(Meta.buildMeta(businessCode, null));
+                responseBasicObj.setMetadata(Meta.buildMeta(businessCode, null));
               });
       return formatResponse(responseBasicObj);
     } else {
@@ -85,7 +85,7 @@ public class ServiceProcessingValidateAOPHandle {
     }
   }
   public ResponseEntity<BaseResponse<String, Void>> formatResponse(BaseResponse responseBasicObj) {
-    if (responseBasicObj.getMeta().getCode() != ErrorCodeEnum.SUCCESS.getValue()) {
+    if (responseBasicObj.getMetadata().getCode() != ErrorCodeEnum.SUCCESS.getValue()) {
       responseBasicObj.ofFailed(Meta.buildMeta(ErrorCode.INTERNAL_SERVER_ERROR, null), HttpStatus.INTERNAL_SERVER_ERROR);
     }
     
