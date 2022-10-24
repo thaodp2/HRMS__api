@@ -65,4 +65,6 @@ public class Person {
 	@Column(name = "status")
 	private String status;
 
+	@Column(name = "position_id")
+	private Long positionId;
 }
