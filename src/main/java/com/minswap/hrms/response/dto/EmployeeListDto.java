@@ -35,4 +35,8 @@ public class EmployeeListDto {
 
     @JsonProperty("positionName")
     private String positionName;
+    
+    public int getActive() {
+    	return active == null ? 0 : Integer.parseInt(active);
+    }
 }

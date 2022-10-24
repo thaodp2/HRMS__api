@@ -49,7 +49,7 @@ public class EmployeeDetailDto {
     @JsonProperty("onBoardDate")
     private String onBoardDate;
 
-    @JsonProperty("status")
+    @JsonProperty("isActive")
     private String status;
 
     @JsonProperty("role")
@@ -57,4 +57,8 @@ public class EmployeeDetailDto {
 
     @JsonProperty("managerName")
     private String managerName;
+    
+    public int getStatus() {
+    	return status == null ? 0 : Integer.parseInt(status);
+    }
 }
