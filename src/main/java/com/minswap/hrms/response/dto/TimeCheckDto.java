@@ -8,6 +8,7 @@ import java.util.Date;
 public class TimeCheckDto {
 
     private Long personId;
+    private String personName;
 
     private Double iloe;
 
@@ -19,8 +20,9 @@ public class TimeCheckDto {
 
     private Double workingTime;
 
-    public TimeCheckDto(Long personId, Double iloe, Date timeIn, Date timeOut, Double ot, Double workingTime) {
+    public TimeCheckDto(Long personId, String personName, Double iloe, Date timeIn, Date timeOut, Double ot, Double workingTime) {
         this.personId = personId;
+        this.personName = personName;
         this.iloe = iloe;
         this.timeIn = timeIn;
         this.timeOut = timeOut;
