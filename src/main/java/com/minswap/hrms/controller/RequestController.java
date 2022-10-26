@@ -24,7 +24,7 @@ public class RequestController {
     @Autowired
     private RequestService requestService;
 
-    @GetMapping("request/detail/{id}")
+    @GetMapping("request/{id}")
     public ResponseEntity<BaseResponse<RequestResponse, Void>> getRequestDetail(
             @PathVariable
             @Min(value = 1, message = "ID must be greater or equal 1")
