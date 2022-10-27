@@ -16,7 +16,7 @@ public interface RequestService {
 
     ResponseEntity<BaseResponse<RequestResponse, Void>> getEmployeeRequestDetail (Long id);
 
-    ResponseEntity<BaseResponse<Void, Void>> updateRequestStatus (String status, Long id);
+    ResponseEntity<BaseResponse<Void, Void>> updateRequestStatus (String status, Long id) throws ParseException;
 
     ResponseEntity<BaseResponse<Void, Void>> editRequest (EditRequest editRequest,
                                                           Long id);

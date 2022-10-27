@@ -1,5 +1,6 @@
 package com.minswap.hrms.repsotories;
 import com.minswap.hrms.entities.Request;
+import com.minswap.hrms.response.dto.DateDto;
 import com.minswap.hrms.response.dto.ListRequestDto;
 import com.minswap.hrms.response.dto.RequestDto;
 import io.lettuce.core.dynamic.annotation.Param;
@@ -54,8 +55,10 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
 
     @Modifying
     @Transactional
-    @Query("update Request r set r.status =:status where r.requestId =:id")
-    Integer updateStatusRequest(@Param("status") String status, @Param("id") Long id);
+    @Query("update Request r set r.status =:status, r.approvalDate =:approvalDate where r.requestId =:id")
+    Integer updateStatusRequest(@Param("status") String status,
+                                @Param("id") Long id,
+                                @Param("approvalDate") Date approvalDate);
 
 
     @Modifying
@@ -79,4 +82,12 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
     @Query("select r.createDate from Request r where r.requestId=:id")
     Date getCreateDateById(@Param("id") Long id);
 
+    @Query("select new com.minswap.hrms.response.dto.DateDto(r.startTime, r.endTime) from Request r where r.requestId=:id")
+    DateDto getStartAndEndTimeByRequestId(@Param("id") Long id);
+
+    @Query("select r.requestTypeId from Request r where r.requestId =:id")
+    Integer isRequestIdValid(@Param("id") Long id);
+
+    @Query("select r.personId from Request r where r.requestId=:id")
+    Long getPersonIdByRequestId(@Param("id") Long id);
 }
