@@ -1,0 +1,4 @@
+{"@timestamp":"2022-10-27T16:25:04.046+07:00","level":"INFO","logger_name":"org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean","message":"Closing JPA EntityManagerFactory for persistence unit 'default'","thread_name":"SpringContextShutdownHook"}
+{"@timestamp":"2022-10-27T16:25:04.049+07:00","level":"INFO","logger_name":"org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor","message":"Shutting down ExecutorService 'applicationTaskExecutor'","thread_name":"SpringContextShutdownHook"}
+{"@timestamp":"2022-10-27T16:25:04.050+07:00","level":"INFO","logger_name":"com.zaxxer.hikari.HikariDataSource","message":"HikariPool-1 - Shutdown initiated...","thread_name":"SpringContextShutdownHook"}
+{"@timestamp":"2022-10-27T16:25:04.061+07:00","level":"INFO","logger_name":"com.zaxxer.hikari.HikariDataSource","message":"HikariPool-1 - Shutdown completed.","thread_name":"SpringContextShutdownHook"}
