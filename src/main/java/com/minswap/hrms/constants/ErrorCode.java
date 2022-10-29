@@ -21,6 +21,10 @@ public class ErrorCode {
             ErrorCodeEnum.REQUEST_INVALID.getValue(), "You can't cancel an approved or rejected request ",
             HttpStatus.NOT_ACCEPTABLE);
 
+    public static final BusinessCode UPDATE_STATUS_FAIL = new BusinessCode(
+            ErrorCodeEnum.UPDATE_STATUS_FAIL.getValue(), "You can't update an approved or rejected request",
+            HttpStatus.NOT_ACCEPTABLE);
+
     public static final BusinessCode DELETE_FAIL = new BusinessCode(
             ErrorCodeEnum.DELETE_FAIL.getValue(), "Delete failed", HttpStatus.NOT_FOUND);
 

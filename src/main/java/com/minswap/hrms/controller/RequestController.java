@@ -37,7 +37,7 @@ public class RequestController {
     public ResponseEntity<BaseResponse<Void, Void>> updateRequestStatus(@RequestBody
                                                                         @Valid UpdateStatusRequest updateStatusRequest,
                                                                         BindingResult bindingResult,
-                                                                        @PathVariable Long id) {
+                                                                        @PathVariable Long id) throws ParseException {
         return requestService.updateRequestStatus(updateStatusRequest.getStatus(), id);
     }
 

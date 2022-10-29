@@ -6,12 +6,11 @@ import com.minswap.hrms.entities.Evidence;
 import com.minswap.hrms.exception.model.BaseException;
 import com.minswap.hrms.exception.model.Pagination;
 import com.minswap.hrms.model.BaseResponse;
-import com.minswap.hrms.repsotories.DeviceTypeRepository;
-import com.minswap.hrms.repsotories.EvidenceRepository;
-import com.minswap.hrms.repsotories.RequestRepository;
-import com.minswap.hrms.repsotories.RequestTypeRepository;
+import com.minswap.hrms.repsotories.*;
 import com.minswap.hrms.request.EditRequest;
 import com.minswap.hrms.response.RequestResponse;
+import com.minswap.hrms.response.dto.AnnualLeaveBudgetDto;
+import com.minswap.hrms.response.dto.DateDto;
 import com.minswap.hrms.response.dto.RequestDto;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Session;
@@ -26,9 +25,15 @@ import javax.persistence.Query;
 
 import org.springframework.data.domain.Pageable;
 
+import java.text.DecimalFormat;
 import java.text.ParseException;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.Year;
+import java.time.format.DateTimeFormatter;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -38,6 +43,9 @@ import java.util.List;
 public class RequestServiceImpl implements RequestService {
     @Autowired
     RequestRepository requestRepository;
+
+    @Autowired
+    AnnualLeaveBudgetRepository annualLeaveBudgetRepository;
 
     @Autowired
     EntityManager entityManager;
@@ -53,8 +61,9 @@ public class RequestServiceImpl implements RequestService {
 
     private static final String APPROVED_STATUS = "Approved";
     private static final String REJECTED_STATUS = "Rejected";
-
     private static final int BORROW_REQUEST_TYPE_ID = 11;
+    private static final Integer ANNUAL_LEAVE_TYPE_ID = 1;
+    private static final Integer OT_TYPE_ID = 7;
 
     Session session;
 
@@ -158,10 +167,21 @@ public class RequestServiceImpl implements RequestService {
     @Override
     public ResponseEntity<BaseResponse<RequestResponse, Void>> getEmployeeRequestDetail(Long id) {
         try {
-
             RequestDto requestDto = requestRepository.getEmployeeRequestDetail(id);
             if (requestDto == null) {
                 throw new NullPointerException();
+            }
+            Integer requestType = requestTypeRepository.getRequestTypeByRequestId(id);
+            AnnualLeaveBudgetDto annualLeaveBudgetDto =
+                    annualLeaveBudgetRepository.getAnnualLeaveBudgetByRequestId(id, 2022);
+            if (requestType != BORROW_REQUEST_TYPE_ID) {
+                if (requestType == ANNUAL_LEAVE_TYPE_ID) {
+                    requestDto.setTimeRemaining(annualLeaveBudgetDto.getRemainDayOff());
+                    requestDto.setBudget(annualLeaveBudgetDto.getAnnualLeaveBudget());
+                }
+                else if (requestType == OT_TYPE_ID){
+
+                }
             }
             List<String> listImage = evidenceRepository.getListImageByRequest(id);
             requestDto.setListEvidence(listImage);
@@ -182,11 +202,27 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
-    public ResponseEntity<BaseResponse<Void, Void>> updateRequestStatus(String status, Long id) {
-        Integer isUpdatedSuccess = requestRepository.updateStatusRequest(status, id);
+    public ResponseEntity<BaseResponse<Void, Void>> updateRequestStatus(String status, Long id) throws ParseException {
+        // Check id valid or not
+        if (!isRequestIdValid(id)) {
+            throw new BaseException(ErrorCode.RESULT_NOT_FOUND);
+        }
+        String getStatusById = requestRepository.getStatusOfRequestById(id);
+        // Check status is approved or rejected
+        if (getStatusById.equalsIgnoreCase(APPROVED_STATUS) || getStatusById.equalsIgnoreCase(REJECTED_STATUS)) {
+            throw new BaseException(ErrorCode.UPDATE_STATUS_FAIL);
+        }
+        // Get approval date
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime localDateTime = LocalDateTime.now();
+        String approvalDateString = dateTimeFormatter.format(localDateTime);
+        Date approvalDate = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
+                parse(approvalDateString);
+        Integer isUpdatedSuccess = requestRepository.updateStatusRequest(status, id, approvalDate);
         ResponseEntity<BaseResponse<Void, Void>> responseEntity = null;
         if (isUpdatedSuccess == CommonConstant.UPDATE_SUCCESS) {
             responseEntity = BaseResponse.ofSucceeded(null);
+            updateNumOfDayOffAfterApprovedRequest(id);
         } else {
             throw new BaseException(ErrorCode.UPDATE_FAIL);
         }
@@ -206,6 +242,9 @@ public class RequestServiceImpl implements RequestService {
                         editRequest.getDeviceTypeId(),
                         editRequest.getReason());
             } else {
+                if (requestTypeId.intValue() == ANNUAL_LEAVE_TYPE_ID) {
+
+                }
                 try {
                     Date createDate = requestRepository.getCreateDateById(id);
                     Date startTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
@@ -275,5 +314,71 @@ public class RequestServiceImpl implements RequestService {
             ResponseEntity<BaseResponse<Void, Void>> responseEntity = BaseResponse.ofSucceeded(null);
             return responseEntity;
         }
+    }
+
+    public boolean isRequestIdValid(Long id) {
+        Integer isRequestIdValid = requestRepository.isRequestIdValid(id);
+        if (isRequestIdValid == null) {
+            return false;
+        }
+        else {
+            return true;
+        }
+    }
+
+    public void updateNumOfDayOffAfterApprovedRequest(Long id) {
+        // Get the year of the request creation time
+        Date createDate = requestRepository.getCreateDateById(id);
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(createDate);
+        int year = calendar.get(Calendar.YEAR);
+        // Get request type id
+        Integer requestTypeId = requestTypeRepository.getRequestTypeByRequestId(id);
+        // Get person id
+        Long personId = requestRepository.getPersonIdByRequestId(id);
+
+        DateDto dateDto = requestRepository.getStartAndEndTimeByRequestId(id);
+        Date startTime = dateDto.getStartTime();
+        Date endTime = dateDto.getEndTime();
+
+        DecimalFormat decimalFormat = new DecimalFormat("#.##");
+        // calculate the number of days off
+        long dayOffByMinutesInRequest = ((endTime.getTime() - startTime.getTime()) / (60 * 1000));
+        double dayOffByDaysInRequest = Double.parseDouble(decimalFormat.format(((Double.valueOf(dayOffByMinutesInRequest)) / 60) / 24));
+        if (requestTypeId != BORROW_REQUEST_TYPE_ID) {
+            if (requestTypeId == ANNUAL_LEAVE_TYPE_ID) {
+                updateAnnualLeaveBudget(id, year, dayOffByDaysInRequest, personId);
+            }
+            else if (requestTypeId == OT_TYPE_ID) {
+
+            }
+            else {
+
+            }
+        }
+    }
+
+    public void updateAnnualLeaveBudget(Long id,
+                                        int year,
+                                        double numberOfDayOffInRequest,
+                                        Long personId) {
+        AnnualLeaveBudgetDto annualLeaveBudgetDto = annualLeaveBudgetRepository.getAnnualLeaveBudgetByRequestId(id, year);
+        double numberOfDayOff = numberOfDayOffInRequest + annualLeaveBudgetDto.getNumberOfDayOff();
+        double remainDayOff = annualLeaveBudgetDto.getAnnualLeaveBudget() - numberOfDayOff;
+        Integer isUpdateSuccess = annualLeaveBudgetRepository.updateAnnualLeaveBudget(personId,
+                numberOfDayOff,
+                remainDayOff,
+                year);
+        if (isUpdateSuccess == null) {
+            throw new BaseException(ErrorCode.UPDATE_FAIL);
+        }
+    }
+
+    public void updateOTBudget (Long id,
+                                int month,
+                                int year,
+                                long numberOfDayOffInRequest,
+                                Long personId) {
+
     }
 }

@@ -35,4 +35,5 @@ public class EditRequest extends BasicRequest{
     private String reason;
 
     private List<String> listImage;
+
 }
