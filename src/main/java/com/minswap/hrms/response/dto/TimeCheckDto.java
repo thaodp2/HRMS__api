@@ -1,32 +1,35 @@
 package com.minswap.hrms.response.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 
 import java.util.Date;
 
 @Data
+@Builder
+@AllArgsConstructor
 public class TimeCheckDto {
 
+
     private Long personId;
+
     private String personName;
 
-    private Double iloe;
+    private Date date;
 
     private Date timeIn;
 
     private Date timeOut;
 
+    private Double inLate;
+
+    private Double outEarly;
+
     private Double ot;
 
     private Double workingTime;
 
-    public TimeCheckDto(Long personId, String personName, Double iloe, Date timeIn, Date timeOut, Double ot, Double workingTime) {
-        this.personId = personId;
-        this.personName = personName;
-        this.iloe = iloe;
-        this.timeIn = timeIn;
-        this.timeOut = timeOut;
-        this.ot = ot;
-        this.workingTime = workingTime;
-    }
+    private String requestTypeName;
+
 }

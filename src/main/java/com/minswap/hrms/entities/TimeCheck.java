@@ -21,8 +21,11 @@ public class TimeCheck {
     @Column(name = "person_id")
     private Long personId;
 
-    @Column(name = "iloe")
-    private Double iloe;
+    @Column(name = "in_late")
+    private Double inLate;
+
+    @Column(name = "out_early")
+    private Double outEarly;
 
     @Column(name = "time_in")
     private Date timeIn;
