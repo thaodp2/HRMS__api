@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.validation.annotation.Validated;
 
 import java.util.Date;
 
@@ -16,12 +17,15 @@ public interface TimeCheckRepository extends JpaRepository<TimeCheck, Long> {
 
     @Query("SELECT new com.minswap.hrms.response.dto.TimeCheckDto( " +
             " tc.personId ,  " +
-            "p.fullName  as personName,  " +
-            " tc.iloe ,  " +
-            " tc.timeIn  as timeIn,  " +
-            " tc.timeOut  as timeOut,  " +
+            " p.fullName as personName,  " +
+            " tc.timeIn as date, " +
+            " tc.timeIn as timeIn,  " +
+            " tc.timeOut  as timeOut, " +
+            " tc.inLate as inLate, " +
+            " tc.outEarly as outEarly ,  " +
             " tc.ot, " +
-            " tc.workingTime  as workingTime )" +
+            " tc.workingTime  as workingTime, " +
+            " '' as  requestTypeName ) " +
             " FROM  " +
             " TimeCheck tc " +
             " Join Person p On p.personId = tc.personId" +
@@ -35,13 +39,16 @@ public interface TimeCheckRepository extends JpaRepository<TimeCheck, Long> {
                                           Pageable pageable);
 
     @Query("SELECT new com.minswap.hrms.response.dto.TimeCheckDto( " +
-            " tc.personId ,  " +
-            " p.fullName  as personName,  " +
-            " tc.iloe ,  " +
-            " tc.timeIn  as timeIn,  " +
-            " tc.timeOut  as timeOut,  " +
-            " tc.ot, " +
-            " tc.workingTime  as workingTime )" +
+            " tc.personId as personId,  " +
+            " p.fullName as personName,  " +
+            " tc.timeIn as date, " +
+            " tc.timeIn as timeIn,  " +
+            " tc.timeOut  as timeOut, " +
+            " tc.inLate as inLate, " +
+            " tc.outEarly as outEarly ,  " +
+            " tc.ot as ot, " +
+            " tc.workingTime  as workingTime," +
+            " '' as  requestTypeName ) " +
             " FROM  " +
             " TimeCheck tc " +
             " Join Person p On p.personId = tc.personId" +

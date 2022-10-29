@@ -12,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.*;
@@ -19,10 +20,18 @@ import java.util.*;
 @Service
 public class TimeCheckServiceImpl implements TimeCheckService{
 
+    private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private static final DateFormat TIME_EXCLUDED_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
+
     @Autowired
     TimeCheckRepository timeCheckRepository;
     @Override
-    public ResponseEntity<BaseResponse<TimeCheckResponse.TimeCheckEachPersonResponse, Pageable>> getMyTimeCheck(Long personId, String startDate, String endDate, Integer page, Integer limit) throws Exception {
+    public ResponseEntity<BaseResponse<TimeCheckResponse.TimeCheckEachPersonResponse, Pageable>> getMyTimeCheck(Long personId,
+                                                                                                                String startDate,
+                                                                                                                String endDate,
+                                                                                                                Integer page,
+                                                                                                                Integer limit) throws Exception {
+
         ResponseEntity<BaseResponse<TimeCheckResponse.TimeCheckEachPersonResponse, Pageable>> responseEntity = null;
         try {
 
@@ -31,27 +40,80 @@ public class TimeCheckServiceImpl implements TimeCheckService{
             Date endDateFormat = null ;
 
             if(startDate != null & endDate!= null ){
-                startDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(startDate);
-                endDateFormat =new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(endDate);
+                startDateFormat = DATE_FORMAT.parse(startDate);
+                endDateFormat = DATE_FORMAT.parse(endDate);
             } else if (startDate != null  & endDate == null) {
-                startDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(startDate);
+                startDateFormat = DATE_FORMAT.parse(startDate);
                 LocalDate now = LocalDate.now();
-                endDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(now.toString() + " 23:59:59");
+                endDateFormat = DATE_FORMAT.parse(now.toString() + " 23:59:59");
             } else if (startDate == null  & endDate != null){
-                startDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse("1899-01-01 00:00:00");
-                endDateFormat =new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(endDate);
+                startDateFormat = DATE_FORMAT.parse("1899-01-01 00:00:00");
+                endDateFormat = DATE_FORMAT.parse(endDate);
             }
 
             Page<TimeCheckDto> timeCheckPage = timeCheckRepository.getListMyTimeCheck(
                     personId, startDateFormat, endDateFormat, pagination);
             List<TimeCheckDto> timeCheckDtos = timeCheckPage.getContent();
+
+            Map<Date, List<TimeCheckDto>> timeCheckPerDateMap = new HashMap<>();
+
+            for (TimeCheckDto timeCheckDto : timeCheckDtos) {
+                Date timeCheckDate = TIME_EXCLUDED_DATE_FORMAT.parse(timeCheckDto.getDate().toString()); // get the date with the format of yyyy-MM-dd
+                List<TimeCheckDto> timeCheckListOfThisDate = Optional.ofNullable(timeCheckPerDateMap.get(timeCheckDate))
+                        .orElse(new ArrayList<>());
+                timeCheckListOfThisDate.add(timeCheckDto);
+                timeCheckPerDateMap.put(timeCheckDate, timeCheckListOfThisDate);
+            }
+
+            getDatesInRange(startDateFormat, endDateFormat).forEach((date) -> {
+                if (!Optional.ofNullable(timeCheckPerDateMap.get(date)).isPresent()) {
+                    timeCheckPerDateMap.put(date, Arrays.asList(
+                            TimeCheckDto.builder()
+                                    .personId(personId)
+                                    .date(date)
+                                    .workingTime(0d)
+                                    .build()
+                    ));
+                }
+            });
+
+            List<TimeCheckDto> timeCheckListAfterFillingUp = timeCheckPerDateMap.values().stream()
+                    .reduce(new ArrayList<>(), (cumulatedList, currentValues) -> {
+                        cumulatedList.addAll(currentValues);
+                        return cumulatedList;
+            });
+
             pagination.setTotalRecords(timeCheckPage);
 
-            responseEntity = BaseResponse.ofSucceededOffset(TimeCheckResponse.TimeCheckEachPersonResponse.of(timeCheckDtos), pagination);
+            responseEntity = BaseResponse.ofSucceededOffset(TimeCheckResponse.TimeCheckEachPersonResponse.of(timeCheckListAfterFillingUp), pagination);
         }catch(Exception ex){
             throw new Exception(ex.getMessage());
         }
         return responseEntity;
+    }
+
+    /**
+     * Represents the number of milliseconds of a day.
+     */
+    private static final long MILLISECOND_PER_DAY = 24 * 60 * 60 * 1000;
+
+    /**
+     * Generates a list of {@link Date} in a specific range.
+     * @param startDate the start of the range
+     * @param endDate the end of the range (exclusive)
+     */
+    private static List<Date> getDatesInRange(Date startDate, Date endDate) {
+        List<Date> dates = new ArrayList<>();
+
+        Date current = startDate;
+        while (current.before(endDate)) {
+            dates.add(current);
+            Date previous = current;
+            current = new Date();
+            current.setTime(previous.getTime() + MILLISECOND_PER_DAY); // go to the next day
+        }
+
+        return dates;
     }
 
     @Override
@@ -117,5 +179,6 @@ public class TimeCheckServiceImpl implements TimeCheckService{
             throw new Exception(ex.getMessage());
         }
         return responseEntity;
+
     }
 }
