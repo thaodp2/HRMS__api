@@ -1,4 +1,4 @@
-package com.minswap.hrms.service.deviceType;
+package com.minswap.hrms.service.devicetype;
 
 import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.response.DeviceTypeResponse;

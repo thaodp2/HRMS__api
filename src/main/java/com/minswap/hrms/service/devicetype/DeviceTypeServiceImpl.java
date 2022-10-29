@@ -1,25 +1,19 @@
-package com.minswap.hrms.service.deviceType;
+package com.minswap.hrms.service.devicetype;
 
 import com.minswap.hrms.constants.ErrorCode;
 import com.minswap.hrms.entities.DeviceType;
-import com.minswap.hrms.entities.RequestType;
 import com.minswap.hrms.exception.model.BaseException;
 import com.minswap.hrms.exception.model.Pagination;
 import com.minswap.hrms.model.BaseResponse;
-import com.minswap.hrms.model.BusinessCode;
-import com.minswap.hrms.model.Meta;
 import com.minswap.hrms.repsotories.DeviceTypeRepository;
-import com.minswap.hrms.repsotories.RequestTypeRepository;
 import com.minswap.hrms.response.DeviceTypeResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @Slf4j

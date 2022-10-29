@@ -4,6 +4,8 @@ import com.minswap.hrms.util.YearAttributeConverter;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.*;
 
 import javax.persistence.*;
 import java.time.Year;
@@ -12,6 +14,7 @@ import java.time.Year;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
 @Table(name = LeaveBudget.TABLE_NAME)
 public class LeaveBudget {
 
@@ -20,6 +23,7 @@ public class LeaveBudget {
     @Id
     @Column(name = "leave_budget_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @JsonProperty("id")
     private Long leaveBudgetId;
 
     @Column(name = "person_id")
