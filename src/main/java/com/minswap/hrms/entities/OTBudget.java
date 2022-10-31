@@ -1,5 +1,6 @@
 package com.minswap.hrms.entities;
 
+import com.minswap.hrms.util.YearAttributeConverter;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -27,11 +28,17 @@ public class OTBudget {
     private double otHoursBudget;
 
     @Column(name = "hours_worked")
-    private double numberOfDayOff;
+    private double hoursWorked;
 
     @Column(name = "month")
     private int month;
 
     @Column(name = "year")
-    private int year;
+    @Convert(
+            converter = YearAttributeConverter.class
+    )
+    private Year year;
+
+    @Column(name = "time_remaining")
+    private double timeRemaining;
 }
