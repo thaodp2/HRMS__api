@@ -1,5 +1,6 @@
 package com.minswap.hrms.entities;
 
+import com.minswap.hrms.util.YearAttributeConverter;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -11,21 +12,21 @@ import java.time.Year;
 @Getter
 @Setter
 @NoArgsConstructor
-@Table(name = AnnualLeaveBudget.TABLE_NAME)
-public class AnnualLeaveBudget {
+@Table(name = LeaveBudget.TABLE_NAME)
+public class LeaveBudget {
 
-    public static final String TABLE_NAME = "annual_leave_budget";
+    public static final String TABLE_NAME = "leave_budget";
 
     @Id
-    @Column(name = "annual_leave_budget_id")
+    @Column(name = "leave_budget_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long annualLeaveBudgetId;
+    private Long leaveBudgetId;
 
     @Column(name = "person_id")
     private Long personId;
 
-    @Column(name = "annual_leave_budget")
-    private double annualLeaveBudget;
+    @Column(name = "leave_budget")
+    private double leaveBudget;
 
     @Column(name = "number_of_day_off")
     private double numberOfDayOff;
@@ -34,6 +35,11 @@ public class AnnualLeaveBudget {
     private double remainDayOff;
 
     @Column(name = "year")
-    private int year;
+    @Convert(
+            converter = YearAttributeConverter.class
+    )
+    private Year year;
 
+    @Column(name = "request_type_id")
+    private Long requestTypeId;
 }

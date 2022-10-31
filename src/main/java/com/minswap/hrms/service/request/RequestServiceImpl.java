@@ -9,8 +9,9 @@ import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.repsotories.*;
 import com.minswap.hrms.request.EditRequest;
 import com.minswap.hrms.response.RequestResponse;
-import com.minswap.hrms.response.dto.AnnualLeaveBudgetDto;
+import com.minswap.hrms.response.dto.LeaveBudgetDto;
 import com.minswap.hrms.response.dto.DateDto;
+import com.minswap.hrms.response.dto.OTBudgetDto;
 import com.minswap.hrms.response.dto.RequestDto;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Session;
@@ -29,14 +30,10 @@ import java.text.DecimalFormat;
 import java.text.ParseException;
 
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Year;
 import java.time.format.DateTimeFormatter;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -45,7 +42,10 @@ public class RequestServiceImpl implements RequestService {
     RequestRepository requestRepository;
 
     @Autowired
-    AnnualLeaveBudgetRepository annualLeaveBudgetRepository;
+    LeaveBudgetRepository leaveBudgetRepository;
+
+    @Autowired
+    OTBudgetRepository otBudgetRepository;
 
     @Autowired
     EntityManager entityManager;
@@ -59,11 +59,19 @@ public class RequestServiceImpl implements RequestService {
     @Autowired
     EvidenceRepository evidenceRepository;
 
+    /*
+        ANNUAL_LEAVE_TYPE_ID = 1;
+        CHILDREN_SICKNESS = 3;
+        UNPAID_LEAVE = 6;
+        SICK_LEAVE = 8;
+        BEREAVEMENT_LEAVE = 10;
+     */
+    private static final Set<Integer> LEAVE_REQUEST_TYPE = new HashSet<Integer>(Arrays.asList(1, 3, 6, 8, 10));
     private static final String APPROVED_STATUS = "Approved";
     private static final String REJECTED_STATUS = "Rejected";
     private static final int BORROW_REQUEST_TYPE_ID = 11;
-    private static final Integer ANNUAL_LEAVE_TYPE_ID = 1;
     private static final Integer OT_TYPE_ID = 7;
+    private static final Integer ANNUAL_LEAVE_TYPE_ID = 1;
 
     Session session;
 
@@ -171,17 +179,22 @@ public class RequestServiceImpl implements RequestService {
             if (requestDto == null) {
                 throw new NullPointerException();
             }
+            DateDto dateDto = requestRepository.getStartAndEndTimeByRequestId(id);
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(dateDto.getStartTime());
+            Year year = Year.of(calendar.get(Calendar.YEAR));
+            int month = calendar.get(Calendar.MONTH);
             Integer requestType = requestTypeRepository.getRequestTypeByRequestId(id);
-            AnnualLeaveBudgetDto annualLeaveBudgetDto =
-                    annualLeaveBudgetRepository.getAnnualLeaveBudgetByRequestId(id, 2022);
-            if (requestType != BORROW_REQUEST_TYPE_ID) {
-                if (requestType == ANNUAL_LEAVE_TYPE_ID) {
-                    requestDto.setTimeRemaining(annualLeaveBudgetDto.getRemainDayOff());
-                    requestDto.setBudget(annualLeaveBudgetDto.getAnnualLeaveBudget());
-                }
-                else if (requestType == OT_TYPE_ID){
-
-                }
+            Long personId = requestRepository.getPersonIdByRequestId(id);
+            if (LEAVE_REQUEST_TYPE.contains(requestType)) {
+                LeaveBudgetDto leaveBudgetDto = leaveBudgetRepository.getLeaveBudget(personId, year, Long.valueOf(requestType));
+                requestDto.setTimeRemaining(leaveBudgetDto.getRemainDayOff());
+                requestDto.setBudget(leaveBudgetDto.getLeaveBudget());
+            }
+            else if (requestType == OT_TYPE_ID){
+                OTBudgetDto otBudgetDto = otBudgetRepository.getOTBudgetByPersonId(personId, year, month);
+                requestDto.setTimeRemaining(otBudgetDto.getTimeRemaining());
+                requestDto.setBudget(otBudgetDto.getOtHoursBudget());
             }
             List<String> listImage = evidenceRepository.getListImageByRequest(id);
             requestDto.setListEvidence(listImage);
@@ -242,9 +255,9 @@ public class RequestServiceImpl implements RequestService {
                         editRequest.getDeviceTypeId(),
                         editRequest.getReason());
             } else {
-                if (requestTypeId.intValue() == ANNUAL_LEAVE_TYPE_ID) {
-
-                }
+//                if (requestTypeId.intValue() == ANNUAL_LEAVE_TYPE_ID) {
+//
+//                }
                 try {
                     Date createDate = requestRepository.getCreateDateById(id);
                     Date startTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
@@ -331,7 +344,7 @@ public class RequestServiceImpl implements RequestService {
         Date createDate = requestRepository.getCreateDateById(id);
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(createDate);
-        int year = calendar.get(Calendar.YEAR);
+        Year year = Year.of(calendar.get(Calendar.YEAR));
         // Get request type id
         Integer requestTypeId = requestTypeRepository.getRequestTypeByRequestId(id);
         // Get person id
@@ -359,19 +372,19 @@ public class RequestServiceImpl implements RequestService {
     }
 
     public void updateAnnualLeaveBudget(Long id,
-                                        int year,
+                                        Year year,
                                         double numberOfDayOffInRequest,
                                         Long personId) {
-        AnnualLeaveBudgetDto annualLeaveBudgetDto = annualLeaveBudgetRepository.getAnnualLeaveBudgetByRequestId(id, year);
-        double numberOfDayOff = numberOfDayOffInRequest + annualLeaveBudgetDto.getNumberOfDayOff();
-        double remainDayOff = annualLeaveBudgetDto.getAnnualLeaveBudget() - numberOfDayOff;
-        Integer isUpdateSuccess = annualLeaveBudgetRepository.updateAnnualLeaveBudget(personId,
-                numberOfDayOff,
-                remainDayOff,
-                year);
-        if (isUpdateSuccess == null) {
-            throw new BaseException(ErrorCode.UPDATE_FAIL);
-        }
+//        LeaveBudgetDto leaveBudgetDto = leaveBudgetRepository.getAnnualLeaveBudgetByRequestId(id, year);
+//        double numberOfDayOff = numberOfDayOffInRequest + leaveBudgetDto.getNumberOfDayOff();
+//        double remainDayOff = leaveBudgetDto.getLeaveBudget() - numberOfDayOff;
+//        Integer isUpdateSuccess = leaveBudgetRepository.updateAnnualLeaveBudget(personId,
+//                numberOfDayOff,
+//                remainDayOff,
+//                year);
+//        if (isUpdateSuccess == null) {
+//            throw new BaseException(ErrorCode.UPDATE_FAIL);
+//        }
     }
 
     public void updateOTBudget (Long id,
