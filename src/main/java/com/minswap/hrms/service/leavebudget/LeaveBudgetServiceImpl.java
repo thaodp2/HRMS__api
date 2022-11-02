@@ -25,27 +25,29 @@ import java.util.List;
 
 @Service
 @Slf4j
-public class LeaveBudgetServiceImpl implements LeaveBudgetService{
+public class LeaveBudgetServiceImpl implements LeaveBudgetService {
     @Autowired
     EntityManager entityManager;
 
-    public List<LeaveBudgetDto> getQueryForLeaveBudgetList(String type, Boolean isLimit, Long managerId, Long personId, Integer page, Integer limit, Long requestTypeId, String search, Year year) throws ParseException {
+    public List<LeaveBudgetDto> getQueryForLeaveBudgetList(String type, Boolean isLimit, Long managerId, Long personId, Integer page, Integer limit, Long requestTypeId, String search, Year year, Boolean isExport) throws ParseException {
         HashMap<String, Object> params = new HashMap<>();
         StringBuilder queryAllRequest = new StringBuilder(
                 "select lb.leave_budget_id as leaveBudgetId," +
-                " p.full_name as fullName, lb.leave_budget as leaveBudget," +
-                " lb.number_of_day_off as numberOfDayOff," +
-                " lb.remain_day_off as remainDayOff ");
-        queryAllRequest.append("from leave_budget lb, person p ");
-        StringBuilder whereBuild = new StringBuilder("WHERE lb.person_id  = p.person_id ");
+                        " p.full_name as fullName, lb.leave_budget as leaveBudget," +
+                        " lb.number_of_day_off as numberOfDayOff," +
+                        " lb.remain_day_off as remainDayOff, rt.request_type_name as requestTypeName ");
+        queryAllRequest.append("from leave_budget lb, person p, request_type rt ");
+        StringBuilder whereBuild = new StringBuilder("WHERE lb.person_id = p.person_id and lb.request_type_id = rt.request_type_id ");
 
         whereBuild.append("and year = :year ");
-        params.put("year", year == null ? Year.now() : year);
+        params.put("year", year == null ? Year.now().toString() : year.toString());
 
-        whereBuild.append("and lb.request_type_id = :requestTypeId ");
-        params.put("requestTypeId", requestTypeId == null ? 1 : requestTypeId);
+        if(!isExport && !type.equals(CommonConstant.MY)) {
+            whereBuild.append("and lb.request_type_id = :requestTypeId ");
+            params.put("requestTypeId", requestTypeId == null ? 1 : requestTypeId);
+        }
 
-        if(search != null && !search.trim().isEmpty()){
+        if (search != null && !search.trim().isEmpty()) {
             whereBuild.append("and p.full_name like %:search% ");
             params.put("search", search.trim());
         }
@@ -71,13 +73,13 @@ public class LeaveBudgetServiceImpl implements LeaveBudgetService{
             params.put("offset", (page - 1) * limit);
         }
         Session session = entityManager.unwrap(Session.class);
-
         Query query = session.createNativeQuery(queryAllRequest.toString())
                 .addScalar("leaveBudgetId", LongType.INSTANCE)
                 .addScalar("fullName", StringType.INSTANCE)
                 .addScalar("leaveBudget", DoubleType.INSTANCE)
                 .addScalar("numberOfDayOff", DoubleType.INSTANCE)
                 .addScalar("remainDayOff", DoubleType.INSTANCE)
+                .addScalar("requestTypeName", StringType.INSTANCE)
                 .setResultTransformer(Transformers.aliasToBean(LeaveBudgetDto.class));
 
         params.forEach(query::setParameter);
@@ -87,13 +89,8 @@ public class LeaveBudgetServiceImpl implements LeaveBudgetService{
 
     public ResponseEntity<BaseResponse<LeaveBudgetResponse.LeaveBudgetListResponse, Pageable>> getLeaveBudgetByPermission(String type, Long managerId, Long personId, Integer page, Integer limit, Long requestTypeId, String search, Year year) throws ParseException {
         Pagination pagination = new Pagination(page, limit);
-        List<LeaveBudgetDto> leaveBudgetDtosWithoutPagination = getQueryForLeaveBudgetList(type, false, managerId, personId, page, limit, requestTypeId, search, year);
-        pagination.setTotalRecords(leaveBudgetDtosWithoutPagination.size());
-        List<LeaveBudgetDto> leaveBudgetDtos = getQueryForLeaveBudgetList(type, true, managerId, personId, page, limit, requestTypeId, search, year);
-        if (type == CommonConstant.MY){
-            leaveBudgetDtos = leaveBudgetDtosWithoutPagination;
-            pagination = null;
-        }
+        pagination.setTotalRecords(getQueryForLeaveBudgetList(type, false, managerId, personId, page, limit, requestTypeId, search, year,false).size());
+        List<LeaveBudgetDto> leaveBudgetDtos = getQueryForLeaveBudgetList(type, true, managerId, personId, page, limit, requestTypeId, search, year,false);
         LeaveBudgetResponse.LeaveBudgetListResponse response = new LeaveBudgetResponse.LeaveBudgetListResponse(leaveBudgetDtos);
         ResponseEntity<BaseResponse<LeaveBudgetResponse.LeaveBudgetListResponse, Pageable>> responseEntity
                 = BaseResponse.ofSucceededOffset(response, pagination);

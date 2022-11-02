@@ -68,23 +68,23 @@ public class HRPersonController {
     return employeeHRService.changeStatusEmployee(personId,active);
   }
 
-  @GetMapping("/employee/export")
-  public ResponseEntity<BaseResponse<Void, Void>> exportToExcel(
-          HttpServletResponse response
-  ) throws IOException {
-    response.setContentType("application/octet-stream");
-    String headerKey = "Content-Disposition";
-
-    DateFormat dateFormat = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS);
-    String currentDateTime = dateFormat.format(new Date());
-    String fileName = "employees_" + currentDateTime + ".xlsx";
-    String headerValue = "attachment; filename=" + fileName;
-
-    response.setHeader(headerKey, headerValue);
-    List<DeviceType> deviceTypeList = deviceTypeRepository.findAll();
-    ExcelExporter excelExporter = new ExcelExporter(deviceTypeList);
-    excelExporter.export(response);
-
-    return null;
-  }
+//  @GetMapping("/employee/export")
+//  public ResponseEntity<BaseResponse<Void, Void>> exportToExcel(
+//          HttpServletResponse response
+//  ) throws IOException {
+//    response.setContentType("application/octet-stream");
+//    String headerKey = "Content-Disposition";
+//
+//    DateFormat dateFormat = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS);
+//    String currentDateTime = dateFormat.format(new Date());
+//    String fileName = "employees_" + currentDateTime + ".xlsx";
+//    String headerValue = "attachment; filename=" + fileName;
+//
+//    response.setHeader(headerKey, headerValue);
+//    List<DeviceType> deviceTypeList = deviceTypeRepository.findAll();
+//    ExcelExporter excelExporter = new ExcelExporter(deviceTypeList);
+//    excelExporter.export(response);
+//
+//    return null;
+//  }
 }

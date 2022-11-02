@@ -23,7 +23,6 @@ public class LeaveBudget {
     @Id
     @Column(name = "leave_budget_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @JsonProperty("id")
     private Long leaveBudgetId;
 
     @Column(name = "person_id")

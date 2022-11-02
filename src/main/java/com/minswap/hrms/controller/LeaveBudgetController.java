@@ -24,7 +24,7 @@ public class LeaveBudgetController {
     @GetMapping("/leave-budget")
     public ResponseEntity<BaseResponse<LeaveBudgetResponse.LeaveBudgetListResponse, Pageable>> getLeaveBudgetOfAllEmployee(
             @RequestParam @Min(1) Integer page,
-            @RequestParam Integer limit,
+            @RequestParam @Min(0) Integer limit,
             @RequestParam (required = false) Long requestTypeId,
             @RequestParam (required = false) String search,
             @RequestParam (required = false) Year year
