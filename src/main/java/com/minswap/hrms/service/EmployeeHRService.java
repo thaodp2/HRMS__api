@@ -15,4 +15,5 @@ public interface EmployeeHRService {
   ResponseEntity<BaseResponse<EmployeeInfoResponse, Pageable>> getSearchListEmployee(int page, int limit, String fullName,String email,String departmentName,String rollNumber,String status,String positionName);
 
   ResponseEntity<BaseResponse<Void, Void>> changeStatusEmployee(Long personId, String active);
+  ResponseEntity<BaseResponse<Void, Void>> exportEmployee();
 }

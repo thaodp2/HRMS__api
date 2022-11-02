@@ -1,15 +1,11 @@
-package com.minswap.hrms.controller.itSupport;
+package com.minswap.hrms.controller.itsupport;
 
 import com.minswap.hrms.constants.CommonConstant;
-import com.minswap.hrms.entities.DeviceType;
 import com.minswap.hrms.exception.annotation.ServiceProcessingValidateAnnotation;
 import com.minswap.hrms.model.BaseResponse;
-import com.minswap.hrms.request.DepartmentRequest;
 import com.minswap.hrms.request.DeviceTypeRequest;
 import com.minswap.hrms.response.DeviceTypeResponse;
-import com.minswap.hrms.response.dto.ListDepartmentDto;
-import com.minswap.hrms.service.department.DepartmentService;
-import com.minswap.hrms.service.deviceType.DeviceTypeService;
+import com.minswap.hrms.service.devicetype.DeviceTypeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;

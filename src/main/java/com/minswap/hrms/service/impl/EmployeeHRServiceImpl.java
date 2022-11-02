@@ -67,4 +67,9 @@ public class EmployeeHRServiceImpl implements EmployeeHRService {
 		return responseEntity;
 	}
 
+	@Override
+	public ResponseEntity<BaseResponse<Void, Void>> exportEmployee() {
+		return null;
+	}
+
 }
