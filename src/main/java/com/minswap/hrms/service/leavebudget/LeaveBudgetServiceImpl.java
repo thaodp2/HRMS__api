@@ -48,8 +48,8 @@ public class LeaveBudgetServiceImpl implements LeaveBudgetService {
         }
 
         if (search != null && !search.trim().isEmpty()) {
-            whereBuild.append("and p.full_name like %:search% ");
-            params.put("search", search.trim());
+            whereBuild.append("and p.full_name like :search ");
+            params.put("search", "%" + search.trim() + "%");
         }
 
         switch (type) {

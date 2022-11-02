@@ -90,11 +90,15 @@ public class ExcelExporter {
     }
 
     public void export(HttpServletResponse response) throws IOException {
-        writeHeaderRowLeaveBudget();
-        writeDataRowsLeaveBudget();
         ServletOutputStream outputStream = response.getOutputStream();
         workbook.write(outputStream);
         workbook.close();
         outputStream.close();
+    }
+
+    public void exportLeaveBudget(HttpServletResponse response) throws IOException {
+        writeHeaderRowLeaveBudget();
+        writeDataRowsLeaveBudget();
+        export(response);
     }
 }
