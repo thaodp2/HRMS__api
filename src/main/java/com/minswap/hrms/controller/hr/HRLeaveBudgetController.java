@@ -54,23 +54,15 @@ public class HRLeaveBudgetController {
     ) throws IOException, ParseException {
         response.setContentType("application/octet-stream");
         String headerKey = "Content-Disposition";
-
         DateFormat dateFormat = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS);
         String currentDateTime = dateFormat.format(new Date());
-        String fileName = "leave-budget-in-2022";
-//        if(year == null){
-//            fileName += Year.now().toString();
-//        }else {
-//            fileName += year.toString();
-//        }
-        fileName += "_" + currentDateTime + ".xlsx";
+        String fileName = "leave-budget-in-" + (year==null?Year.now().toString():year.toString()) + "_" + currentDateTime + ".xlsx";
         String headerValue = "attachment; filename=" + fileName;
-
         response.setHeader(headerKey, headerValue);
+
         List<LeaveBudgetDto> leaveBudgetDtos = leaveBudgetService.getQueryForLeaveBudgetList(CommonConstant.ALL,false,null,null,null,null,null,search,year,true);
         ExcelExporter excelExporter = new ExcelExporter(leaveBudgetDtos);
-        excelExporter.export(response);
-
+        excelExporter.exportLeaveBudget(response);
         return null;
     }
 }
