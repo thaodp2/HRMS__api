@@ -1,25 +1,19 @@
 package com.minswap.hrms.controller.hr;
 
-import com.minswap.hrms.entities.DeviceType;
+import com.minswap.hrms.constants.CommonConstant;
+import com.minswap.hrms.exception.annotation.ServiceProcessingValidateAnnotation;
+import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.repsotories.DeviceTypeRepository;
-import com.minswap.hrms.service.devicetype.DeviceTypeService;
-import com.minswap.hrms.util.ExcelExporter;
+import com.minswap.hrms.request.ChangeStatusEmployeeRequest;
+import com.minswap.hrms.response.EmployeeInfoResponse;
+import com.minswap.hrms.service.EmployeeHRService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import com.minswap.hrms.constants.CommonConstant;
-import com.minswap.hrms.model.BaseResponse;
-import com.minswap.hrms.response.EmployeeInfoResponse;
-import com.minswap.hrms.service.EmployeeHRService;
-
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
+import javax.validation.Valid;
 
 @RestController
 @RequestMapping(CommonConstant.HR + "/")
@@ -30,42 +24,40 @@ public class HRPersonController {
 
   @Autowired
   private DeviceTypeRepository deviceTypeRepository;
-
-  
-    @GetMapping("/employee")
-    public ResponseEntity<BaseResponse<EmployeeInfoResponse, Pageable>> getListEmployee(
-            @RequestParam int page,
-            @RequestParam int limit
-            ) {
-        return employeeHRService.getListEmployee(page, limit);
+    
+    @GetMapping("/employee/{rollNumber}")
+    public ResponseEntity<BaseResponse<EmployeeInfoResponse, Void>> getDetailEmployee(@PathVariable String rollNumber) {
+      return employeeHRService.getDetailEmployee(rollNumber);
     }
 
-    @GetMapping("/employee/{personId}")
-    public ResponseEntity<BaseResponse<EmployeeInfoResponse, Void>> getDetailEmployee(@PathVariable Long personId) {
-      return employeeHRService.getDetailEmployee(personId);
-    }
-
-  @GetMapping("search/employee")
+  @GetMapping("/employee")
   public ResponseEntity<BaseResponse<EmployeeInfoResponse, Pageable>> getSearchListEmployee(
           @RequestParam int page,
           @RequestParam int limit,
-          @RequestParam String fullName,
-          @RequestParam String email,
-          @RequestParam String departmentName,
-          @RequestParam String rollNumber,
-          @RequestParam String active,
-          @RequestParam String positionName
+          @RequestParam (name = "fullName", required = false)String fullName,
+          @RequestParam (name = "email", required = false)String email,
+          @RequestParam (name = "departmentName", required = false) String departmentName,
+          @RequestParam (name = "rollNumber", required = false) String rollNumber,
+          @RequestParam (name = "active", required = false) String active,
+          @RequestParam (name = "positionName", required = false)String positionName
 
   ) {
-    return employeeHRService.getSearchListEmployee(page,limit,fullName,email,departmentName,rollNumber,active,positionName);
+    return employeeHRService.getSearchListEmployee(page,limit,fullName,email,departmentName,rollNumber,active,positionName, "");
   }
 
 
   @PutMapping("/employee/{personId}")
+  @ServiceProcessingValidateAnnotation
   public ResponseEntity<BaseResponse<Void, Void>> changeStatusEmployee(
-          @PathVariable Long personId,
-          @RequestParam String active) {
-    return employeeHRService.changeStatusEmployee(personId,active);
+		  @RequestBody @Valid ChangeStatusEmployeeRequest changeStatusEmployeeRequest , 
+		  BindingResult bindingResult,
+          @PathVariable String rollNumber) {
+    return employeeHRService.changeStatusEmployee(rollNumber,changeStatusEmployeeRequest.getActive());
+  }
+
+  @PostMapping("/employee")
+  public ResponseEntity<BaseResponse<Void, Void>> createEmployee() {
+    return null;
   }
 
 //  @GetMapping("/employee/export")

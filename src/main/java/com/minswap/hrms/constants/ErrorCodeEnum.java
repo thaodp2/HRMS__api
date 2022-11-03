@@ -26,7 +26,7 @@ public enum ErrorCodeEnum {
   DUPLICATE_DEVICE_TYPE(416),
 
   NOT_FOUND_DEVICE_TYPE(416),
-
+  PERSON_NOT_EXIST(455),
   ;
 
   /** The value. */

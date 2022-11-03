@@ -70,4 +70,9 @@ public class RequestController {
     public ResponseEntity<BaseResponse<Void, Void>> cancelRequest(@PathVariable Long id) {
         return requestService.cancelRequest(id);
     }
+
+    @PostMapping("/request")
+    public ResponseEntity<BaseResponse<Void, Void>> createRequest(@PathVariable Long id) {
+        return null;
+    }
 }
