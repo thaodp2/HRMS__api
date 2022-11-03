@@ -47,7 +47,8 @@ public class ErrorCode {
     public static final BusinessCode NOT_FOUND_DEVICE_TYPE = new BusinessCode(
             ErrorCodeEnum.NOT_FOUND_DEVICE_TYPE.getValue(), "Not found device type", HttpStatus.NOT_FOUND);
 
-
+    public static final BusinessCode PERSON_NOT_EXIST = new BusinessCode(
+            ErrorCodeEnum.PERSON_NOT_EXIST.getValue(), "Person not exist!", HttpStatus.NOT_FOUND);
     public static BusinessCode newErrorCode(String message) {
         return new BusinessCode(ErrorCodeEnum.INTERNAL_SERVER_ERROR.getValue(), message, HttpStatus.INTERNAL_SERVER_ERROR);
     }

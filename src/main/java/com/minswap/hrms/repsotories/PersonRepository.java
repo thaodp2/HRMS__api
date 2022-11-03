@@ -6,6 +6,7 @@ import com.minswap.hrms.response.dto.EmployeeListDto;
 import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.minswap.hrms.entities.Person;
@@ -20,7 +21,7 @@ import java.util.Optional;
 public interface PersonRepository extends JpaRepository<Person, Long>{
 
     Optional<Person> findPersonByPersonId(Long id);
-
+    Optional<Person> findPersonByRollNumberEquals(String rollNumber);
     @Query("select new com.minswap.hrms.response.dto.EmployeeListDto(" +
             "  p.personId as personId, p.fullName as fullName,p.email as email,d.departmentName as departmentName,p.rollNumber as rollNumber," +
             "  p.status as active, p2.positionName as positionName )" +
@@ -70,8 +71,8 @@ public interface PersonRepository extends JpaRepository<Person, Long>{
             " p.positionId = p2.positionId "+
             " LEFT JOIN Rank r ON " +
             " p.rankId = r.rankId "+
-            " WHERE p.personId = :personId")
-    EmployeeDetailDto getDetailEmployee(@Param("personId") Long personId);
+            " WHERE p.rollNumber = :rollNumber")
+    EmployeeDetailDto getDetailEmployee(@Param("rollNumber") String rollNumber);
 
     @Query("select new com.minswap.hrms.response.dto.EmployeeListDto(" +
             "  p.personId as personId, p.fullName as fullName,p.email as email,d.departmentName as departmentName,p.rollNumber as rollNumber," +
@@ -81,25 +82,27 @@ public interface PersonRepository extends JpaRepository<Person, Long>{
             "    p.departmentId = d.departmentId " +
             "    LEFT JOIN Position p2 ON " +
             "    p.positionId = p2.positionId  " +
-            "     where  1 = 1  " +
-            " and p.fullName LIKE '%a%'" +
-            " and p.rollNumber LIKE '%NV00%'" +
-            " and p.email LIKE '%n%'" +
-            " and d.departmentName LIKE '%De%'" +
-            " and p.status = 1" +
-            " and p2.positionName LIKE '%de%'")
+            "     where  1 = 1  "+
+            " and ( :fullName IS NULL OR p.fullName LIKE  %:fullName%)" +
+            " and (:rollNumber IS NULL OR p.rollNumber LIKE %:rollNumber%)" +
+            " and (:email IS NULL OR p.email LIKE %:email%) " +
+            " and ( :departmentName IS NULL OR d.departmentName LIKE %:departmentName%) " +
+//            " and  (:status IS NULL OR p.status = :status) " +
+            " and (:positionName IS NULL OR p2.positionName LIKE %:positionName%)"+
+            " and (:managerRoll IS NULL OR p.managerId = :managerRoll)")
     Page<EmployeeListDto> getSearchListPerson(@Param("fullName")String fullName,
                                               @Param("email")String email,
                                               @Param("departmentName")String departmentName,
                                               @Param("rollNumber")String rollNumber,
-                                              @Param("status")String status,
+//                                              @Param("status")String status,
                                               @Param("positionName")String positionName,
-                                              Pagination pageable);
+                                              @Param(("managerRoll"))Long managerRoll,
+                                              Pageable pageable);
     @Modifying
     @Transactional
-    @Query("UPDATE Person p set p.status = '0' where p.personId = '4'")
+    @Query("UPDATE Person p set p.status = :status where p.rollNumber LIKE :id")
     Integer updateStatusEmployee(@Param("status") String status,
-                             @Param("personId") Long id);
+                             @Param("personId") String id);
 
 
 }

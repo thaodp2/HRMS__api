@@ -73,7 +73,7 @@ public class RequestServiceImpl implements RequestService {
     private static final Integer OT_TYPE_ID = 7;
     private static final Integer ANNUAL_LEAVE_TYPE_ID = 1;
 
-    Session session;
+    //Session session;
 
     public List<RequestDto> getQueryForRequestList(String type, Long managerId, Long personId, Boolean isLimit, Integer limit, Integer page, Boolean isSearch, String createDateFrom, String createDateTo, Long requestTypeId) throws ParseException {
         HashMap<String, Object> params = new HashMap<>();
@@ -123,9 +123,9 @@ public class RequestServiceImpl implements RequestService {
         if (isLimit) {
             queryAllRequest = queryAllRequest.append("LIMIT :offset, :limit");
             params.put("limit", limit);
-            params.put("offset", page * limit);
+            params.put("offset", (page - 1) * limit);
         }
-        session = entityManager.unwrap(Session.class);
+        Session session = entityManager.unwrap(Session.class);
 
         Query query = session.createNativeQuery(queryAllRequest.toString())
                 .addScalar("requestId", LongType.INSTANCE)

@@ -1,5 +1,6 @@
 package com.minswap.hrms.entities;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,6 +23,7 @@ public class DeviceType {
     @Id
     @Column(name = "device_type_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @JsonProperty("id")
     private Long deviceTypeId;
 
     @Column(name = "device_type")

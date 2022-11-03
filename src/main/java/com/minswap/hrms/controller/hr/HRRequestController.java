@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.constraints.Min;
 import javax.validation.constraints.Pattern;
 import java.text.ParseException;
 
@@ -25,8 +26,8 @@ public class HRRequestController {
 
     @GetMapping("/request")
     public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getAllRequest(
-            @RequestParam Integer page,
-            @RequestParam Integer limit,
+            @RequestParam @Min(1) Integer page,
+            @RequestParam @Min(0) Integer limit,
             @RequestParam (required = false) @Pattern(regexp = "[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1]) (2[0-3]|[01][0-9]):[0-5][0-9]:[0-5][0-9]", message = "Invalid createDateFrom") String createDateFrom,
             @RequestParam (required = false) @Pattern(regexp = "[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1]) (2[0-3]|[01][0-9]):[0-5][0-9]:[0-5][0-9]", message = "Invalid createDateTo") String createDateTo,
             @RequestParam (required = false) Long requestTypeId) throws ParseException {
