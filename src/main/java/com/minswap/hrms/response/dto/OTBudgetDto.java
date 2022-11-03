@@ -8,15 +8,13 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class OTBudgetDto {
-    public OTBudgetDto(double otHoursBudget, double hoursWorked, double timeRemaining) {
+    public OTBudgetDto(double otHoursBudget, double hoursWorked) {
         this.otHoursBudget = otHoursBudget;
         this.hoursWorked = hoursWorked;
-        this.timeRemaining = timeRemaining;
     }
 
     private double otHoursBudget;
 
     private double hoursWorked;
 
-    private double timeRemaining;
 }

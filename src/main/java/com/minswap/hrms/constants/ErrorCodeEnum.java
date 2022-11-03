@@ -27,6 +27,10 @@ public enum ErrorCodeEnum {
 
   NOT_FOUND_DEVICE_TYPE(416),
 
+  YEAR_INVALID(416),
+
+  MONTH_INVALID(416)
+
   ;
 
   /** The value. */

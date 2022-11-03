@@ -38,7 +38,4 @@ public class OTBudget {
             converter = YearAttributeConverter.class
     )
     private Year year;
-
-    @Column(name = "time_remaining")
-    private double timeRemaining;
 }
