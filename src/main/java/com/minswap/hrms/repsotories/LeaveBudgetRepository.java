@@ -24,9 +24,10 @@ public interface LeaveBudgetRepository extends JpaRepository<LeaveBudget, Long> 
     @Modifying
     @Transactional
     @Query("Update LeaveBudget lb set lb.numberOfDayOff =:numberOfDayOff, lb.remainDayOff =:remainDayOff " +
-            "where lb.personId =:id and lb.year=:year")
-    Integer updateAnnualLeaveBudget(@Param("id") Long id,
-                                    @Param("numberOfDayOff") double numberOfDayOff,
-                                    @Param("remainDayOff") double remainDayOff,
-                                    @Param("year") Year year);
+            "where lb.personId =:personId and lb.year=:year and lb.requestTypeId =:requestTypeId")
+    Integer updateLeaveBudget(@Param("personId") Long personId,
+                            @Param("numberOfDayOff") double numberOfDayOff,
+                            @Param("remainDayOff") double remainDayOff,
+                            @Param("year") Year year,
+                            @Param("requestTypeId") Long requestTypeId);
 }
