@@ -45,16 +45,16 @@ public class Person {
 	private String onBoardDate;
 
 	@Column(name = "rank_id")
-	private String rankId;
+	private int rankId;
 
 	@Column(name = "department_id")
-	private String departmentId;
+	private int departmentId;
 
 	@Column(name = "manager_id")
-	private Long managerId;
+	private int managerId;
 
 	@Column(name = "gender")
-	private String gender;
+	private int gender;
 
 	@Column(name = "roll_number")
 	private String rollNumber;
@@ -66,5 +66,5 @@ public class Person {
 	private String status;
 
 	@Column(name = "position_id")
-	private Long positionId;
+	private int positionId;
 }
