@@ -64,5 +64,5 @@ public class EmployeeRequest {
 	@JsonProperty("gender")
 	@NotNull(message ="")
 	@NotEmpty(message = "")
-	private String gender;
+	private int gender;
 }

@@ -57,20 +57,14 @@ public interface PersonRepository extends JpaRepository<Person, Long>{
             " p.address as address," +
             " p.rollNumber as rollNumber," +
             " p.email as email," +
-            " d.departmentName as departmentName," +
-            " p2.positionName as positionName," +
-            " r.rankName as rankName," +
+            " p.departmentId as departmentId," +
+            " p.positionId as positionId," +
+            " p.rankId as rankId," +
             " p.onBoardDate as onBoardDate," +
             " p.status as status," +
             " p.rollNumber as rollNumber, " +
-            "(select p3.fullName from Person p3 where p3.personId=p.managerId) as managerName) " +
+            "p.managerId as managerId ) " +
             " FROM Person p " +
-            " LEFT JOIN Department d ON " +
-            " p.departmentId = d.departmentId " +
-            " lEFT JOIN Position p2 ON " +
-            " p.positionId = p2.positionId "+
-            " LEFT JOIN Rank r ON " +
-            " p.rankId = r.rankId "+
             " WHERE p.rollNumber = :rollNumber")
     EmployeeDetailDto getDetailEmployee(@Param("rollNumber") String rollNumber);
 

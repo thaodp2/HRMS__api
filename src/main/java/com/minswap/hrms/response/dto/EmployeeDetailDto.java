@@ -20,7 +20,7 @@ public class EmployeeDetailDto {
     private String dateOfBirth;
 
     @JsonProperty("gender")
-    private String gender;
+    private int gender;
 
     @JsonProperty("phoneNumber")
     private String phoneNumber;
@@ -37,14 +37,14 @@ public class EmployeeDetailDto {
     @JsonProperty("email")
     private String email;
 
-    @JsonProperty("departmentName")
-    private String departmentName;
+    @JsonProperty("departmenId")
+    private int departmenId;
 
-    @JsonProperty("positionName")
-    private String positionName;
+    @JsonProperty("positionId")
+    private int positionId;
 
-    @JsonProperty("rankName")
-    private String rankName;
+    @JsonProperty("rankId")
+    private int rankId;
 
     @JsonProperty("onBoardDate")
     private String onBoardDate;
@@ -55,8 +55,8 @@ public class EmployeeDetailDto {
     @JsonProperty("role")
     private String role;
 
-    @JsonProperty("managerName")
-    private String managerName;
+    @JsonProperty("managerId")
+    private int managerId;
     
     public int getStatus() {
     	return status == null ? 0 : Integer.parseInt(status);
