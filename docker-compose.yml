@@ -8,5 +8,4 @@ services:
       context: .
     ports:
       - '80:6689'
-    volumes:
-      - "${HOME}/.m2:/root/.m2"
+      - '6699:6699'
