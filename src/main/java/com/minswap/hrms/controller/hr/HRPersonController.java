@@ -46,7 +46,7 @@ public class HRPersonController {
   }
 
 
-  @PutMapping("/employee/{personId}")
+  @PutMapping("/employee/{rollNumber}")
   @ServiceProcessingValidateAnnotation
   public ResponseEntity<BaseResponse<Void, Void>> changeStatusEmployee(
 		  @RequestBody @Valid ChangeStatusEmployeeRequest changeStatusEmployeeRequest , 
