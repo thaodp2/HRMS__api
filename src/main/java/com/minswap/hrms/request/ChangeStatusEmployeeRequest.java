@@ -15,7 +15,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class ChangeStatusEmployeeRequest extends BasicRequest{
 
-   @JsonProperty("active")
+   @JsonProperty("isActive")
    //@NotNull(message = "608")
    private String active;
 

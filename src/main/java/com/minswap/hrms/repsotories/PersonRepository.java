@@ -100,9 +100,9 @@ public interface PersonRepository extends JpaRepository<Person, Long>{
                                               Pageable pageable);
     @Modifying
     @Transactional
-    @Query("UPDATE Person p set p.status = :status where p.rollNumber LIKE :id")
+    @Query("UPDATE Person p set p.status = :status where p.rollNumber LIKE %:personId%")
     Integer updateStatusEmployee(@Param("status") String status,
-                             @Param("personId") String id);
+                             @Param("personId") String personId);
 
 
 }
