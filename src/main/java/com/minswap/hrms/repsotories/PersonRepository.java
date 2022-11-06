@@ -15,6 +15,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import javax.transaction.Transactional;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -96,7 +97,14 @@ public interface PersonRepository extends JpaRepository<Person, Long>{
     @Transactional
     @Query("UPDATE Person p set p.status = :status where p.rollNumber LIKE %:personId%")
     Integer updateStatusEmployee(@Param("status") String status,
-                             @Param("personId") String personId);
+                                 @Param("personId") String personId);
 
+    @Query(" SELECT p.personId " +
+           " from Person p " +
+           " WHERE p.managerId = :managerId" +
+           " AND (:search IS NULL OR p.fullName LIKE %:search%) ")
+    Page<Long> getListPersonIdByManagerId(@Param("managerId") int managerId,
+                                          @Param("search") String search,
+                                          Pageable pageable);
 
 }

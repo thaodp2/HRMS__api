@@ -9,11 +9,16 @@ import java.util.List;
 
 public interface TimeCheckService {
 
-    ResponseEntity<BaseResponse<TimeCheckResponse.TimeCheckEachPersonResponse, Pageable>> getMyTimeCheck(Long personId, String startDate, String endDate,
-                                                                                                         Integer page, Integer limit) throws Exception;
+    ResponseEntity<BaseResponse<TimeCheckResponse.TimeCheckEachPersonResponse, Pageable>> getMyTimeCheck(Long personId,
+                                                                                                         String startDate,
+                                                                                                         String endDate,
+                                                                                                         Integer page,
+                                                                                                         Integer limit) throws Exception;
 
-    ResponseEntity<BaseResponse<List<TimeCheckResponse.TimeCheckListSubordinateResponse>, Pageable>> getListTimeCheck(String search, String startDate,
-                                                                                                                      String endDate, Integer page,
-                                                                                                                      Integer limit) throws Exception;
+    ResponseEntity<BaseResponse<TimeCheckResponse.TimeCheckEachSubordinateResponse, Pageable>> getListTimeCheck(String search,
+                                                                                                                int managerId,
+                                                                                                                String startDate,
+                                                                                                                String endDate, Integer page,
+                                                                                                                Integer limit) throws Exception;
 
 }
