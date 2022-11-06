@@ -193,7 +193,7 @@ public class RequestServiceImpl implements RequestService {
             }
             else if (requestType == OT_TYPE_ID){
                 OTBudgetDto otBudgetDto = otBudgetRepository.getOTBudgetByPersonId(personId, year, month);
-                requestDto.setTimeRemaining(otBudgetDto.getTimeRemaining());
+                requestDto.setTimeRemaining(otBudgetDto.getOtHoursBudget() - otBudgetDto.getHoursWorked());
                 requestDto.setBudget(otBudgetDto.getOtHoursBudget());
             }
             List<String> listImage = evidenceRepository.getListImageByRequest(id);
@@ -234,8 +234,9 @@ public class RequestServiceImpl implements RequestService {
         Integer isUpdatedSuccess = requestRepository.updateStatusRequest(status, id, approvalDate);
         ResponseEntity<BaseResponse<Void, Void>> responseEntity = null;
         if (isUpdatedSuccess == CommonConstant.UPDATE_SUCCESS) {
-            responseEntity = BaseResponse.ofSucceeded(null);
             updateNumOfDayOffAfterApprovedRequest(id);
+            responseEntity = BaseResponse.ofSucceeded(null);
+
         } else {
             throw new BaseException(ErrorCode.UPDATE_FAIL);
         }
@@ -255,9 +256,6 @@ public class RequestServiceImpl implements RequestService {
                         editRequest.getDeviceTypeId(),
                         editRequest.getReason());
             } else {
-//                if (requestTypeId.intValue() == ANNUAL_LEAVE_TYPE_ID) {
-//
-//                }
                 try {
                     Date createDate = requestRepository.getCreateDateById(id);
                     Date startTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
@@ -340,58 +338,64 @@ public class RequestServiceImpl implements RequestService {
     }
 
     public void updateNumOfDayOffAfterApprovedRequest(Long id) {
-        // Get the year of the request creation time
-        Date createDate = requestRepository.getCreateDateById(id);
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(createDate);
-        Year year = Year.of(calendar.get(Calendar.YEAR));
         // Get request type id
         Integer requestTypeId = requestTypeRepository.getRequestTypeByRequestId(id);
         // Get person id
         Long personId = requestRepository.getPersonIdByRequestId(id);
-
+        // Get start time and end time
         DateDto dateDto = requestRepository.getStartAndEndTimeByRequestId(id);
         Date startTime = dateDto.getStartTime();
         Date endTime = dateDto.getEndTime();
-
+        // get month and year of start time
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(startTime);
+        Year year = Year.of(calendar.get(Calendar.YEAR));
+        int month = calendar.get(Calendar.MONTH) + 1;
         DecimalFormat decimalFormat = new DecimalFormat("#.##");
         // calculate the number of days off
-        long dayOffByMinutesInRequest = ((endTime.getTime() - startTime.getTime()) / (60 * 1000));
-        double dayOffByDaysInRequest = Double.parseDouble(decimalFormat.format(((Double.valueOf(dayOffByMinutesInRequest)) / 60) / 24));
-        if (requestTypeId != BORROW_REQUEST_TYPE_ID) {
-            if (requestTypeId == ANNUAL_LEAVE_TYPE_ID) {
-                updateAnnualLeaveBudget(id, year, dayOffByDaysInRequest, personId);
-            }
-            else if (requestTypeId == OT_TYPE_ID) {
-
-            }
-            else {
-
-            }
+        double dayOffByMinutesInRequest = ((endTime.getTime() - startTime.getTime()) / (60 * 1000));
+        double otHoursInRequest = dayOffByMinutesInRequest / 60;
+        double dayOffByDaysInRequest = Double.parseDouble(decimalFormat.format(((dayOffByMinutesInRequest) / 60) / 24));
+        if (LEAVE_REQUEST_TYPE.contains(requestTypeId)) {
+            updateLeaveBudget(Long.valueOf (requestTypeId),
+                                            personId,
+                                            year,
+                                            dayOffByDaysInRequest
+                                            );
+        }
+        else if (requestTypeId == OT_TYPE_ID) {
+            updateOTBudget(personId, month, year, otHoursInRequest);
         }
     }
 
-    public void updateAnnualLeaveBudget(Long id,
-                                        Year year,
-                                        double numberOfDayOffInRequest,
-                                        Long personId) {
-//        LeaveBudgetDto leaveBudgetDto = leaveBudgetRepository.getAnnualLeaveBudgetByRequestId(id, year);
-//        double numberOfDayOff = numberOfDayOffInRequest + leaveBudgetDto.getNumberOfDayOff();
-//        double remainDayOff = leaveBudgetDto.getLeaveBudget() - numberOfDayOff;
-//        Integer isUpdateSuccess = leaveBudgetRepository.updateAnnualLeaveBudget(personId,
-//                numberOfDayOff,
-//                remainDayOff,
-//                year);
-//        if (isUpdateSuccess == null) {
-//            throw new BaseException(ErrorCode.UPDATE_FAIL);
-//        }
+    public void updateLeaveBudget(Long requestTypeId,
+                                  Long personId,
+                                  Year year,
+                                  double numberOfDayOffInRequest) {
+        LeaveBudgetDto leaveBudgetDto = leaveBudgetRepository.getLeaveBudget(personId, year, requestTypeId);
+        double leaveBudget = leaveBudgetDto.getLeaveBudget();
+        double newNumberOfDayOff = leaveBudgetDto.getNumberOfDayOff() + numberOfDayOffInRequest;
+        double remainDayOff = leaveBudget - newNumberOfDayOff;
+        Integer isUpdateSucceeded = leaveBudgetRepository.updateLeaveBudget(personId,
+                                                                            newNumberOfDayOff,
+                                                                            remainDayOff,
+                                                                            year,
+                                                                            requestTypeId);
+        if (isUpdateSucceeded != CommonConstant.UPDATE_SUCCESS) {
+            throw new BaseException(ErrorCode.UPDATE_FAIL);
+        }
     }
 
-    public void updateOTBudget (Long id,
-                                int month,
-                                int year,
-                                long numberOfDayOffInRequest,
-                                Long personId) {
 
+    public void updateOTBudget (Long personId,
+                                int month,
+                                Year year,
+                                double otHoursInRequest) {
+        OTBudgetDto otBudgetDto = otBudgetRepository.getOTBudgetByPersonId(personId, year, month);
+        double newHoursWorked = otBudgetDto.getHoursWorked() + otHoursInRequest;
+        Integer isUpdateSucceeded = otBudgetRepository.updateOTBudget(personId, year, month, newHoursWorked);
+        if (isUpdateSucceeded != CommonConstant.UPDATE_SUCCESS) {
+            throw new BaseException(ErrorCode.UPDATE_FAIL);
+        }
     }
 }

@@ -28,6 +28,12 @@ public class ErrorCode {
     public static final BusinessCode DELETE_FAIL = new BusinessCode(
             ErrorCodeEnum.DELETE_FAIL.getValue(), "Delete failed", HttpStatus.NOT_FOUND);
 
+    public static final BusinessCode YEAR_INVALID = new BusinessCode(
+            ErrorCodeEnum.YEAR_INVALID.getValue(), "Year can't be null", HttpStatus.NOT_FOUND);
+
+    public static final BusinessCode MONTH_INVALID = new BusinessCode(
+            ErrorCodeEnum.MONTH_INVALID.getValue(), "Month can't be null", HttpStatus.NOT_FOUND);
+
     public static final BusinessCode UPDATE_DEPARTMENT_FAIL = new BusinessCode(
             ErrorCodeEnum.UPDATE_DEPARTMENT_FAIL.getValue(), "DepartmentName already exist", HttpStatus.ALREADY_REPORTED);
 
@@ -41,7 +47,8 @@ public class ErrorCode {
     public static final BusinessCode NOT_FOUND_DEVICE_TYPE = new BusinessCode(
             ErrorCodeEnum.NOT_FOUND_DEVICE_TYPE.getValue(), "Not found device type", HttpStatus.NOT_FOUND);
 
-
+    public static final BusinessCode PERSON_NOT_EXIST = new BusinessCode(
+            ErrorCodeEnum.PERSON_NOT_EXIST.getValue(), "Person not exist!", HttpStatus.NOT_FOUND);
     public static BusinessCode newErrorCode(String message) {
         return new BusinessCode(ErrorCodeEnum.INTERNAL_SERVER_ERROR.getValue(), message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
