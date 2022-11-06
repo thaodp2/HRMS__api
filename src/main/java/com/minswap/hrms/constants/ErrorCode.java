@@ -17,8 +17,15 @@ public class ErrorCode {
     public static final BusinessCode UPDATE_FAIL = new BusinessCode(
             ErrorCodeEnum.UPDATE_FAIL.getValue(), "Update failed", HttpStatus.NOT_FOUND);
 
+    public static final BusinessCode UPDATE_DAY_OFF_FAIL = new BusinessCode(
+            ErrorCodeEnum.UPDATE_DAY_OFF_FAIL.getValue(), "Your remaining days off are not enough", HttpStatus.NOT_ACCEPTABLE);
+
     public static final BusinessCode REQUEST_INVALID = new BusinessCode(
-            ErrorCodeEnum.REQUEST_INVALID.getValue(), "You can't cancel an approved or rejected request ",
+            ErrorCodeEnum.REQUEST_INVALID.getValue(), "You can't cancel an approved or rejected request",
+            HttpStatus.NOT_ACCEPTABLE);
+
+    public static final BusinessCode STATUS_INVALID = new BusinessCode(
+            ErrorCodeEnum.STATUS_INVALID.getValue(), "You can't update status same as current",
             HttpStatus.NOT_ACCEPTABLE);
 
     public static final BusinessCode UPDATE_STATUS_FAIL = new BusinessCode(

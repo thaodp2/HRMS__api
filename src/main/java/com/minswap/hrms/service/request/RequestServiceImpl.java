@@ -69,6 +69,7 @@ public class RequestServiceImpl implements RequestService {
     private static final Set<Integer> LEAVE_REQUEST_TYPE = new HashSet<Integer>(Arrays.asList(1, 3, 6, 8, 10));
     private static final String APPROVED_STATUS = "Approved";
     private static final String REJECTED_STATUS = "Rejected";
+    private static final String PENDING_STATUS = "Pending";
     private static final int BORROW_REQUEST_TYPE_ID = 11;
     private static final Integer OT_TYPE_ID = 7;
     private static final Integer ANNUAL_LEAVE_TYPE_ID = 1;
@@ -217,29 +218,41 @@ public class RequestServiceImpl implements RequestService {
     @Override
     public ResponseEntity<BaseResponse<Void, Void>> updateRequestStatus(String status, Long id) throws ParseException {
         // Check id valid or not
+        boolean isReturnNumOfDayOff = true;
         if (!isRequestIdValid(id)) {
             throw new BaseException(ErrorCode.RESULT_NOT_FOUND);
         }
-        String getStatusById = requestRepository.getStatusOfRequestById(id);
-        // Check status is approved or rejected
-        if (getStatusById.equalsIgnoreCase(APPROVED_STATUS) || getStatusById.equalsIgnoreCase(REJECTED_STATUS)) {
-            throw new BaseException(ErrorCode.UPDATE_STATUS_FAIL);
+        String currentStatus = requestRepository.getStatusOfRequestById(id);
+        if (currentStatus.equalsIgnoreCase(status)) {
+            throw new BaseException(ErrorCode.STATUS_INVALID);
         }
-        // Get approval date
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        LocalDateTime localDateTime = LocalDateTime.now();
-        String approvalDateString = dateTimeFormatter.format(localDateTime);
-        Date approvalDate = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
-                parse(approvalDateString);
-        Integer isUpdatedSuccess = requestRepository.updateStatusRequest(status, id, approvalDate);
+        else if (status.equalsIgnoreCase(PENDING_STATUS)) {
+            Integer isUpdatedSuccess = requestRepository.updateStatusRequest(status, id, null);
+            if (isUpdatedSuccess == CommonConstant.UPDATE_FAIL) {
+                throw new BaseException(ErrorCode.UPDATE_FAIL);
+            }
+        }
+        else {
+            if (status.equalsIgnoreCase(APPROVED_STATUS)) {
+                isReturnNumOfDayOff = false;
+            }
+            else {
+                isReturnNumOfDayOff = true;
+            }
+            // Get approval date
+            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            LocalDateTime localDateTime = LocalDateTime.now();
+            String approvalDateString = dateTimeFormatter.format(localDateTime);
+            Date approvalDate = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
+                    parse(approvalDateString);
+            Integer isUpdatedSuccess = requestRepository.updateStatusRequest(status, id, approvalDate);
+            if (isUpdatedSuccess == CommonConstant.UPDATE_FAIL) {
+                throw new BaseException(ErrorCode.UPDATE_FAIL);
+            }
+        }
+        updateNumOfDayOff(id, isReturnNumOfDayOff);
         ResponseEntity<BaseResponse<Void, Void>> responseEntity = null;
-        if (isUpdatedSuccess == CommonConstant.UPDATE_SUCCESS) {
-            updateNumOfDayOffAfterApprovedRequest(id);
-            responseEntity = BaseResponse.ofSucceeded(null);
-
-        } else {
-            throw new BaseException(ErrorCode.UPDATE_FAIL);
-        }
+        responseEntity = BaseResponse.ofSucceeded(null);
         return responseEntity;
     }
 
@@ -337,7 +350,7 @@ public class RequestServiceImpl implements RequestService {
         }
     }
 
-    public void updateNumOfDayOffAfterApprovedRequest(Long id) {
+    public void updateNumOfDayOff(Long id, boolean isReturnNumOfDayOff) {
         // Get request type id
         Integer requestTypeId = requestTypeRepository.getRequestTypeByRequestId(id);
         // Get person id
@@ -360,22 +373,33 @@ public class RequestServiceImpl implements RequestService {
             updateLeaveBudget(Long.valueOf (requestTypeId),
                                             personId,
                                             year,
-                                            dayOffByDaysInRequest
+                                            dayOffByDaysInRequest,
+                                            isReturnNumOfDayOff
                                             );
         }
         else if (requestTypeId == OT_TYPE_ID) {
-            updateOTBudget(personId, month, year, otHoursInRequest);
+            updateOTBudget(personId, month, year, otHoursInRequest, isReturnNumOfDayOff);
         }
     }
 
     public void updateLeaveBudget(Long requestTypeId,
                                   Long personId,
                                   Year year,
-                                  double numberOfDayOffInRequest) {
+                                  double numberOfDayOffInRequest,
+                                  boolean isReturnNumOfDayOff) {
         LeaveBudgetDto leaveBudgetDto = leaveBudgetRepository.getLeaveBudget(personId, year, requestTypeId);
         double leaveBudget = leaveBudgetDto.getLeaveBudget();
-        double newNumberOfDayOff = leaveBudgetDto.getNumberOfDayOff() + numberOfDayOffInRequest;
+        double newNumberOfDayOff = 0;
+        if (isReturnNumOfDayOff) {
+            newNumberOfDayOff = leaveBudgetDto.getNumberOfDayOff() - numberOfDayOffInRequest;
+        }
+        else {
+            newNumberOfDayOff = leaveBudgetDto.getNumberOfDayOff() + numberOfDayOffInRequest;
+        }
         double remainDayOff = leaveBudget - newNumberOfDayOff;
+        if (remainDayOff < 0) {
+            throw new BaseException(ErrorCode.UPDATE_DAY_OFF_FAIL);
+        }
         Integer isUpdateSucceeded = leaveBudgetRepository.updateLeaveBudget(personId,
                                                                             newNumberOfDayOff,
                                                                             remainDayOff,
@@ -390,9 +414,20 @@ public class RequestServiceImpl implements RequestService {
     public void updateOTBudget (Long personId,
                                 int month,
                                 Year year,
-                                double otHoursInRequest) {
+                                double otHoursInRequest,
+                                boolean isReturnNumOfDayOff) {
         OTBudgetDto otBudgetDto = otBudgetRepository.getOTBudgetByPersonId(personId, year, month);
-        double newHoursWorked = otBudgetDto.getHoursWorked() + otHoursInRequest;
+        double newHoursWorked = 0;
+        if(isReturnNumOfDayOff) {
+            newHoursWorked = otBudgetDto.getHoursWorked() - otHoursInRequest;
+        }
+        else {
+            newHoursWorked = otBudgetDto.getHoursWorked() + otHoursInRequest;
+        }
+        double remainHoursWork = otBudgetDto.getOtHoursBudget() - newHoursWorked;
+        if (remainHoursWork < 0) {
+            throw new BaseException(ErrorCode.UPDATE_DAY_OFF_FAIL);
+        }
         Integer isUpdateSucceeded = otBudgetRepository.updateOTBudget(personId, year, month, newHoursWorked);
         if (isUpdateSucceeded != CommonConstant.UPDATE_SUCCESS) {
             throw new BaseException(ErrorCode.UPDATE_FAIL);
