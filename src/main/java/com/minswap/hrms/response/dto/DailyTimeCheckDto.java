@@ -1,19 +1,19 @@
 package com.minswap.hrms.response.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.Date;
 
 @Data
+@AllArgsConstructor
 public class DailyTimeCheckDto {
 
-    private Long personId;
+    private Date timeIn;
 
-    private String personName;
+    private Date timeOut;
 
-    private Date date;
+    private Double inLate;
 
-    private String timeIn;
-
-    private String timeOut;
+    private Double outEarly;
 }

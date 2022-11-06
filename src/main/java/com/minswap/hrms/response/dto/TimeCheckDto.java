@@ -11,6 +11,7 @@ import java.util.Date;
 @AllArgsConstructor
 public class TimeCheckDto {
 
+    private Long id;
 
     private Long personId;
 

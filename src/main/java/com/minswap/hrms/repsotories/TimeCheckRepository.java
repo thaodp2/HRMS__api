@@ -1,6 +1,7 @@
 package com.minswap.hrms.repsotories;
 
 import com.minswap.hrms.entities.TimeCheck;
+import com.minswap.hrms.response.dto.DailyTimeCheckDto;
 import com.minswap.hrms.response.dto.TimeCheckDto;
 import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.domain.Page;
@@ -16,6 +17,7 @@ import java.util.Date;
 public interface TimeCheckRepository extends JpaRepository<TimeCheck, Long> {
 
     @Query("SELECT new com.minswap.hrms.response.dto.TimeCheckDto( " +
+            " tc.personId as id,  " +
             " tc.personId ,  " +
             " p.fullName as personName,  " +
             " tc.timeIn as date, " +
@@ -38,7 +40,17 @@ public interface TimeCheckRepository extends JpaRepository<TimeCheck, Long> {
                                           @Param("toDate") Date toDate,
                                           Pageable pageable);
 
+    @Query(value = " SELECT rt.request_type_name " +
+            "FROM request r " +
+            "join request_type rt on r.request_type_id  = rt.request_type_id " +
+            "WHERE r.person_id = :personId " +
+            "AND r.request_type_id NOT IN (7,11)" +
+            "AND date(:absentDate) BETWEEN date(r.start_time) and date(r.end_time) " +
+            "AND r.status LIKE 'Approved' LIMIT  1", nativeQuery = true)
+    String getMissTimeCheckReason(@Param("personId") Long personId,
+                                  @Param("absentDate") Date absentDate);
     @Query("SELECT new com.minswap.hrms.response.dto.TimeCheckDto( " +
+            " tc.personId as id,  " +
             " tc.personId as personId,  " +
             " p.fullName as personName,  " +
             " tc.timeIn as date, " +
@@ -61,4 +73,15 @@ public interface TimeCheckRepository extends JpaRepository<TimeCheck, Long> {
                                         @Param("fromDate") Date fromDate,
                                         @Param("toDate") Date toDate,
                                         Pageable pageable);
+    @Query(" SELECT new com.minswap.hrms.response.dto.DailyTimeCheckDto(" +
+           " tc.timeIn , " +
+           " tc.timeOut , " +
+           " tc.inLate , " +
+           " tc.outEarly) " +
+           " FROM TimeCheck tc " +
+           " join Person p on p.personId = tc.personId " +
+           " WHERE p.personId = :personId" +
+           " and date(tc.timeIn) = date(:dateTime)")
+    DailyTimeCheckDto getDailyTimeCheck(@Param("personId") Long personId,
+                                        @Param("dateTime") Date dateTime);
 }
