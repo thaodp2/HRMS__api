@@ -1,12 +1,14 @@
-FROM maven:alpine as builder
-ADD /home/ec2-user/.m2/ /root/.m2
+FROM maven:3.5-jdk-8-alpine as builder
 ENV HOME=/app
 RUN mkdir -p $HOME
+RUN mkdir -p /root/.m2 \
+    mkdir -p /root/.m2/repository
+ADD settings.xml /root/.m2
 WORKDIR $HOME
 ADD pom.xml $HOME
 RUN mvn verify --fail-never
 ADD . $HOME
-RUN mvn clean package
+RUN mvn -X clean package
 
 FROM openjdk:8-jre-alpine as runner
 
