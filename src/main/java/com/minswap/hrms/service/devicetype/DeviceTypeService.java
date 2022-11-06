@@ -2,8 +2,11 @@ package com.minswap.hrms.service.devicetype;
 
 import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.response.DeviceTypeResponse;
+import com.minswap.hrms.response.dto.MasterDataDto;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+
+import java.util.List;
 
 public interface DeviceTypeService {
     ResponseEntity<BaseResponse<DeviceTypeResponse, Pageable>> getAllDeviceType (Integer page,
@@ -14,4 +17,6 @@ public interface DeviceTypeService {
     ResponseEntity<BaseResponse<Void, Void>> editDeviceType (Long id,
                                                              String deviceTypeName);
     ResponseEntity<BaseResponse<Void, Void>> deleteDeviceType (Long id);
+
+    ResponseEntity<BaseResponse<List<MasterDataDto>, Pageable>> getMasterDataDeviceType ();
 }
