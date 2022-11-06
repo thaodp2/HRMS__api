@@ -1,10 +1,14 @@
 FROM maven:3.5-jdk-8-alpine as builder
-
-COPY . /app
-
-WORKDIR /app
-
-RUN mvn -f /app/pom.xml clean package
+ENV HOME=/app
+RUN mkdir -p $HOME
+RUN mkdir -p /root/.m2 \
+    mkdir -p /root/.m2/repository
+ADD settings.xml /root/.m2
+WORKDIR $HOME
+ADD pom.xml $HOME
+RUN mvn verify --fail-never
+ADD . $HOME
+RUN mvn -X clean package
 
 FROM openjdk:8-jre-alpine as runner
 
