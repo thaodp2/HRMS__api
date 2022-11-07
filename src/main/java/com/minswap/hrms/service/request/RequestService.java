@@ -10,9 +10,9 @@ import java.text.ParseException;
 
 
 public interface RequestService {
-    ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getAllRequest(Integer page, Integer limit, Boolean isSearch, String createDateFrom, String createDateTo, Long requestTypeId) throws ParseException;
-    ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getSubordinateRequest(Long managerId, Integer page, Integer limit, Boolean isSearch, String createDateFrom, String createDateTo, Long requestTypeId) throws ParseException;
-    ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getMyRequest(Long personId, Integer page, Integer limit, Boolean isSearch, String createDateFrom, String createDateTo, Long requestTypeId) throws ParseException;
+    ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getAllRequest(Integer page, Integer limit, String createDateFrom, String createDateTo, Long requestTypeId, String status, String sort, String dir);
+    ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getSubordinateRequest(Long managerId, Integer page, Integer limit, String createDateFrom, String createDateTo, Long requestTypeId, String status, String sort, String dir);
+    ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getMyRequest(Long personId, Integer page, Integer limit, String createDateFrom, String createDateTo, Long requestTypeId, String status, String sort, String dir);
 
     ResponseEntity<BaseResponse<RequestResponse, Void>> getEmployeeRequestDetail (Long id);
 

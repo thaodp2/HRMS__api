@@ -2,6 +2,7 @@ package com.minswap.hrms.controller;
 
 import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.response.DeviceTypeResponse;
+import com.minswap.hrms.response.MasterDataResponse;
 import com.minswap.hrms.response.dto.MasterDataDto;
 import com.minswap.hrms.service.devicetype.DeviceTypeService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +20,7 @@ public class DeviceTypeController {
     DeviceTypeService deviceTypeService;
 
     @GetMapping("/device-type-master-data")
-    public ResponseEntity<BaseResponse<List<MasterDataDto>, Pageable>> getMasterDataDeviceType() {
+    public ResponseEntity<BaseResponse<MasterDataResponse, Pageable>> getMasterDataDeviceType() {
         return deviceTypeService.getMasterDataDeviceType();
     }
 }
