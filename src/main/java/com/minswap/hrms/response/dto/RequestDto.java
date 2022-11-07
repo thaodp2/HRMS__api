@@ -1,6 +1,7 @@
 package com.minswap.hrms.response.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.minswap.hrms.constants.CommonConstant;
@@ -20,6 +21,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @JsonPropertyOrder("id")
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class RequestDto {
     public RequestDto(Long requestId, String personName, String requestTypeName, Date createDate, Date startTime,
                       Date endTime, String reason, String status, String receiver, String deviceTypeName, Date approvalDate) {
@@ -38,6 +40,8 @@ public class RequestDto {
 
     @JsonProperty("id")
     private Long requestId;
+
+    private String rollNumber;
     private String personName;
     private String requestTypeName;
     @JsonFormat(pattern = CommonConstant.YYYY_MM_DD_HH_MM_SS, shape = JsonFormat.Shape.STRING)

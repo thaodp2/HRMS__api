@@ -27,13 +27,12 @@ public class ManagerRequestController {
             @RequestParam @Min(0) Integer limit,
             @RequestParam (required = false) @Pattern(regexp = "[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1]) (2[0-3]|[01][0-9]):[0-5][0-9]:[0-5][0-9]", message = "Invalid createDateFrom") String createDateFrom,
             @RequestParam (required = false) @Pattern(regexp = "[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1]) (2[0-3]|[01][0-9]):[0-5][0-9]:[0-5][0-9]", message = "Invalid createDateTo") String createDateTo,
-            @RequestParam (required = false) Long requestTypeId) throws ParseException {
+            @RequestParam (required = false) Long requestTypeId,
+            @RequestParam (required = false) String status,
+            @RequestParam (required = false) String sort,
+            @RequestParam (required = false) String dir) throws ParseException {
         Long managerId = Long.valueOf(5);
-        if(createDateFrom == null && createDateTo == null && requestTypeId == null){
-            return requestService.getSubordinateRequest(managerId,page,limit,false,createDateFrom,createDateTo,requestTypeId);
-        }else {
-            return requestService.getSubordinateRequest(managerId,page,limit,true,createDateFrom,createDateTo,requestTypeId);
-        }
+            return requestService.getSubordinateRequest(managerId,page,limit,createDateFrom,createDateTo,requestTypeId, status, sort, dir);
     }
 
 
