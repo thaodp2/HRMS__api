@@ -131,7 +131,7 @@ public class TimeCheckServiceImpl implements TimeCheckService{
 
     @Override
     public ResponseEntity<BaseResponse<TimeCheckResponse.TimeCheckEachSubordinateResponse, Pageable>> getListTimeCheck(
-            String search, int managerId, String startDate, String endDate, Integer page, Integer limit) throws Exception {
+            String search, Long managerId, String startDate, String endDate, Integer page, Integer limit) throws Exception {
 
         ResponseEntity<BaseResponse<TimeCheckResponse.TimeCheckEachSubordinateResponse, Pageable>> responseEntity = null;
         try {
@@ -155,32 +155,27 @@ public class TimeCheckServiceImpl implements TimeCheckService{
                 eachSubordinateDto.setRollNumber(personFromDB.get().getRollNumber());
                 int dateCount = 2;
                 for (Date item : listDate){
+                    DailyTimeCheckDto timeCheckDto = timeCheckRepository.getDailyTimeCheck(personId,item);
+
                     if(dateCount == 2){
-                        DailyTimeCheckDto timeCheckDto = timeCheckRepository.getDailyTimeCheck(personId,item);
                         eachSubordinateDto.setMon(timeCheckDto);
                     }
                     if(dateCount == 3){
-                        DailyTimeCheckDto timeCheckDto = timeCheckRepository.getDailyTimeCheck(personId,item);
                         eachSubordinateDto.setTue(timeCheckDto);
                     }
                     if(dateCount == 4){
-                        DailyTimeCheckDto timeCheckDto = timeCheckRepository.getDailyTimeCheck(personId,item);
                         eachSubordinateDto.setWed(timeCheckDto);
                     }
                     if(dateCount == 5){
-                        DailyTimeCheckDto timeCheckDto = timeCheckRepository.getDailyTimeCheck(personId,item);
                         eachSubordinateDto.setThu(timeCheckDto);
                     }
                     if(dateCount == 6){
-                        DailyTimeCheckDto timeCheckDto = timeCheckRepository.getDailyTimeCheck(personId,item);
                         eachSubordinateDto.setFri(timeCheckDto);
                     }
                     if(dateCount == 7){
-                        DailyTimeCheckDto timeCheckDto = timeCheckRepository.getDailyTimeCheck(personId,item);
                         eachSubordinateDto.setSat(timeCheckDto);
                     }
                     if(dateCount == 8){
-                        DailyTimeCheckDto timeCheckDto = timeCheckRepository.getDailyTimeCheck(personId,item);
                         eachSubordinateDto.setSun(timeCheckDto);
                     }
                     dateCount++;

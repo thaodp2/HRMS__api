@@ -103,7 +103,7 @@ public interface PersonRepository extends JpaRepository<Person, Long>{
            " from Person p " +
            " WHERE p.managerId = :managerId" +
            " AND (:search IS NULL OR p.fullName LIKE %:search%) ")
-    Page<Long> getListPersonIdByManagerId(@Param("managerId") int managerId,
+    Page<Long> getListPersonIdByManagerId(@Param("managerId") Long managerId,
                                           @Param("search") String search,
                                           Pageable pageable);
 
