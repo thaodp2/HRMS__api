@@ -38,13 +38,13 @@ public class EmployeeDetailDto {
     private String email;
 
     @JsonProperty("departmenId")
-    private int departmenId;
+    private Long departmenId;
 
     @JsonProperty("positionId")
-    private int positionId;
+    private Long positionId;
 
     @JsonProperty("rankId")
-    private int rankId;
+    private Long rankId;
 
     @JsonProperty("onBoardDate")
     private String onBoardDate;
@@ -56,7 +56,7 @@ public class EmployeeDetailDto {
     private String role;
 
     @JsonProperty("managerId")
-    private int managerId;
+    private Long managerId;
     
     public int getStatus() {
     	return status == null ? 0 : Integer.parseInt(status);
