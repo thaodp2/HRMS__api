@@ -5,6 +5,7 @@ import com.minswap.hrms.exception.annotation.ServiceProcessingValidateAnnotation
 import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.repsotories.DeviceTypeRepository;
 import com.minswap.hrms.request.ChangeStatusEmployeeRequest;
+import com.minswap.hrms.request.EmployeeRequest;
 import com.minswap.hrms.response.EmployeeInfoResponse;
 import com.minswap.hrms.service.EmployeeHRService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,8 +57,11 @@ public class HRPersonController {
   }
 
   @PostMapping("/employee")
-  public ResponseEntity<BaseResponse<Void, Void>> createEmployee() {
-    return null;
+  @ServiceProcessingValidateAnnotation
+  public ResponseEntity<BaseResponse<Void, Void>> createEmployee(
+		  @RequestBody @Valid EmployeeRequest employeeRequest , 
+		  BindingResult bindingResult) {
+    return employeeHRService.createEmployee(employeeRequest);
   }
 
 //  @GetMapping("/employee/export")
