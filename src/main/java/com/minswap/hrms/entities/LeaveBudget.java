@@ -20,6 +20,15 @@ public class LeaveBudget {
 
     public static final String TABLE_NAME = "leave_budget";
 
+    public LeaveBudget(Long personId, double leaveBudget, double numberOfDayOff, double remainDayOff, Year year, Long requestTypeId) {
+        this.personId = personId;
+        this.leaveBudget = leaveBudget;
+        this.numberOfDayOff = numberOfDayOff;
+        this.remainDayOff = remainDayOff;
+        this.year = year;
+        this.requestTypeId = requestTypeId;
+    }
+
     @Id
     @Column(name = "leave_budget_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
