@@ -1,5 +1,6 @@
 package com.minswap.hrms.request;
 
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -16,7 +17,8 @@ import lombok.Setter;
 public class ChangeStatusEmployeeRequest extends BasicRequest{
 
    @JsonProperty("isActive")
-   //@NotNull(message = "608")
+   @NotNull(message = "608")
+   @NotEmpty(message = "608")
    private String active;
 
 }

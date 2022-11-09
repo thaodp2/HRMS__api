@@ -23,16 +23,7 @@ public interface PersonRepository extends JpaRepository<Person, Long>{
 
     Optional<Person> findPersonByPersonId(Long id);
     Optional<Person> findPersonByRollNumberEquals(String rollNumber);
-    @Query("select new com.minswap.hrms.response.dto.EmployeeListDto(" +
-            "  p.personId as personId, p.fullName as fullName,p.email as email,d.departmentName as departmentName,p.rollNumber as rollNumber," +
-            "  p.status as active, p2.positionName as positionName )" +
-            "  FROM Person p " +
-            "  LEFT JOIN Department d on " +
-            "    p.departmentId = d.departmentId " +
-            "    LEFT JOIN Position p2 ON " +
-            "    p.positionId = p2.positionId  " +
-            "     where  1 = 1 ")
-    Page<EmployeeListDto> getListPerson(Pagination pageable);
+
     @Value("a")
     default String getListPersonQuery() {
         StringBuilder queryBuilder = new StringBuilder();

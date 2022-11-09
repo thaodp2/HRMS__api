@@ -1,5 +1,7 @@
 package com.minswap.hrms.response.dto;
 
+import java.util.Date;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
@@ -17,7 +19,7 @@ public class EmployeeDetailDto {
     private String fullName;
 
     @JsonProperty("dateOfBirth")
-    private String dateOfBirth;
+    private Date dateOfBirth;
 
     @JsonProperty("gender")
     private int gender;
@@ -47,7 +49,7 @@ public class EmployeeDetailDto {
     private Long rankId;
 
     @JsonProperty("onBoardDate")
-    private String onBoardDate;
+    private Date onBoardDate;
 
     @JsonProperty("isActive")
     private String status;

@@ -2,6 +2,7 @@ package com.minswap.hrms.request;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -14,55 +15,54 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class EmployeeRequest {
+public class EmployeeRequest extends BasicRequest{
 	@JsonProperty("fullName")
 	@NotNull(message ="600")
 	@NotEmpty(message = "600")
+//	@Pattern(regexp = "^[a-zA-Z0-9 ]{3,20}$", message = "600")
 	private String fullName;
 	
 	@JsonProperty("dateOfBirth")
 	@NotNull(message ="601")
 	@NotEmpty(message = "601")
+//	@Pattern(regexp = "((0[1-9]|[12]\\d|3[01])-(0[1-9]|1[0-2])-[12]\\d{3})", message = "601")
 	private String dateOfBirth;
 	
 	@JsonProperty("managerId")
-	@NotNull(message ="603")
-	@NotEmpty(message = "603")
-	private String managerId;
+	@NotNull(message ="602")
+	private Long managerId;
 	
 	@JsonProperty("departmentId")
-	@NotNull(message ="604")
-	@NotEmpty(message = "604")
-	private String departmentId;
+	@NotNull(message ="603")
+	private Long departmentId;
 	
 	@JsonProperty("positionId")
-	@NotNull(message ="60")
-	@NotEmpty(message = "")
-	private String positionId;
+	@NotNull(message ="604")
+	private Long positionId;
 	
 	@JsonProperty("rankId")
-	@NotNull(message ="")
-	@NotEmpty(message = "")
-	private String rankId;
+	@NotNull(message ="605")
+	private Long rankId;
 	
 	@JsonProperty("onBoardDate")
-	@NotNull(message ="")
-	@NotEmpty(message = "")
+	@NotNull(message ="606")
+	@NotEmpty(message = "606")
+//	@Pattern(regexp = "((0[1-9]|[12]\\d|3[01])-(0[1-9]|1[0-2])-[12]\\d{3})", message = "601")
 	private String onBoardDate;
 	
 	@JsonProperty("citizenIdentification")
-	@NotNull(message ="")
-	@NotEmpty(message = "")
+	@NotNull(message ="607")
+	@NotEmpty(message = "607")
 	private String citizenIdentification;
 	
 	@JsonProperty("phoneNumber")
+	@Pattern(regexp = "^(0?)(3[2-9]|5[6|8|9]|7[0|6-9]|8[0-6|8|9]|9[0-4|6-9])[0-9]{7}$", message = "609")
 	private String phoneNumber;
 	
 	@JsonProperty("address")
 	private String address;
 	
 	@JsonProperty("gender")
-	@NotNull(message ="")
-	@NotEmpty(message = "")
+	@NotNull(message ="610")
 	private int gender;
 }
