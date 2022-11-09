@@ -16,7 +16,7 @@ public interface TimeCheckService {
                                                                                                          Integer limit) throws Exception;
 
     ResponseEntity<BaseResponse<TimeCheckResponse.TimeCheckEachSubordinateResponse, Pageable>> getListTimeCheck(String search,
-                                                                                                                int managerId,
+                                                                                                                Long managerId,
                                                                                                                 String startDate,
                                                                                                                 String endDate, Integer page,
                                                                                                                 Integer limit) throws Exception;
