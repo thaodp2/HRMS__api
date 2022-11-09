@@ -18,29 +18,29 @@ import java.util.List;
 @Repository
 public interface RequestRepository extends JpaRepository<Request, Long> {
 
-    @Query(" SELECT new com.minswap.hrms.response.dto.RequestDto(" +
-            " r.requestId as requestId, p.fullName as sender, rt.requestTypeName as requestTypeName, r.createDate as createDate, " +
-            " r.startTime as startTime, r.endTime as endTime, r.reason as reason, r.status as status, p2.fullName as receiver," +
-            " dt.deviceTypeName as deviceTypeName, r.approvalDate as approvalDate) " +
-            " from Request r " +
-            " left join RequestType rt on " +
-            " r.requestTypeId = rt.requestTypeId " +
-            " left join Person p on " +
-            " p.personId = r.personId " +
-            " left join Person p2 on " +
-            " p2.personId = p.managerId " +
-            " left join DeviceType dt on " +
-            " r.deviceTypeId = dt.deviceTypeId " +
-            " WHERE p.personId =:personId " +
-            " AND r.createDate BETWEEN :fromDate and :toDate ")
-    Page<RequestDto> getListRequestBySearch(@Param("personId") Long personId,
-                                            @Param("fromDate") Date fromDate,
-                                            @Param("toDate") Date toDate,
-                                            Pageable pageable);
+//    @Query(" SELECT new com.minswap.hrms.response.dto.RequestDto(" +
+//            " r.requestId as requestId, p.fullName as sender, rt.requestTypeName as requestTypeName, r.createDate as createDate, " +
+//            " r.startTime as startTime, r.endTime as endTime, r.reason as reason, r.status as status, p2.fullName as receiver," +
+//            " dt.deviceTypeName as deviceTypeName, r.approvalDate as approvalDate) " +
+//            " from Request r " +
+//            " left join RequestType rt on " +
+//            " r.requestTypeId = rt.requestTypeId " +
+//            " left join Person p on " +
+//            " p.personId = r.personId " +
+//            " left join Person p2 on " +
+//            " p2.personId = p.managerId " +
+//            " left join DeviceType dt on " +
+//            " r.deviceTypeId = dt.deviceTypeId " +
+//            " WHERE p.personId =:personId " +
+//            " AND r.createDate BETWEEN :fromDate and :toDate ")
+//    Page<RequestDto> getListRequestBySearch(@Param("personId") Long personId,
+//                                            @Param("fromDate") Date fromDate,
+//                                            @Param("toDate") Date toDate,
+//                                            Pageable pageable);
     @Query("select new com.minswap.hrms.response.dto.RequestDto(" +
-            "r.requestId as requestId, p.fullName as personName, rt.requestTypeName as requestTypeName, r.createDate as createDate, " +
+            "r.requestId as requestId, p.fullName as personName,rt.requestTypeId as requestTypeId, rt.requestTypeName as requestTypeName, r.createDate as createDate, " +
             "r.startTime as startTime, r.endTime as endTime, " +
-            "r.reason as reason, r.status as status, p2.fullName as receiver, dt.deviceTypeName as deviceTypeName, r.approvalDate as approvalDate) " +
+            "r.reason as reason, r.status as status, p2.fullName as receiver, dt.deviceTypeId as deviceTypeId, r.approvalDate as approvalDate) " +
             "from Request r " +
             "left join RequestType rt on " +
             "r.requestTypeId = rt.requestTypeId " +

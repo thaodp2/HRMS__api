@@ -70,6 +70,9 @@ public class RequestServiceImpl implements RequestService {
     private static final String APPROVED_STATUS = "Approved";
     private static final String REJECTED_STATUS = "Rejected";
     private static final String PENDING_STATUS = "Pending";
+    private static final String LEAVE_TYPE = "leave";
+    private static final String OT_TYPE = "ot";
+    private static final String DEVICE_TYPE = "device";
     private static final int BORROW_REQUEST_TYPE_ID = 11;
     private static final Integer OT_TYPE_ID = 7;
     private static final Integer ANNUAL_LEAVE_TYPE_ID = 1;
@@ -190,12 +193,15 @@ public class RequestServiceImpl implements RequestService {
             if (LEAVE_REQUEST_TYPE.contains(requestType)) {
                 LeaveBudgetDto leaveBudgetDto = leaveBudgetRepository.getLeaveBudget(personId, year, Long.valueOf(requestType));
                 requestDto.setTimeRemaining(leaveBudgetDto.getRemainDayOff());
-                requestDto.setBudget(leaveBudgetDto.getLeaveBudget());
+                requestDto.setRequestTypeName(LEAVE_TYPE);
             }
             else if (requestType == OT_TYPE_ID){
                 OTBudgetDto otBudgetDto = otBudgetRepository.getOTBudgetByPersonId(personId, year, month);
                 requestDto.setTimeRemaining(otBudgetDto.getOtHoursBudget() - otBudgetDto.getHoursWorked());
-                requestDto.setBudget(otBudgetDto.getOtHoursBudget());
+                requestDto.setRequestTypeName(OT_TYPE);
+            }
+            else {
+                requestDto.setRequestTypeName(DEVICE_TYPE);
             }
             List<String> listImage = evidenceRepository.getListImageByRequest(id);
             requestDto.setListEvidence(listImage);
