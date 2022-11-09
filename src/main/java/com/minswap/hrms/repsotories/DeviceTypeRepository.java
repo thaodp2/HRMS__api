@@ -17,7 +17,6 @@ public interface DeviceTypeRepository extends JpaRepository<DeviceType,Long> {
 
     List<DeviceType> findByDeviceTypeNameContainsIgnoreCase(String deviceTypeName);
     List<DeviceType> findByDeviceTypeNameContainsIgnoreCase(String deviceTypeName, Pageable pageable);
-
     List<DeviceType> findByDeviceTypeNameIgnoreCase(String deviceTypeName);
 
 }

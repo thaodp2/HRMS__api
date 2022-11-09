@@ -24,6 +24,11 @@ public class Person {
 
 	public static final String TABLE_NAME = "person";
 
+	public Person(Long personId, String fullName) {
+		this.personId = personId;
+		this.fullName = fullName;
+	}
+
 	@Id
 	@Column(name = "person_id")
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

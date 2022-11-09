@@ -141,16 +141,16 @@ public class LeaveBudgetServiceImpl implements LeaveBudgetService {
 
     @Override
     public void updateLeaveBudgetEachMonth() {
-        DecimalFormat df = new DecimalFormat("#.##");
-        List<Person> personList = personRepository.findAll();
-        LOGGER.info(personList.size() + "");
-        for (Person person : personList) {
-            Double increaseLeaveBudget = Double.valueOf(df.format(person.getAnnualLeaveBudget()/12));
-            LeaveBudget preLeaveBudget = leaveBudgetRepository.findByPersonIdAndYearAndRequestTypeId(person.getPersonId(), Year.now(), CommonConstant.REQUEST_TYPE_ID_OF_ANNUAL_LEAVE);
-            preLeaveBudget.setLeaveBudget(preLeaveBudget.getLeaveBudget() + increaseLeaveBudget);
-            leaveBudgetRepository.save(preLeaveBudget);
-            LOGGER.info("Send email to producers to inform quantity sold items");
-        }
+//        DecimalFormat df = new DecimalFormat("#.##");
+//        List<Person> personList = personRepository.findAll();
+//        LOGGER.info(personList.size() + "");
+//        for (Person person : personList) {
+//            Double increaseLeaveBudget = Double.valueOf(df.format(person.getAnnualLeaveBudget()/12));
+//            LeaveBudget preLeaveBudget = leaveBudgetRepository.findByPersonIdAndYearAndRequestTypeId(person.getPersonId(), Year.now(), CommonConstant.REQUEST_TYPE_ID_OF_ANNUAL_LEAVE);
+//            preLeaveBudget.setLeaveBudget(preLeaveBudget.getLeaveBudget() + increaseLeaveBudget);
+//            leaveBudgetRepository.save(preLeaveBudget);
+//            LOGGER.info("Send email to producers to inform quantity sold items");
+//        }
     }
 
 }
