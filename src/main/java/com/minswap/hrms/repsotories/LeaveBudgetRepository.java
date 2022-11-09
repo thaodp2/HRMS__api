@@ -1,5 +1,6 @@
 package com.minswap.hrms.repsotories;
 
+import com.minswap.hrms.entities.DeviceType;
 import com.minswap.hrms.entities.LeaveBudget;
 import com.minswap.hrms.response.dto.LeaveBudgetDto;
 import io.lettuce.core.dynamic.annotation.Param;
@@ -10,9 +11,12 @@ import org.springframework.stereotype.Repository;
 
 import javax.transaction.Transactional;
 import java.time.Year;
+import java.util.List;
 
 @Repository
 public interface LeaveBudgetRepository extends JpaRepository<LeaveBudget, Long> {
+
+    LeaveBudget findByPersonIdAndYearAndRequestTypeId(Long personId, Year year, Long requestTypeId);
 
     @Query("SELECT new com.minswap.hrms.response.dto.LeaveBudgetDto(lb.leaveBudget, lb.numberOfDayOff, lb.remainDayOff) " +
             "from LeaveBudget lb " +

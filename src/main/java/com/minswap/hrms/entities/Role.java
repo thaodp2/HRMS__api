@@ -1,6 +1,7 @@
 package com.minswap.hrms.entities;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -11,19 +12,18 @@ import javax.persistence.*;
 @Getter
 @Setter
 @NoArgsConstructor
-@Table(name = Position.TABLE_NAME)
-public class Position {
-    public static final String TABLE_NAME = "position";
+@AllArgsConstructor
+@Table(name = Role.TABLE_NAME)
+public class Role {
+    public static final String TABLE_NAME = "role";
 
     @Id
-    @Column(name = "position_id")
+    @Column(name = "role_id")
     @JsonProperty("id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long positionId;
+    private Long roleId;
 
-    @Column(name = "position_name")
-    private String positionName;
+    @Column(name = "role_name")
+    private String roleName;
 
-    @Column(name = "department_id")
-    private Long departmentId;
 }
