@@ -2,6 +2,8 @@ package com.minswap.hrms.entities;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
@@ -10,7 +12,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
+import java.util.Date;
 @Entity
 @Getter
 @Setter
@@ -24,6 +26,7 @@ public class Person {
 
 	@Id
 	@Column(name = "person_id")
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long personId;
 
 	@Column(name = "full_name")
@@ -42,25 +45,25 @@ public class Person {
 	private String email;
 
 	@Column(name = "on_board_date")
-	private String onBoardDate;
+	private Date onBoardDate;
 
 	@Column(name = "rank_id")
-	private String rankId;
+	private Long rankId;
 
 	@Column(name = "department_id")
-	private String departmentId;
+	private Long departmentId;
 
 	@Column(name = "manager_id")
 	private Long managerId;
 
 	@Column(name = "gender")
-	private String gender;
+	private int gender;
 
 	@Column(name = "roll_number")
 	private String rollNumber;
 
 	@Column(name = "date_of_birth")
-	private String dateOfBirth;
+	private Date dateOfBirth;
 
 	@Column(name = "status")
 	private String status;

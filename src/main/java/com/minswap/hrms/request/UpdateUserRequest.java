@@ -37,7 +37,7 @@ public class UpdateUserRequest {
     private Integer managerId;
 
     @JsonProperty("gender")
-    private String gender;
+    private int gender;
 
     @JsonProperty("rollNumber")
     private String rollNumber;
@@ -48,7 +48,7 @@ public class UpdateUserRequest {
     @JsonProperty("status")
     private String status;
 
-    public UpdateUserRequest(Long personId, String fullName, String address, String citizenIdentification, String phoneNumber, String email, String onBoardDate, String rankId, String departmentId, Integer managerId, String gender, String rollNumber, String dateOfBirth, String status) {
+    public UpdateUserRequest(Long personId, String fullName, String address, String citizenIdentification, String phoneNumber, String email, String onBoardDate, String rankId, String departmentId, Integer managerId, int gender, String rollNumber, String dateOfBirth, String status) {
         this.personId = personId;
         this.fullName = fullName;
         this.address = address;

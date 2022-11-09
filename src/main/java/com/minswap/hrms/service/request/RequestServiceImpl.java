@@ -75,24 +75,22 @@ public class RequestServiceImpl implements RequestService {
     private static final String DEVICE_TYPE = "device";
     private static final int BORROW_REQUEST_TYPE_ID = 11;
     private static final Integer OT_TYPE_ID = 7;
+
     private static final Integer ANNUAL_LEAVE_TYPE_ID = 1;
 
-    //Session session;
-
-    public List<RequestDto> getQueryForRequestList(String type, Long managerId, Long personId, Boolean isLimit, Integer limit, Integer page, Boolean isSearch, String createDateFrom, String createDateTo, Long requestTypeId) throws ParseException {
+    public List<RequestDto> getQueryForRequestList(String type, Long managerId, Long personId, Boolean isLimit, Integer limit, Integer page, String createDateFrom, String createDateTo, Long requestTypeId, String status, String sort, String dir) {
         HashMap<String, Object> params = new HashMap<>();
-        StringBuilder queryAllRequest = new StringBuilder("select r.request_id as requestId, p.full_name as personName, rt.request_type_name as requestTypeName, r.create_date as createDate, r.start_time as startTime, r.end_time as endTime, r.reason as reason, r.status as status, p2.full_name as receiver, dt.device_type as deviceTypeName, r.approval_date as approvalDate ");
+        StringBuilder queryAllRequest = new StringBuilder("select r.request_id as requestId,p.roll_number as rollNumber, p.full_name as personName, rt.request_type_name as requestTypeName, r.create_date as createDate, r.start_time as startTime, r.end_time as endTime, r.reason as reason, r.status as status, p2.full_name as receiver, r.approval_date as approvalDate ");
         queryAllRequest.append("from request r " +
                 "left join request_type rt on " +
                 "r.request_type_id = rt.request_type_id " +
                 "left join person p on " +
                 "r.person_id = p.person_id " +
                 "left join person p2 on " +
-                "r.person_id = p2.manager_id " +
-                "left join device_type dt on " +
-                "r.device_type_id = dt.device_type_id ");
+                "r.person_id = p2.manager_id ");
         StringBuilder whereBuild = new StringBuilder("WHERE 1=1 ");
-        if (isSearch) {
+        //search
+        if (!(createDateFrom == null && createDateTo == null && requestTypeId == null && status == null)) {
             if (createDateFrom != null && createDateTo == null) {
                 whereBuild.append("and create_date >= :createDateFrom ");
                 params.put("createDateFrom", createDateFrom);
@@ -108,7 +106,12 @@ public class RequestServiceImpl implements RequestService {
                 whereBuild.append("and rt.request_type_id = :requestTypeId ");
                 params.put("requestTypeId", requestTypeId);
             }
+            if (status != null) {
+                whereBuild.append("and r.status = :status ");
+                params.put("status", status);
+            }
         }
+        // role
         switch (type) {
             case CommonConstant.ALL:
                 break;
@@ -124,15 +127,37 @@ public class RequestServiceImpl implements RequestService {
                 break;
         }
         queryAllRequest.append(whereBuild);
+        //sort
+        if (sort != null && (sort.equalsIgnoreCase(CommonConstant.CREATE_DATE_FIELD) || sort.equalsIgnoreCase(CommonConstant.START_TIME_FIELD) || sort.equalsIgnoreCase(CommonConstant.END_TIME_FIELD))) {
+            StringBuilder orderByBuild = new StringBuilder("Order by ");
+            switch (sort) {
+                case CommonConstant.CREATE_DATE_FIELD:
+                    orderByBuild.append("r.create_date ");
+                    break;
+                case CommonConstant.START_TIME_FIELD:
+                    orderByBuild.append("r.start_time ");
+                    break;
+                case CommonConstant.END_TIME_FIELD:
+                    orderByBuild.append("r.end_time ");
+                    break;
+            }
+            if (dir != null && dir.equalsIgnoreCase("desc")) {
+                orderByBuild.append("desc ");
+            }
+            queryAllRequest.append(orderByBuild);
+        }
+        //limit
         if (isLimit) {
             queryAllRequest = queryAllRequest.append("LIMIT :offset, :limit");
             params.put("limit", limit);
             params.put("offset", (page - 1) * limit);
         }
+
         Session session = entityManager.unwrap(Session.class);
 
         Query query = session.createNativeQuery(queryAllRequest.toString())
                 .addScalar("requestId", LongType.INSTANCE)
+                .addScalar("rollNumber", StringType.INSTANCE)
                 .addScalar("personName", StringType.INSTANCE)
                 .addScalar("requestTypeName", StringType.INSTANCE)
                 .addScalar("createDate", new TimestampType())
@@ -150,10 +175,10 @@ public class RequestServiceImpl implements RequestService {
         return dtos;
     }
 
-    public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getRequestByPermission(String type, Long managerId, Long personId, Integer page, Integer limit, Boolean isSearch, String createDateFrom, String createDateTo, Long requestTypeId) throws ParseException {
+    public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getRequestByPermission(String type, Long managerId, Long personId, Integer page, Integer limit, String createDateFrom, String createDateTo, Long requestTypeId, String status, String sort, String dir) {
         Pagination pagination = new Pagination(page, limit);
-        pagination.setTotalRecords(getQueryForRequestList(type, managerId, personId, false, limit, page, isSearch, createDateFrom, createDateTo, requestTypeId).size());
-        List<RequestDto> requestDtos = getQueryForRequestList(type, managerId, personId, true, limit, page, isSearch, createDateFrom, createDateTo, requestTypeId);
+        pagination.setTotalRecords(getQueryForRequestList(type, managerId, personId, false, limit, page, createDateFrom, createDateTo, requestTypeId, status, sort, dir).size());
+        List<RequestDto> requestDtos = getQueryForRequestList(type, managerId, personId, true, limit, page, createDateFrom, createDateTo, requestTypeId, status, sort, dir);
         RequestResponse.RequestListResponse response = new RequestResponse.RequestListResponse(requestDtos);
         ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> responseEntity
                 = BaseResponse.ofSucceededOffset(response, pagination);
@@ -161,18 +186,18 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
-    public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getAllRequest(Integer page, Integer limit, Boolean isSearch, String createDateFrom, String createDateTo, Long requestTypeId) throws ParseException {
-        return getRequestByPermission(CommonConstant.ALL, null, null, page, limit, isSearch, createDateFrom, createDateTo, requestTypeId);
+    public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getAllRequest(Integer page, Integer limit, String createDateFrom, String createDateTo, Long requestTypeId, String status, String sort, String dir) {
+        return getRequestByPermission(CommonConstant.ALL, null, null, page, limit, createDateFrom, createDateTo, requestTypeId, status, sort, dir);
     }
 
     @Override
-    public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getSubordinateRequest(Long managerId, Integer page, Integer limit, Boolean isSearch, String createDateFrom, String createDateTo, Long requestTypeId) throws ParseException {
-        return getRequestByPermission(CommonConstant.SUBORDINATE, managerId, null, page, limit, isSearch, createDateFrom, createDateTo, requestTypeId);
+    public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getSubordinateRequest(Long managerId, Integer page, Integer limit, String createDateFrom, String createDateTo, Long requestTypeId, String status, String sort, String dir) {
+        return getRequestByPermission(CommonConstant.SUBORDINATE, managerId, null, page, limit, createDateFrom, createDateTo, requestTypeId, status, sort, dir);
     }
 
     @Override
-    public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getMyRequest(Long personId, Integer page, Integer limit, Boolean isSearch, String createDateFrom, String createDateTo, Long requestTypeId) throws ParseException {
-        return getRequestByPermission(CommonConstant.MY, null, personId, page, limit, isSearch, createDateFrom, createDateTo, requestTypeId);
+    public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getMyRequest(Long personId, Integer page, Integer limit, String createDateFrom, String createDateTo, Long requestTypeId, String status, String sort, String dir) {
+        return getRequestByPermission(CommonConstant.MY, null, personId, page, limit, createDateFrom, createDateTo, requestTypeId, status, sort, dir);
     }
 
 

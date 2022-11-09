@@ -14,6 +14,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 
 @RestController
 @RequestMapping(CommonConstant.ITSUPPORT + "/")
@@ -23,8 +24,8 @@ public class ITDeviceTypeController {
     DeviceTypeService deviceTypeService;
 
     @GetMapping("/device-type")
-    public ResponseEntity<BaseResponse<DeviceTypeResponse, Pageable>> getAllDeviceType(@RequestParam Integer page,
-                                                                                        @RequestParam Integer limit,
+    public ResponseEntity<BaseResponse<DeviceTypeResponse, Pageable>> getAllDeviceType(@RequestParam @Min(1) Integer page,
+                                                                                        @RequestParam @Min(0) Integer limit,
                                                                                         @RequestParam (required = false) String deviceTypeName) {
         return deviceTypeService.getAllDeviceType(page,limit,deviceTypeName);
     }

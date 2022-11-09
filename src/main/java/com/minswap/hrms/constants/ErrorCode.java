@@ -59,7 +59,8 @@ public class ErrorCode {
     public static BusinessCode newErrorCode(String message) {
         return new BusinessCode(ErrorCodeEnum.INTERNAL_SERVER_ERROR.getValue(), message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-
+    public static final BusinessCode DATE_FAIL_FOMART = new BusinessCode(
+            ErrorCodeEnum.DATE_INVALID.getValue(), "Date fail formart! ", HttpStatus.BAD_REQUEST);
     public static BusinessCode newErrorCode(int code,String message) {
       return new BusinessCode(code, message, null);
     }

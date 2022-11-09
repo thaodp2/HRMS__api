@@ -15,6 +15,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import javax.transaction.Transactional;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -22,16 +23,7 @@ public interface PersonRepository extends JpaRepository<Person, Long>{
 
     Optional<Person> findPersonByPersonId(Long id);
     Optional<Person> findPersonByRollNumberEquals(String rollNumber);
-    @Query("select new com.minswap.hrms.response.dto.EmployeeListDto(" +
-            "  p.personId as personId, p.fullName as fullName,p.email as email,d.departmentName as departmentName,p.rollNumber as rollNumber," +
-            "  p.status as active, p2.positionName as positionName )" +
-            "  FROM Person p " +
-            "  LEFT JOIN Department d on " +
-            "    p.departmentId = d.departmentId " +
-            "    LEFT JOIN Position p2 ON " +
-            "    p.positionId = p2.positionId  " +
-            "     where  1 = 1 ")
-    Page<EmployeeListDto> getListPerson(Pagination pageable);
+
     @Value("a")
     default String getListPersonQuery() {
         StringBuilder queryBuilder = new StringBuilder();
@@ -57,20 +49,14 @@ public interface PersonRepository extends JpaRepository<Person, Long>{
             " p.address as address," +
             " p.rollNumber as rollNumber," +
             " p.email as email," +
-            " d.departmentName as departmentName," +
-            " p2.positionName as positionName," +
-            " r.rankName as rankName," +
+            " p.departmentId as departmentId," +
+            " p.positionId as positionId," +
+            " p.rankId as rankId," +
             " p.onBoardDate as onBoardDate," +
             " p.status as status," +
             " p.rollNumber as rollNumber, " +
-            "(select p3.fullName from Person p3 where p3.personId=p.managerId) as managerName) " +
+            "p.managerId as managerId ) " +
             " FROM Person p " +
-            " LEFT JOIN Department d ON " +
-            " p.departmentId = d.departmentId " +
-            " lEFT JOIN Position p2 ON " +
-            " p.positionId = p2.positionId "+
-            " LEFT JOIN Rank r ON " +
-            " p.rankId = r.rankId "+
             " WHERE p.rollNumber = :rollNumber")
     EmployeeDetailDto getDetailEmployee(@Param("rollNumber") String rollNumber);
 
@@ -100,9 +86,16 @@ public interface PersonRepository extends JpaRepository<Person, Long>{
                                               Pageable pageable);
     @Modifying
     @Transactional
-    @Query("UPDATE Person p set p.status = :status where p.rollNumber LIKE :id")
+    @Query("UPDATE Person p set p.status = :status where p.rollNumber LIKE %:personId%")
     Integer updateStatusEmployee(@Param("status") String status,
-                             @Param("personId") String id);
+                                 @Param("personId") String personId);
 
+    @Query(" SELECT p.personId " +
+           " from Person p " +
+           " WHERE p.managerId = :managerId" +
+           " AND (:search IS NULL OR p.fullName LIKE %:search%) ")
+    Page<Long> getListPersonIdByManagerId(@Param("managerId") Long managerId,
+                                          @Param("search") String search,
+                                          Pageable pageable);
 
 }

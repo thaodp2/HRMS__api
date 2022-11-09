@@ -1,5 +1,6 @@
 package com.minswap.hrms.service;
 
+import com.minswap.hrms.request.EmployeeRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 
@@ -14,4 +15,6 @@ public interface EmployeeHRService {
 
   ResponseEntity<BaseResponse<Void, Void>> exportEmployee();
   ResponseEntity<BaseResponse<Void, Void>> changeStatusEmployee(String rollNumber, String active);
+
+  ResponseEntity<BaseResponse<Void, Void>> createEmployee(EmployeeRequest employeeRequest);
 }

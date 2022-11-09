@@ -42,6 +42,8 @@ public class RequestDto {
 
     @JsonProperty("id")
     private Long requestId;
+
+    private String rollNumber;
     private String personName;
 
     private Long requestTypeId;

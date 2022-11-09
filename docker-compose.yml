@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  app:
+    image: hrms-api
+    container_name: hrms_api
+    build:
+      context: .
+    ports:
+      - '80:6689'
+      - '6699:6699'

@@ -2,6 +2,7 @@ package com.minswap.hrms.response;
 
 import com.minswap.hrms.response.dto.DailyTimeCheckDto;
 import com.minswap.hrms.response.dto.TimeCheckDto;
+import com.minswap.hrms.response.dto.TimeCheckEachSubordinateDto;
 import lombok.*;
 
 import java.util.List;
@@ -23,16 +24,14 @@ public class TimeCheckResponse {
 
     @Data
     @Builder
-    public static class TimeCheckListSubordinateResponse{
-        private Long id;
-        private List<DailyTimeCheckDto> timeCheckList;
+    public static class TimeCheckEachSubordinateResponse {
 
-        public TimeCheckListSubordinateResponse() {
+        private List<TimeCheckEachSubordinateDto> timeCheckSubordinateList;
+
+        public static TimeCheckEachSubordinateResponse of(List<TimeCheckEachSubordinateDto> timeCheckList){
+            return builder().timeCheckSubordinateList(timeCheckList).build();
+
         }
 
-        public TimeCheckListSubordinateResponse(Long id, List<DailyTimeCheckDto> timeCheckList) {
-            this.id = id;
-            this.timeCheckList = timeCheckList;
-        }
     }
 }

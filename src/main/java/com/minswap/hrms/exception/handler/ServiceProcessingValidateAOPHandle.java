@@ -68,16 +68,18 @@ public class ServiceProcessingValidateAOPHandle {
           .forEach(
               f -> {
                 // Check field dupp
-                for (String checkDuppError : fieldDup) {
-                  if (checkDuppError.equals(f.getField())) {
-                    return;
-                  }
-                }
+//                for (String checkDuppError : fieldDup) {
+//                  if (checkDuppError.equals(f.getField())) {
+//                    return;
+//                  }
+//                }
                 fieldDup.add(f.getField());
 
                 String code = f.getDefaultMessage();
-                BusinessCode businessCode = ErrorCode.newErrorCode(Integer.parseInt(code), dfsProps.get(code).toString(), HttpStatus.BAD_REQUEST);
-                responseBasicObj.setMetadata(Meta.buildMeta(businessCode, null));
+                if (NumberUtils.isNumber(code)) {
+	                BusinessCode businessCode = ErrorCode.newErrorCode(Integer.parseInt(code), dfsProps.get(code).toString(), HttpStatus.BAD_REQUEST);
+	                responseBasicObj.setMetadata(Meta.buildMeta(businessCode, null));
+                }
               });
       return formatResponse(responseBasicObj);
     } else {

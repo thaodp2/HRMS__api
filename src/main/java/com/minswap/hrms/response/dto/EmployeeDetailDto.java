@@ -1,5 +1,7 @@
 package com.minswap.hrms.response.dto;
 
+import java.util.Date;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
@@ -17,10 +19,10 @@ public class EmployeeDetailDto {
     private String fullName;
 
     @JsonProperty("dateOfBirth")
-    private String dateOfBirth;
+    private Date dateOfBirth;
 
     @JsonProperty("gender")
-    private String gender;
+    private int gender;
 
     @JsonProperty("phoneNumber")
     private String phoneNumber;
@@ -37,17 +39,17 @@ public class EmployeeDetailDto {
     @JsonProperty("email")
     private String email;
 
-    @JsonProperty("departmentName")
-    private String departmentName;
+    @JsonProperty("departmenId")
+    private Long departmenId;
 
-    @JsonProperty("positionName")
-    private String positionName;
+    @JsonProperty("positionId")
+    private Long positionId;
 
-    @JsonProperty("rankName")
-    private String rankName;
+    @JsonProperty("rankId")
+    private Long rankId;
 
     @JsonProperty("onBoardDate")
-    private String onBoardDate;
+    private Date onBoardDate;
 
     @JsonProperty("isActive")
     private String status;
@@ -55,8 +57,8 @@ public class EmployeeDetailDto {
     @JsonProperty("role")
     private String role;
 
-    @JsonProperty("managerName")
-    private String managerName;
+    @JsonProperty("managerId")
+    private Long managerId;
     
     public int getStatus() {
     	return status == null ? 0 : Integer.parseInt(status);
