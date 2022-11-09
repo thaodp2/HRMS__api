@@ -155,7 +155,9 @@ public class TimeCheckServiceImpl implements TimeCheckService{
                 eachSubordinateDto.setRollNumber(personFromDB.get().getRollNumber());
                 int dateCount = 2;
                 for (Date item : listDate){
-                    DailyTimeCheckDto timeCheckDto = timeCheckRepository.getDailyTimeCheck(personId,item);
+                    Date dateAdd = item;
+                    dateAdd.setTime(dateAdd.getTime() + MILLISECOND_7_HOURS);
+                    DailyTimeCheckDto timeCheckDto = timeCheckRepository.getDailyTimeCheck(personId,dateAdd);
 
                     if(dateCount == 2){
                         eachSubordinateDto.setMon(timeCheckDto);
