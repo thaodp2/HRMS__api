@@ -73,6 +73,7 @@ public class RequestServiceImpl implements RequestService {
     private static final String LEAVE_TYPE = "leave";
     private static final String OT_TYPE = "ot";
     private static final String DEVICE_TYPE = "device";
+    private static final String OTHER_TYPE = "other";
     private static final int BORROW_REQUEST_TYPE_ID = 11;
     private static final Integer OT_TYPE_ID = 7;
 
@@ -225,8 +226,11 @@ public class RequestServiceImpl implements RequestService {
                 requestDto.setTimeRemaining(otBudgetDto.getOtHoursBudget() - otBudgetDto.getHoursWorked());
                 requestDto.setRequestTypeName(OT_TYPE);
             }
-            else {
+            else if (requestType == BORROW_REQUEST_TYPE_ID) {
                 requestDto.setRequestTypeName(DEVICE_TYPE);
+            }
+            else {
+                requestDto.setRequestTypeName(OTHER_TYPE);
             }
             List<String> listImage = evidenceRepository.getListImageByRequest(id);
             requestDto.setListEvidence(listImage);
