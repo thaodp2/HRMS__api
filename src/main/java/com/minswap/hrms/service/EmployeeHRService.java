@@ -14,7 +14,7 @@ public interface EmployeeHRService {
   ResponseEntity<BaseResponse<EmployeeInfoResponse, Pageable>> getSearchListEmployee(int page, int limit, String fullName,String email,String departmentName,String rollNumber,String status,String positionName, String managerRoll);
 
   ResponseEntity<BaseResponse<Void, Void>> exportEmployee();
-  ResponseEntity<BaseResponse<Void, Void>> changeStatusEmployee(String rollNumber, String active);
+  ResponseEntity<BaseResponse<Void, Void>> updateEmployee( EmployeeRequest employeeRequest, String rollNumber );
 
   ResponseEntity<BaseResponse<Void, Void>> createEmployee(EmployeeRequest employeeRequest);
 }

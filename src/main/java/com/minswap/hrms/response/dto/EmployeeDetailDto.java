@@ -39,8 +39,8 @@ public class EmployeeDetailDto {
     @JsonProperty("email")
     private String email;
 
-    @JsonProperty("departmenId")
-    private Long departmenId;
+    @JsonProperty("departmentId")
+    private Long departmentId;
 
     @JsonProperty("positionId")
     private Long positionId;
@@ -54,7 +54,7 @@ public class EmployeeDetailDto {
     @JsonProperty("isActive")
     private String status;
 
-    @JsonProperty("role")
+    @JsonProperty("isManager")
     private String role;
 
     @JsonProperty("managerId")
