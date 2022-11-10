@@ -1,21 +1,33 @@
 package com.minswap.hrms.entities;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.util.Date;
 
 @Entity
 @Data
+@NoArgsConstructor
 @Table(name = Request.TABLE_NAME)
 public class Request {
     public static final String TABLE_NAME = "request";
 
+    public Request(Long requestTypeId, Long personId, Long deviceTypeId, Date startTime,
+                   Date endTime, String reason, Date createDate, String status) {
+        this.requestTypeId = requestTypeId;
+        this.personId = personId;
+        this.deviceTypeId = deviceTypeId;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.reason = reason;
+        this.createDate = createDate;
+        this.status = status;
+    }
+
     @Id
     @Column(name = "request_id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long requestId;
 
     @Column(name = "request_type_id")

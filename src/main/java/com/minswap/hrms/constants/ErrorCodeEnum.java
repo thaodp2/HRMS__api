@@ -13,6 +13,8 @@ public enum ErrorCodeEnum {
 
   DATE_INVALID(405),
 
+  INVALID_DATE(405),
+
   RESULT_NOT_FOUND(404),
 
   UPDATE_FAIL(404),
@@ -34,7 +36,9 @@ public enum ErrorCodeEnum {
 
   STATUS_INVALID(416),
 
-  UPDATE_DAY_OFF_FAIL(406)
+  UPDATE_DAY_OFF_FAIL(406),
+
+  REQUEST_TYPE_INVALID(404)
 
   ;
 
