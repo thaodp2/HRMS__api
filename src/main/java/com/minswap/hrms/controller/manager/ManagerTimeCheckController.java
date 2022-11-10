@@ -23,19 +23,20 @@ public class ManagerTimeCheckController {
     TimeCheckService timeCheckService;
 
     @GetMapping("/detail-subordinate")
-    public ResponseEntity<BaseResponse<TimeCheckResponse.TimeCheckEachPersonResponse, Pageable>> getDetailSubordinateTimeCheck(@RequestParam @Pattern(regexp = "[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1]) (2[0-3]|[01][0-9]):[0-5][0-9]:[0-5][0-9]", message = "Invalid createDateFrom") String startDate,
+    public ResponseEntity<BaseResponse<TimeCheckResponse.TimeCheckEachPersonResponse, Pageable>> getDetailSubordinateTimeCheck(@RequestParam Long personId,
+                                                                                                                               @RequestParam @Pattern(regexp = "[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1]) (2[0-3]|[01][0-9]):[0-5][0-9]:[0-5][0-9]", message = "Invalid createDateFrom") String startDate,
                                                                                                                                @RequestParam @Pattern(regexp = "[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1]) (2[0-3]|[01][0-9]):[0-5][0-9]:[0-5][0-9]", message = "Invalid createDateTo") String endDate,
                                                                                                                                @RequestParam (defaultValue = "1") Integer page,
                                                                                                                                @RequestParam (defaultValue = "10") Integer limit) throws Exception {
-        return timeCheckService.getMyTimeCheck(startDate, endDate, page, limit);
+        return timeCheckService.getMyTimeCheck(personId, startDate, endDate, page, limit);
     }
 
     @GetMapping("/all-subordinate")
     public ResponseEntity<BaseResponse<TimeCheckResponse.TimeCheckEachSubordinateResponse, Pageable>> getListSubordinateTimeCheck(@RequestParam (required = false) String search,
                                                                                                                                   @RequestParam @Pattern(regexp = "[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1]) (2[0-3]|[01][0-9]):[0-5][0-9]:[0-5][0-9]", message = "Invalid createDateFrom") String startDate,
                                                                                                                                   @RequestParam @Pattern(regexp = "[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1]) (2[0-3]|[01][0-9]):[0-5][0-9]:[0-5][0-9]", message = "Invalid createDateTo") String endDate,
-                                                                                                                                  @RequestParam (defaultValue = "1") Integer page,
-                                                                                                                                  @RequestParam (defaultValue = "10") Integer limit) throws Exception {
-        return timeCheckService.getListTimeCheck(search, startDate, endDate, page, limit);
+                                                                                                                                  @RequestParam (defaultValue = "1") Integer page, @RequestParam (defaultValue = "10") Integer limit) throws Exception {
+        Long managerId = 3L;
+        return timeCheckService.getListTimeCheck(search, managerId, startDate, endDate, page, limit);
     }
 }

@@ -32,12 +32,12 @@ public class TimeCheckServiceImpl implements TimeCheckService{
     @Autowired
     PersonRepository personRepository;
     @Override
-    public ResponseEntity<BaseResponse<TimeCheckResponse.TimeCheckEachPersonResponse, Pageable>> getMyTimeCheck(String startDate,
+    public ResponseEntity<BaseResponse<TimeCheckResponse.TimeCheckEachPersonResponse, Pageable>> getMyTimeCheck(Long personId,
+                                                                                                                String startDate,
                                                                                                                 String endDate,
                                                                                                                 Integer page,
                                                                                                                 Integer limit) throws Exception {
 
-        Long personId = 2L;
         ResponseEntity<BaseResponse<TimeCheckResponse.TimeCheckEachPersonResponse, Pageable>> responseEntity = null;
         try {
 
@@ -131,9 +131,8 @@ public class TimeCheckServiceImpl implements TimeCheckService{
 
     @Override
     public ResponseEntity<BaseResponse<TimeCheckResponse.TimeCheckEachSubordinateResponse, Pageable>> getListTimeCheck(
-            String search, String startDate, String endDate, Integer page, Integer limit) throws Exception {
+            String search, Long managerId, String startDate, String endDate, Integer page, Integer limit) throws Exception {
 
-        Long managerId = 3L;
         ResponseEntity<BaseResponse<TimeCheckResponse.TimeCheckEachSubordinateResponse, Pageable>> responseEntity = null;
         try {
             Pagination pagination = new Pagination(page - 1, limit);
