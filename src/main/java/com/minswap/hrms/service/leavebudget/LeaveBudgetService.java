@@ -15,4 +15,7 @@ public interface LeaveBudgetService {
 
     ResponseEntity<BaseResponse<LeaveBudgetResponse.LeaveBudgetListResponse, Pageable>> getMyLeaveBudget(Long personId, Integer page, Integer limit, Long requestTypeId, String search, Year year) throws ParseException;
 
+    public void createLeaveBudget();
+
+    public void updateLeaveBudgetEachMonth();
 }

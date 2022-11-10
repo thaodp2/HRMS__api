@@ -81,14 +81,12 @@ public class RequestServiceImpl implements RequestService {
 
     public List<RequestDto> getQueryForRequestList(String type, Long managerId, Long personId, Boolean isLimit, Integer limit, Integer page, String createDateFrom, String createDateTo, Long requestTypeId, String status, String sort, String dir) {
         HashMap<String, Object> params = new HashMap<>();
-        StringBuilder queryAllRequest = new StringBuilder("select r.request_id as requestId,p.roll_number as rollNumber, p.full_name as personName, rt.request_type_name as requestTypeName, r.create_date as createDate, r.start_time as startTime, r.end_time as endTime, r.reason as reason, r.status as status, p2.full_name as receiver, r.approval_date as approvalDate ");
+        StringBuilder queryAllRequest = new StringBuilder("select r.request_id as requestId,p.roll_number as rollNumber, p.full_name as personName, rt.request_type_name as requestTypeName, r.create_date as createDate, r.start_time as startTime, r.end_time as endTime, r.reason as reason, r.status as status ");
         queryAllRequest.append("from request r " +
                 "left join request_type rt on " +
                 "r.request_type_id = rt.request_type_id " +
                 "left join person p on " +
-                "r.person_id = p.person_id " +
-                "left join person p2 on " +
-                "r.person_id = p2.manager_id ");
+                "r.person_id = p.person_id ");
         StringBuilder whereBuild = new StringBuilder("WHERE 1=1 ");
         //search
         if (!(createDateFrom == null && createDateTo == null && requestTypeId == null && status == null)) {
@@ -166,9 +164,6 @@ public class RequestServiceImpl implements RequestService {
                 .addScalar("endTime", new TimestampType())
                 .addScalar("reason", StringType.INSTANCE)
                 .addScalar("status", StringType.INSTANCE)
-                .addScalar("receiver", StringType.INSTANCE)
-                .addScalar("deviceTypeName", StringType.INSTANCE)
-                .addScalar("approvalDate", new TimestampType())
                 .setResultTransformer(Transformers.aliasToBean(RequestDto.class));
 
         params.forEach(query::setParameter);
@@ -200,7 +195,6 @@ public class RequestServiceImpl implements RequestService {
     public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getMyRequest(Long personId, Integer page, Integer limit, String createDateFrom, String createDateTo, Long requestTypeId, String status, String sort, String dir) {
         return getRequestByPermission(CommonConstant.MY, null, personId, page, limit, createDateFrom, createDateTo, requestTypeId, status, sort, dir);
     }
-
 
     @Override
     public ResponseEntity<BaseResponse<RequestResponse, Void>> getEmployeeRequestDetail(Long id) {

@@ -16,6 +16,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.core.env.Environment;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.context.request.RequestContextListener;
@@ -26,6 +27,7 @@ import com.minswap.hrms.exception.handler.RestTemplateErrorHandler;
  * The Class EWcashbackserviceApplication.
  */
 @SpringBootApplication
+@EnableScheduling
 public class HRMSApplication {
 
 	private static Logger logger = LoggerFactory.getLogger(HRMSApplication.class);

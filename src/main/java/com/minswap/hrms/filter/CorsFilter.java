@@ -57,11 +57,11 @@ public class CorsFilter implements Filter {
 			JSONObject dataRequest = StringUtils.isEmpty(requestWrapper.getBody()) ? new JSONObject()
 					: (JSONObject) parser.parse(requestWrapper.getBody());
 			requestWrapper.setBody(dataRequest.toString());
-//			response.setHeader("Access-Control-Allow-Origin", "*");
-//			response.setHeader("Access-Control-Allow-Credentials", "true");
-//			response.setHeader("Access-Control-Allow-Methods", "POST, GET, PUT, OPTIONS, DELETE");
-//			response.setHeader("Access-Control-Max-Age", "3600");
-//			response.setHeader("Access-Control-Allow-Headers", "X-Requested-With, Content-Type, Authorization, Origin, Accept, Access-Control-Request-Method, Access-Control-Request-Headers");
+			response.setHeader("Access-Control-Allow-Origin", "*");
+			response.setHeader("Access-Control-Allow-Credentials", "true");
+			response.setHeader("Access-Control-Allow-Methods", "POST, GET, PUT, OPTIONS, DELETE");
+			response.setHeader("Access-Control-Max-Age", "3600");
+			response.setHeader("Access-Control-Allow-Headers", "X-Requested-With, Content-Type, Authorization, Origin, Accept, Access-Control-Request-Method, Access-Control-Request-Headers");
 
 			chain.doFilter(requestWrapper, res);
 		} catch (Exception e) {
