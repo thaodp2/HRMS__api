@@ -47,6 +47,7 @@ public class EmployeeHRServiceImpl implements EmployeeHRService {
 			String dateOnBoardSm = sm.format(employeeDetailDto.getOnBoardDate());
 			date = sm.parse(dateOnBoardSm);
 			employeeDetailDto.setOnBoardDate(date);
+			employeeDetailDto.setRole("1");
 		}catch (Exception e) {
 			throw new BaseException(ErrorCode.DATE_FAIL_FOMART);
 		}
@@ -82,8 +83,18 @@ public class EmployeeHRServiceImpl implements EmployeeHRService {
 	}
 
 	@Override
-	public ResponseEntity<BaseResponse<Void, Void>> changeStatusEmployee(String rollNumber, String active) {
-		personRepository.updateStatusEmployee(active, rollNumber);
+	public ResponseEntity<BaseResponse<Void, Void>> updateEmployee(EmployeeRequest employeeRequest, String rollNumber) {
+		personRepository.updateStatusEmployee(employeeRequest.getActive(),
+				employeeRequest.getFullName(),
+				employeeRequest.getManagerId(),
+				employeeRequest.getDepartmentId(),
+				employeeRequest.getPositionId(),
+				employeeRequest.getRankId(),
+				employeeRequest.getCitizenIdentification(),
+				employeeRequest.getPhoneNumber(),
+				employeeRequest.getAddress(),
+				employeeRequest.getGender(),
+				rollNumber);
 
 		ResponseEntity<BaseResponse<Void, Void>> responseEntity = BaseResponse.ofSucceeded(null);
 		return responseEntity;

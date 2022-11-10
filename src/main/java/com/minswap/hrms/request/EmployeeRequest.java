@@ -65,4 +65,7 @@ public class EmployeeRequest extends BasicRequest{
 	@JsonProperty("gender")
 	@NotNull(message ="610")
 	private int gender;
+
+	@JsonProperty("isActive")
+	private String active;
 }
