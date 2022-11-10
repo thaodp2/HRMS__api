@@ -19,5 +19,5 @@ public interface DeviceTypeService {
                                                              String deviceTypeName);
     ResponseEntity<BaseResponse<Void, Void>> deleteDeviceType (Long id);
 
-    ResponseEntity<BaseResponse<MasterDataResponse, Pageable>> getMasterDataDeviceType ();
+    ResponseEntity<BaseResponse<MasterDataResponse, Pageable>> getMasterDataDeviceType (String search);
 }
