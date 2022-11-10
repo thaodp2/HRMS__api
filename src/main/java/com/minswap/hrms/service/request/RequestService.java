@@ -1,6 +1,7 @@
 package com.minswap.hrms.service.request;
 
 import com.minswap.hrms.model.BaseResponse;
+import com.minswap.hrms.request.CreateRequest;
 import com.minswap.hrms.request.EditRequest;
 import com.minswap.hrms.response.RequestResponse;
 import org.springframework.data.domain.Pageable;
@@ -28,4 +29,5 @@ public interface RequestService {
 //                                                                          Integer page, Integer limit) throws Exception;
     ResponseEntity<BaseResponse<Void, Void>> cancelRequest (Long id);
 
+    ResponseEntity<BaseResponse<Void, Void>> createRequest(CreateRequest createRequest) throws ParseException;
 }

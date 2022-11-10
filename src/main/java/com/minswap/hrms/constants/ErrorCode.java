@@ -11,6 +11,9 @@ public class ErrorCode {
     public static final BusinessCode DATE_INVALID = new BusinessCode(
             ErrorCodeEnum.DATE_INVALID.getValue(), "CreateDate must be before StartTime and StartTime must be before EndTime", HttpStatus.BAD_REQUEST);
 
+    public static final BusinessCode INVALID_DATE = new BusinessCode(
+            ErrorCodeEnum.INVALID_DATE.getValue(), "StartTime must be before EndTime", HttpStatus.BAD_REQUEST);
+
     public static final BusinessCode RESULT_NOT_FOUND = new BusinessCode(
             ErrorCodeEnum.RESULT_NOT_FOUND.getValue(), "Result not found", HttpStatus.NOT_FOUND);
 
@@ -23,6 +26,10 @@ public class ErrorCode {
     public static final BusinessCode REQUEST_INVALID = new BusinessCode(
             ErrorCodeEnum.REQUEST_INVALID.getValue(), "You can't cancel an approved or rejected request",
             HttpStatus.NOT_ACCEPTABLE);
+
+    public static final BusinessCode REQUEST_TYPE_INVALID = new BusinessCode(
+            ErrorCodeEnum.REQUEST_TYPE_INVALID.getValue(), "Request type not found",
+            HttpStatus.NOT_FOUND);
 
     public static final BusinessCode STATUS_INVALID = new BusinessCode(
             ErrorCodeEnum.STATUS_INVALID.getValue(), "You can't update status same as current",

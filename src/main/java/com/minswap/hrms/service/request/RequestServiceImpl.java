@@ -3,10 +3,12 @@ package com.minswap.hrms.service.request;
 import com.minswap.hrms.constants.CommonConstant;
 import com.minswap.hrms.constants.ErrorCode;
 import com.minswap.hrms.entities.Evidence;
+import com.minswap.hrms.entities.Request;
 import com.minswap.hrms.exception.model.BaseException;
 import com.minswap.hrms.exception.model.Pagination;
 import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.repsotories.*;
+import com.minswap.hrms.request.CreateRequest;
 import com.minswap.hrms.request.EditRequest;
 import com.minswap.hrms.response.RequestResponse;
 import com.minswap.hrms.response.dto.LeaveBudgetDto;
@@ -367,6 +369,49 @@ public class RequestServiceImpl implements RequestService {
             ResponseEntity<BaseResponse<Void, Void>> responseEntity = BaseResponse.ofSucceeded(null);
             return responseEntity;
         }
+    }
+
+    @Override
+    public ResponseEntity<BaseResponse<Void, Void>> createRequest(CreateRequest createRequest) throws ParseException {
+        Long requestTypeId = createRequest.getRequestTypeId();
+        Long personId = createRequest.getPersonId();
+        Long deviceTypeId = createRequest.getDeviceTypeId();
+        Date startTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
+                parse(createRequest.getStartTime());
+        Date endTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
+                parse(createRequest.getEndTime());
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime localDateTime = LocalDateTime.now();
+        String createDateStr = dateTimeFormatter.format(localDateTime);
+        Date createDate = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
+                parse(createDateStr);
+        List<Long> listRequestTypesId = requestTypeRepository.getAllRequestTypeId();
+        if (!listRequestTypesId.contains(requestTypeId)) {
+            throw new BaseException(ErrorCode.REQUEST_TYPE_INVALID);
+        }
+        else if (requestTypeId == BORROW_REQUEST_TYPE_ID) {
+            List<Long> listDeviceTypesId = deviceTypeRepository.getAllDeviceTypeId();
+            if (!listDeviceTypesId.contains(deviceTypeId)) {
+                throw new BaseException(ErrorCode.NOT_FOUND_DEVICE_TYPE);
+            }
+        }
+        else if (startTime.before(createDate)
+                || endTime.before(createDate)
+                || endTime.before(startTime)) {
+            throw new BaseException(ErrorCode.DATE_INVALID);
+        }
+
+        Request request = new Request(requestTypeId,
+                                    personId,
+                                    deviceTypeId,
+                                    startTime,
+                                    endTime,
+                                    createRequest.getReason(),
+                                    createDate,
+                                    PENDING_STATUS);
+        requestRepository.save(request);
+        ResponseEntity<BaseResponse<Void, Void>> responseEntity = BaseResponse.ofSucceeded(null);
+        return responseEntity;
     }
 
     public boolean isRequestIdValid(Long id) {

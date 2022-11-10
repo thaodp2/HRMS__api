@@ -71,7 +71,9 @@ public class RequestController {
     }
 
     @PostMapping("/request")
-    public ResponseEntity<BaseResponse<Void, Void>> createRequest(@PathVariable Long id) {
-        return null;
+    @ServiceProcessingValidateAnnotation
+    public ResponseEntity<BaseResponse<Void, Void>> createRequest(@RequestBody @Valid CreateRequest createRequest,
+                                                                  BindingResult bindingResult) throws ParseException {
+        return requestService.createRequest(createRequest);
     }
 }
