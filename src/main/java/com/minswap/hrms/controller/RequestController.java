@@ -41,7 +41,7 @@ public class RequestController {
         return requestService.updateRequestStatus(updateStatusRequest.getStatus(), id);
     }
 
-    @PutMapping("request/edit/{id}")
+    @PutMapping("request/{id}")
     @ServiceProcessingValidateAnnotation
     public ResponseEntity<BaseResponse<Void, Void>> editRequest(@RequestBody
                                                                 @Valid

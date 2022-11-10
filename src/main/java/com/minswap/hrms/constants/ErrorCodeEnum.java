@@ -30,7 +30,11 @@ public enum ErrorCodeEnum {
 
   YEAR_INVALID(416),
 
-  MONTH_INVALID(416)
+  MONTH_INVALID(416),
+
+  STATUS_INVALID(416),
+
+  UPDATE_DAY_OFF_FAIL(406)
 
   ;
 
