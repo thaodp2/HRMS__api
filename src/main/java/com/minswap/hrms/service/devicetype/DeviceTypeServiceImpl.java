@@ -92,8 +92,13 @@ public class DeviceTypeServiceImpl implements DeviceTypeService {
     }
 
     @Override
-    public ResponseEntity<BaseResponse<MasterDataResponse, Pageable>> getMasterDataDeviceType() {
-        List<DeviceType> deviceTypes = deviceTypeRepository.findAll();
+    public ResponseEntity<BaseResponse<MasterDataResponse, Pageable>> getMasterDataDeviceType(String search) {
+        List<DeviceType> deviceTypes;
+        if(search != null){
+            deviceTypes = deviceTypeRepository.findByDeviceTypeNameContainsIgnoreCase(search.trim());
+        }else {
+            deviceTypes = deviceTypeRepository.findAll();
+        }
         List<MasterDataDto> masterDataDtos = new ArrayList<>();
         for (int i = 0; i < deviceTypes.size(); i++) {
             MasterDataDto masterDataDto = new MasterDataDto(deviceTypes.get(i).getDeviceTypeName(), deviceTypes.get(i).getDeviceTypeId());

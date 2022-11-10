@@ -17,7 +17,8 @@ public class PositionController {
     PositionService positionService;
 
     @GetMapping("/position-by-departmentId-master-data")
-    public ResponseEntity<BaseResponse<MasterDataResponse, Pageable>> getMasterDataPositionByDepartmentId(@RequestParam Long departmentId) {
-        return positionService.getMasterDataPositionByDepartmentId(departmentId);
+    public ResponseEntity<BaseResponse<MasterDataResponse, Pageable>> getMasterDataPositionByDepartmentId(@RequestParam Long departmentId,
+                                                                                                          @RequestParam(required = false) String search) {
+        return positionService.getMasterDataPositionByDepartmentId(departmentId, search);
     }
 }
