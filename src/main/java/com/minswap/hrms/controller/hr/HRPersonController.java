@@ -37,13 +37,13 @@ public class HRPersonController {
           @RequestParam int limit,
           @RequestParam (name = "fullName", required = false)String fullName,
           @RequestParam (name = "email", required = false)String email,
-          @RequestParam (name = "departmentName", required = false) String departmentName,
+          @RequestParam (name = "departmentId", required = false) Long departmentId,
           @RequestParam (name = "rollNumber", required = false) String rollNumber,
           @RequestParam (name = "active", required = false) String active,
-          @RequestParam (name = "positionName", required = false)String positionName
+          @RequestParam (name = "positionId", required = false)Long positionId
 
   ) {
-    return employeeHRService.getSearchListEmployee(page,limit,fullName,email,departmentName,rollNumber,active,positionName, "");
+    return employeeHRService.getSearchListEmployee(page,limit,fullName,email,departmentId,rollNumber,active,positionId, "");
   }
 
 
@@ -63,7 +63,14 @@ public class HRPersonController {
 		  BindingResult bindingResult) {
     return employeeHRService.createEmployee(employeeRequest);
   }
-
+  @PutMapping("/status/employee/{rollNumber}")
+  @ServiceProcessingValidateAnnotation
+  public ResponseEntity<BaseResponse<Void, Void>> updateStatusEmployee(
+          @RequestBody @Valid ChangeStatusEmployeeRequest changeStatusEmployeeRequest ,
+          BindingResult bindingResult,
+          @PathVariable String rollNumber) {
+    return employeeHRService.updateStatusEmployee(changeStatusEmployeeRequest, rollNumber);
+  }
 //  @GetMapping("/employee/export")
 //  public ResponseEntity<BaseResponse<Void, Void>> exportToExcel(
 //          HttpServletResponse response
