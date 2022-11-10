@@ -1,8 +1,12 @@
 package com.minswap.hrms.service.leavebudget;
 
 import com.minswap.hrms.constants.CommonConstant;
+import com.minswap.hrms.entities.LeaveBudget;
+import com.minswap.hrms.entities.Person;
 import com.minswap.hrms.exception.model.Pagination;
 import com.minswap.hrms.model.BaseResponse;
+import com.minswap.hrms.repsotories.LeaveBudgetRepository;
+import com.minswap.hrms.repsotories.PersonRepository;
 import com.minswap.hrms.response.LeaveBudgetResponse;
 import com.minswap.hrms.response.dto.LeaveBudgetDto;
 import lombok.extern.slf4j.Slf4j;
@@ -18,14 +22,23 @@ import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.time.Year;
 import java.util.HashMap;
 import java.util.List;
 
+//import static com.sun.xml.internal.ws.spi.db.BindingContextFactory.LOGGER;
+
 @Service
 @Slf4j
 public class LeaveBudgetServiceImpl implements LeaveBudgetService {
+    @Autowired
+    LeaveBudgetRepository leaveBudgetRepository;
+
+    @Autowired
+    PersonRepository personRepository;
+
     @Autowired
     EntityManager entityManager;
 
@@ -110,6 +123,34 @@ public class LeaveBudgetServiceImpl implements LeaveBudgetService {
     @Override
     public ResponseEntity<BaseResponse<LeaveBudgetResponse.LeaveBudgetListResponse, Pageable>> getMyLeaveBudget(Long personId, Integer page, Integer limit, Long requestTypeId, String search, Year year) throws ParseException {
         return getLeaveBudgetByPermission(CommonConstant.MY, null, personId, page, limit, requestTypeId, search, year);
+    }
+
+    @Override
+    public void createLeaveBudget() {
+//        List<Person> personList = personRepository.findAll();
+//        for (Person person : personList) {
+//            for (Long element : CommonConstant.LIST_REQUEST_TYPE_ID_IN_LEAVE_BUDGET) {
+//                LeaveBudget preLeaveBudget = leaveBudgetRepository.findByPersonIdAndYearAndRequestTypeId(person.getPersonId(), Year.of(Year.now().getValue() - 1), element);
+//                if(element != CommonConstant.REQUEST_TYPE_ID_OF_ANNUAL_LEAVE) {
+//
+//                }
+//                LeaveBudget leaveBudget = new LeaveBudget(person.getPersonId(),preLeaveBudget.getLeaveBudget(),0,preLeaveBudget.getLeaveBudget(),Year.now(), element);
+//            }
+//        }
+    }
+
+    @Override
+    public void updateLeaveBudgetEachMonth() {
+//        DecimalFormat df = new DecimalFormat("#.##");
+//        List<Person> personList = personRepository.findAll();
+//        LOGGER.info(personList.size() + "");
+//        for (Person person : personList) {
+//            Double increaseLeaveBudget = Double.valueOf(df.format(person.getAnnualLeaveBudget()/12));
+//            LeaveBudget preLeaveBudget = leaveBudgetRepository.findByPersonIdAndYearAndRequestTypeId(person.getPersonId(), Year.now(), CommonConstant.REQUEST_TYPE_ID_OF_ANNUAL_LEAVE);
+//            preLeaveBudget.setLeaveBudget(preLeaveBudget.getLeaveBudget() + increaseLeaveBudget);
+//            leaveBudgetRepository.save(preLeaveBudget);
+//            LOGGER.info("Send email to producers to inform quantity sold items");
+//        }
     }
 
 }

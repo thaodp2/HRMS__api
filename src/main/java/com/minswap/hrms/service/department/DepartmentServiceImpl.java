@@ -3,13 +3,16 @@ package com.minswap.hrms.service.department;
 import com.minswap.hrms.constants.CommonConstant;
 import com.minswap.hrms.constants.ErrorCode;
 import com.minswap.hrms.entities.Department;
+import com.minswap.hrms.entities.DeviceType;
 import com.minswap.hrms.exception.model.BaseException;
 import com.minswap.hrms.exception.model.Pagination;
 import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.repsotories.DepartmentRepository;
+import com.minswap.hrms.response.MasterDataResponse;
 import com.minswap.hrms.response.dto.DepartmentDto;
 import com.minswap.hrms.response.dto.ListDepartmentDto;
 import com.minswap.hrms.response.dto.ListRequestDto;
+import com.minswap.hrms.response.dto.MasterDataDto;
 import io.lettuce.core.dynamic.annotation.Param;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +21,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -85,6 +89,25 @@ public class DepartmentServiceImpl implements DepartmentService{
             throw new BaseException(ErrorCode.DELETE_FAIL);
         }
 
+    }
+
+    @Override
+    public ResponseEntity<BaseResponse<MasterDataResponse, Pageable>> getMasterDataDepartment(String search) {
+        List<Department> departments;
+        if(search != null){
+            departments = departmentRepository.findByDepartmentNameContainsIgnoreCase(search.trim());
+        }else {
+            departments = departmentRepository.findAll();
+        }
+        List<MasterDataDto> masterDataDtos = new ArrayList<>();
+        for (int i = 0; i < departments.size(); i++) {
+            MasterDataDto masterDataDto = new MasterDataDto(departments.get(i).getDepartmentName(), departments.get(i).getDepartmentId());
+            masterDataDtos.add(masterDataDto);
+        }
+        MasterDataResponse response = new MasterDataResponse(masterDataDtos);
+        ResponseEntity<BaseResponse<MasterDataResponse, Pageable>> responseEntity
+                = BaseResponse.ofSucceededOffset(response, null);
+        return responseEntity;
     }
 
 

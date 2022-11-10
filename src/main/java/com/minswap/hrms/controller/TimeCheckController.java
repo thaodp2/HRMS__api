@@ -1,6 +1,5 @@
 package com.minswap.hrms.controller;
 
-import com.minswap.hrms.constants.CommonConstant;
 import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.response.TimeCheckResponse;
 import com.minswap.hrms.service.timeCheck.TimeCheckService;
@@ -18,7 +17,7 @@ import javax.validation.constraints.Pattern;
 @RestController
 @Validated
 @RequestMapping("/time-check")
-public class MyTimeCheckController {
+public class TimeCheckController {
 
     @Autowired
     TimeCheckService timeCheckService;

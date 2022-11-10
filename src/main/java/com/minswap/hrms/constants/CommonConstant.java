@@ -1,11 +1,9 @@
 package com.minswap.hrms.constants;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class CommonConstant {
     public static final String BEARER_TOKEN = "Bearer ";
-
     private CommonConstant() {
     }
 
@@ -21,6 +19,7 @@ public class CommonConstant {
     public static final String HR = "/hr";
     public static final String ITSUPPORT = "/it-support";
     public static final Integer UPDATE_SUCCESS = 1;
+
     public static final Integer UPDATE_FAIL = 0;
     public static final String ALL = "All";
     public static final String SUBORDINATE = "Subordinate";
@@ -28,4 +27,10 @@ public class CommonConstant {
     public static final String CREATE_DATE_FIELD = "createDate";
     public static final String START_TIME_FIELD = "startTime";
     public static final String END_TIME_FIELD = "endTime";
+
+    public static final Long REQUEST_TYPE_ID_OF_ANNUAL_LEAVE = Long.valueOf(1);
+
+    public static final Set<Long> LIST_REQUEST_TYPE_ID_IN_LEAVE_BUDGET = new HashSet<Long>(Arrays.<Long>asList(Long.valueOf(1), Long.valueOf(3), Long.valueOf(6), Long.valueOf(8), Long.valueOf(10)));
+
+    public static final Long ROLE_ID_OF_MANAGER = Long.valueOf(2);
 }

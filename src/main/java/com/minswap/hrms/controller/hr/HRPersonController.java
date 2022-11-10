@@ -49,11 +49,11 @@ public class HRPersonController {
 
   @PutMapping("/employee/{rollNumber}")
   @ServiceProcessingValidateAnnotation
-  public ResponseEntity<BaseResponse<Void, Void>> changeStatusEmployee(
-		  @RequestBody @Valid ChangeStatusEmployeeRequest changeStatusEmployeeRequest , 
+  public ResponseEntity<BaseResponse<Void, Void>> updateEmployee(
+		  @RequestBody @Valid EmployeeRequest employeeRequest ,
 		  BindingResult bindingResult,
           @PathVariable String rollNumber) {
-    return employeeHRService.changeStatusEmployee(rollNumber,changeStatusEmployeeRequest.getActive());
+    return employeeHRService.updateEmployee(employeeRequest, rollNumber);
   }
 
   @PostMapping("/employee")

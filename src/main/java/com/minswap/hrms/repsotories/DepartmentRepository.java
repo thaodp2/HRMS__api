@@ -1,6 +1,7 @@
 package com.minswap.hrms.repsotories;
 
 import com.minswap.hrms.entities.Department;
+import com.minswap.hrms.entities.DeviceType;
 import com.minswap.hrms.entities.RequestType;
 import com.minswap.hrms.response.dto.DepartmentDto;
 import io.lettuce.core.dynamic.annotation.Param;
@@ -30,4 +31,6 @@ public interface DepartmentRepository extends JpaRepository<Department, Long> {
     @Query("UPDATE Department d set d.departmentName =:departmentName where d.departmentId =:id")
     Integer updateDepartment(@Param("departmentName") String departmentName,
                              @Param("id") Long id);
+
+    List<Department> findByDepartmentNameContainsIgnoreCase(String deviceTypeName);
 }

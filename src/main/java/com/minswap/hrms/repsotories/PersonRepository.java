@@ -24,21 +24,6 @@ public interface PersonRepository extends JpaRepository<Person, Long>{
     Optional<Person> findPersonByPersonId(Long id);
     Optional<Person> findPersonByRollNumberEquals(String rollNumber);
 
-    @Value("a")
-    default String getListPersonQuery() {
-        StringBuilder queryBuilder = new StringBuilder();
-        String s=
-        "select new com.minswap.hrms.response.dto.EmployeeListDto(" +
-                "  p.personId as personId, p.fullName as fullName,p.email as email,d.departmentName as departmentName,p.rollNumber as rollNumber," +
-                "  p.status as status, p2.positionName as positionName )" +
-                " FROM Person p " +
-                "LEFT JOIN Department d on " +
-                " p.departmentId = d.departmentId " +
-                "LEFT JOIN Position p2 ON " +
-                " p.positionId = p2.positionId  " +
-                " where  1 = 1 ";
-        return s;
-    }
     @Query("select new com.minswap.hrms.response.dto.EmployeeDetailDto("+
             " p.personId as personId," +
             " p.fullName as fullName," +
@@ -86,9 +71,34 @@ public interface PersonRepository extends JpaRepository<Person, Long>{
                                               Pageable pageable);
     @Modifying
     @Transactional
-    @Query("UPDATE Person p set p.status = :status where p.rollNumber LIKE %:personId%")
+    @Query("UPDATE Person p set " +
+            "p.status = :status, " +
+            "p.fullName = :fullName," +
+//            "p.dateOfBirth = :dateOfBirth," +
+            "p.managerId = :managerId," +
+            "p.departmentId = :departmentId," +
+            "p.positionId = :positionId," +
+            "p.rankId = :rankId," +
+//            "p.onBoardDate = :onBoardDate," +
+            "p.citizenIdentification = :citizenIdentification," +
+            "p.phoneNumber = :phoneNumber," +
+            "p.address = :address," +
+            "p.gender = :gender" +
+            " where p.rollNumber = :rollNumber")
     Integer updateStatusEmployee(@Param("status") String status,
-                                 @Param("personId") String personId);
+                                 @Param("fullName") String fullName,
+//                                 @Param("dateOfBirth") String dateOfBirth,
+                                 @Param("managerId") Long managerId,
+                                 @Param("departmentId") Long departmentId,
+                                 @Param("positionId") Long positionId,
+                                 @Param("rankId") Long rankId,
+//                                 @Param("onBoardDate") String onBoardDate,
+                                 @Param("citizenIdentification") String citizenIdentification,
+                                 @Param("phoneNumber") String phoneNumber,
+                                 @Param("address") String address,
+                                 @Param("gender") int gender,
+                                 @Param("rollNumber") String rollNumber
+                                 );
 
     @Query(" SELECT p.personId " +
            " from Person p " +
@@ -98,4 +108,10 @@ public interface PersonRepository extends JpaRepository<Person, Long>{
                                           @Param("search") String search,
                                           Pageable pageable);
 
+    @Query("select new com.minswap.hrms.entities.Person(p.personId as personId, p.fullName as fullName) " +
+            "from Person p, Person_Role pr, Role r " +
+            "where p.personId = pr.pr.personId and pr.pr.roleId = r.roleId and r.roleId = :roleId " +
+            "AND (:search IS NULL OR p.fullName LIKE %:search%) ")
+    List<Person> getMasterDataAllManager(@Param("roleId") Long roleId,
+                                         @Param("search") String search);
 }
