@@ -35,7 +35,7 @@ public class HRPersonController {
   public ResponseEntity<BaseResponse<EmployeeInfoResponse, Pageable>> getSearchListEmployee(
           @RequestParam int page,
           @RequestParam int limit,
-          @RequestParam (name = "fullName", required = false)String fullName,
+          @RequestParam (name = "search", required = false)String fullName,
           @RequestParam (name = "email", required = false)String email,
           @RequestParam (name = "departmentId", required = false) Long departmentId,
           @RequestParam (name = "rollNumber", required = false) String rollNumber,
