@@ -23,7 +23,6 @@ import java.util.List;
 @AllArgsConstructor
 @JsonPropertyOrder("id")
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@AllArgsConstructor
 public class RequestDto {
     public RequestDto(Long requestId, String personName, Long requestTypeId, String requestTypeName, Date createDate, Date startTime,
                       Date endTime, String reason, String status, String receiver, Long deviceTypeId, Date approvalDate) {
