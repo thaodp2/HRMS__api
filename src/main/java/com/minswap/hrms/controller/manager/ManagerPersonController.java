@@ -22,13 +22,13 @@ public class ManagerPersonController {
           @RequestParam int limit,
           @RequestParam (name = "fullName", required = false)String fullName,
           @RequestParam (name = "email", required = false)String email,
-          @RequestParam (name = "departmentName", required = false) String departmentName,
+          @RequestParam (name = "departmentId", required = false) Long departmentId,
           @RequestParam (name = "rollNumber", required = false) String rollNumber,
           @RequestParam (name = "active", required = false) String active,
-          @RequestParam (name = "positionName", required = false)String positionName,
+          @RequestParam (name = "positionId", required = false)Long positionId,
           @RequestParam (name = "managerRoll", required = false)String managerRoll
 
   ) {
-    return employeeHRService.getSearchListEmployee(page,limit,fullName,email,departmentName,rollNumber,active,positionName,managerRoll);
+    return employeeHRService.getSearchListEmployee(page,limit,fullName,email,departmentId,rollNumber,active,positionId,managerRoll);
   }
 }

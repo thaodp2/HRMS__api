@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 import com.minswap.hrms.constants.ErrorCode;
 import com.minswap.hrms.entities.Person;
 import com.minswap.hrms.exception.model.BaseException;
+import com.minswap.hrms.request.ChangeStatusEmployeeRequest;
 import com.minswap.hrms.request.EmployeeRequest;
 import com.minswap.hrms.response.dto.EmployeeDetailDto;
 import org.apache.commons.lang3.StringUtils;
@@ -47,6 +48,7 @@ public class EmployeeHRServiceImpl implements EmployeeHRService {
 			String dateOnBoardSm = sm.format(employeeDetailDto.getOnBoardDate());
 			date = sm.parse(dateOnBoardSm);
 			employeeDetailDto.setOnBoardDate(date);
+			employeeDetailDto.setRole("1");
 		}catch (Exception e) {
 			throw new BaseException(ErrorCode.DATE_FAIL_FOMART);
 		}
@@ -59,7 +61,7 @@ public class EmployeeHRServiceImpl implements EmployeeHRService {
 	}
 
 	@Override
-	public ResponseEntity<BaseResponse<EmployeeInfoResponse, Pageable>> getSearchListEmployee(int page, int limit, String fullName,String email,String departmentName,String rollNumber,String status,String positionName, String managerRoll) {
+	public ResponseEntity<BaseResponse<EmployeeInfoResponse, Pageable>> getSearchListEmployee(int page, int limit, String fullName,String email,Long departmentId,String rollNumber,String status,Long positionId, String managerRoll) {
 		page = page - 1;
 		Pagination pagination = new Pagination(page, limit);
 		Long managerId = null;
@@ -72,7 +74,7 @@ public class EmployeeHRServiceImpl implements EmployeeHRService {
 			managerRoll = person.getPersonId().toString();
 			managerId = Long.parseLong(managerRoll);
 		}
-		Page<EmployeeListDto> pageInfo = personRepository.getSearchListPerson(fullName, email,departmentName,rollNumber,positionName,managerId,pagination);
+		Page<EmployeeListDto> pageInfo = personRepository.getSearchListPerson(fullName, email,departmentId,rollNumber,positionId,managerId,pagination);
 		List<EmployeeListDto> employeeListDtos = pageInfo.getContent();
 		pagination.setTotalRecords(pageInfo);
 		pagination.setPage(page + 1);
@@ -82,8 +84,18 @@ public class EmployeeHRServiceImpl implements EmployeeHRService {
 	}
 
 	@Override
-	public ResponseEntity<BaseResponse<Void, Void>> changeStatusEmployee(String rollNumber, String active) {
-		personRepository.updateStatusEmployee(active, rollNumber);
+	public ResponseEntity<BaseResponse<Void, Void>> updateEmployee(EmployeeRequest employeeRequest, String rollNumber) {
+		personRepository.updateEmployee(employeeRequest.getActive(),
+				employeeRequest.getFullName(),
+				employeeRequest.getManagerId(),
+				employeeRequest.getDepartmentId(),
+				employeeRequest.getPositionId(),
+				employeeRequest.getRankId(),
+				employeeRequest.getCitizenIdentification(),
+				employeeRequest.getPhoneNumber(),
+				employeeRequest.getAddress(),
+				employeeRequest.getGender(),
+				rollNumber);
 
 		ResponseEntity<BaseResponse<Void, Void>> responseEntity = BaseResponse.ofSucceeded(null);
 		return responseEntity;
@@ -119,6 +131,15 @@ public class EmployeeHRServiceImpl implements EmployeeHRService {
 		}catch (Exception e) {
 			throw new BaseException(ErrorCode.newErrorCode(500, e.getMessage()));
 		}
+		ResponseEntity<BaseResponse<Void, Void>> responseEntity = BaseResponse.ofSucceeded(null);
+		return responseEntity;
+	}
+
+	@Override
+	public ResponseEntity<BaseResponse<Void, Void>> updateStatusEmployee(ChangeStatusEmployeeRequest employeeRequest, String rollNumber) {
+		personRepository.updateStatusEmployee(employeeRequest.getActive(),
+				rollNumber);
+
 		ResponseEntity<BaseResponse<Void, Void>> responseEntity = BaseResponse.ofSucceeded(null);
 		return responseEntity;
 	}

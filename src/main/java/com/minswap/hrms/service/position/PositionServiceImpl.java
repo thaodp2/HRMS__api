@@ -23,8 +23,13 @@ public class PositionServiceImpl implements PositionService{
     PositionRepository positionRepository;
 
     @Override
-    public ResponseEntity<BaseResponse<MasterDataResponse, Pageable>> getMasterDataPositionByDepartmentId(Long departmentId) {
-        List<Position> positions = positionRepository.findByDepartmentId(departmentId);
+    public ResponseEntity<BaseResponse<MasterDataResponse, Pageable>> getMasterDataPositionByDepartmentId(Long departmentId, String search) {
+        List<Position> positions;
+        if(search != null){
+            positions = positionRepository.findByDepartmentIdAndPositionNameContainsIgnoreCase(departmentId, search.trim());
+        }else {
+            positions = positionRepository.findByDepartmentId(departmentId);
+        }
         List<MasterDataDto> masterDataDtos = new ArrayList<>();
         for (int i = 0; i < positions.size(); i++) {
             MasterDataDto masterDataDto = new MasterDataDto(positions.get(i).getPositionName(), positions.get(i).getPositionId());

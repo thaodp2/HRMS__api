@@ -46,7 +46,7 @@ public class PersonServiceImpl implements PersonService{
 
     @Override
     public ResponseEntity<BaseResponse<MasterDataResponse, Pageable>> getMasterDataAllManager(String search) {
-        List<Person> personList = personRepository.getMasterDataAllManager(CommonConstant.ROLE_ID_OF_MANAGER, search);
+        List<Person> personList = personRepository.getMasterDataAllManager(CommonConstant.ROLE_ID_OF_MANAGER, search.trim());
         List<MasterDataDto> masterDataDtos = new ArrayList<>();
         for (int i = 0; i < personList.size(); i++) {
             MasterDataDto masterDataDto = new MasterDataDto(personList.get(i).getFullName(), personList.get(i).getPersonId());

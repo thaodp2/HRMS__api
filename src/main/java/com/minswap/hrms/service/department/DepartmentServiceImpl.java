@@ -92,8 +92,13 @@ public class DepartmentServiceImpl implements DepartmentService{
     }
 
     @Override
-    public ResponseEntity<BaseResponse<MasterDataResponse, Pageable>> getMasterDataDepartment() {
-        List<Department> departments = departmentRepository.findAll();
+    public ResponseEntity<BaseResponse<MasterDataResponse, Pageable>> getMasterDataDepartment(String search) {
+        List<Department> departments;
+        if(search != null){
+            departments = departmentRepository.findByDepartmentNameContainsIgnoreCase(search.trim());
+        }else {
+            departments = departmentRepository.findAll();
+        }
         List<MasterDataDto> masterDataDtos = new ArrayList<>();
         for (int i = 0; i < departments.size(); i++) {
             MasterDataDto masterDataDto = new MasterDataDto(departments.get(i).getDepartmentName(), departments.get(i).getDepartmentId());

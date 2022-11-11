@@ -20,7 +20,7 @@ public class DeviceTypeController {
     DeviceTypeService deviceTypeService;
 
     @GetMapping("/device-type-master-data")
-    public ResponseEntity<BaseResponse<MasterDataResponse, Pageable>> getMasterDataDeviceType() {
-        return deviceTypeService.getMasterDataDeviceType();
+    public ResponseEntity<BaseResponse<MasterDataResponse, Pageable>> getMasterDataDeviceType(@RequestParam(required = false) String search) {
+        return deviceTypeService.getMasterDataDeviceType(search);
     }
 }
