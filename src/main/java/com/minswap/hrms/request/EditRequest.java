@@ -14,12 +14,12 @@ import java.util.List;
 public class EditRequest extends BasicRequest{
 
     @JsonCreator
-    public EditRequest(Long deviceTypeId, String startTime, String endTime, String reason, List<String> listImage) {
+    public EditRequest(Long deviceTypeId, String startTime, String endTime, String reason, List<String> listEvidence) {
         this.deviceTypeId = deviceTypeId;
         this.startTime = startTime;
         this.endTime = endTime;
         this.reason = reason;
-        this.listImage = listImage;
+        this.listEvidence = listEvidence;
     }
 
     private Long deviceTypeId;
@@ -34,6 +34,6 @@ public class EditRequest extends BasicRequest{
 
     private String reason;
 
-    private List<String> listImage;
+    private List<String> listEvidence;
 
 }

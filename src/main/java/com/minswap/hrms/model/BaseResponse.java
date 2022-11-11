@@ -7,8 +7,6 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.List;
-
 @Data
 @Accessors(chain = true)
 @Slf4j
@@ -18,7 +16,7 @@ public class BaseResponse<T, R> {
 
     private static final BusinessCode SUCCESS_BUSINESS_CODE = new BusinessCode(200, "Success", HttpStatus.OK);
 
-    private static final BusinessCode FAIL_BUSINESS_CODE = new BusinessCode(201, "Update fail", HttpStatus.OK);
+    private static final BusinessCode OTHER_REMAINING_TIME_BUDGET = new BusinessCode(200, "This request doesn't have remaining time", HttpStatus.OK);
 
     public static <T, R> ResponseEntity<BaseResponse<T, R>> ofSucceeded(T data) {
         BaseResponse<T, R> response = new BaseResponse<>();
@@ -39,10 +37,10 @@ public class BaseResponse<T, R> {
     }
 
     // Vunt
-    public static <T, R> ResponseEntity<BaseResponse<T, R>> ofFailedUpdate(T data) {
+    public static <T, R> ResponseEntity<BaseResponse<T, R>> ofSucceededRemainingTime(T data, R extraMeta) {
         BaseResponse<T, R> response = new BaseResponse<>();
         response.data = data;
-        response.metadata = Meta.buildMeta(FAIL_BUSINESS_CODE, null);
+        response.metadata = Meta.buildMeta(OTHER_REMAINING_TIME_BUDGET, extraMeta);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
