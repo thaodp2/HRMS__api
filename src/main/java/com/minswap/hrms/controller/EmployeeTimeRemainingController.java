@@ -10,10 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -26,11 +23,10 @@ public class EmployeeTimeRemainingController {
     EmployeeTimeRemainingService employeeTimeRemainingService;
 
     @GetMapping("request/remaining-time")
-    @ServiceProcessingValidateAnnotation
-    public ResponseEntity<BaseResponse<EmployeeTimeRemainingResponse, Void>>
-                                    getEmployeeRemainingTime(@RequestBody
-                                                             @Valid TimeRemainingRequest timeRemainingRequest,
-                                                             BindingResult bindingResult) {
-        return employeeTimeRemainingService.getEmployeeRemainingTime(timeRemainingRequest);
+    public ResponseEntity<BaseResponse<EmployeeTimeRemainingResponse, Void>> getEmployeeRemainingTime(
+                                                        @RequestParam Long requestTypeId,
+                                                        @RequestParam (required = false) int month,
+                                                        @RequestParam int year) {
+        return employeeTimeRemainingService.getEmployeeRemainingTime(requestTypeId, month, year);
     }
 }

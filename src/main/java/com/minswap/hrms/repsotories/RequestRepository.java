@@ -90,4 +90,7 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
 
     @Query("select r.personId from Request r where r.requestId=:id")
     Long getPersonIdByRequestId(@Param("id") Long id);
+
+    @Query("select max(r.requestId) from Request r")
+    Integer getLastRequestId();
 }

@@ -17,6 +17,13 @@ public class ErrorCode {
     public static final BusinessCode RESULT_NOT_FOUND = new BusinessCode(
             ErrorCodeEnum.RESULT_NOT_FOUND.getValue(), "Result not found", HttpStatus.NOT_FOUND);
 
+    public static final BusinessCode DATE_INVALID_IN_LEAVE_REQUEST = new BusinessCode(
+            ErrorCodeEnum.DATE_INVALID_IN_LEAVE_REQUEST.getValue(),
+            "Start Time and End Time can't be null in leave request", HttpStatus.BAD_REQUEST);
+
+    public static final BusinessCode INVALID_DEVICE_TYPE_ID = new BusinessCode(
+            ErrorCodeEnum.INVALID_DEVICE_TYPE_ID.getValue(), "DeviceTypeId is not exist", HttpStatus.NOT_FOUND);
+
     public static final BusinessCode UPDATE_FAIL = new BusinessCode(
             ErrorCodeEnum.UPDATE_FAIL.getValue(), "Update failed", HttpStatus.NOT_FOUND);
 

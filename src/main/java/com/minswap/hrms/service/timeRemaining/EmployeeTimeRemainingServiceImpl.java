@@ -5,6 +5,7 @@ import com.minswap.hrms.exception.model.BaseException;
 import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.repsotories.EmployeeTimeRemainingRepository;
 import com.minswap.hrms.repsotories.OTBudgetRepository;
+import com.minswap.hrms.repsotories.RequestTypeRepository;
 import com.minswap.hrms.request.TimeRemainingRequest;
 import com.minswap.hrms.response.EmployeeTimeRemainingResponse;
 import com.minswap.hrms.response.RequestResponse;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 import java.time.Year;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Service
@@ -29,6 +31,9 @@ public class EmployeeTimeRemainingServiceImpl implements EmployeeTimeRemainingSe
 
     @Autowired
     OTBudgetRepository otBudgetRepository;
+
+    @Autowired
+    RequestTypeRepository requestTypeRepository;
 
     /*
         ANNUAL_LEAVE_TYPE_ID = 1;
@@ -43,12 +48,16 @@ public class EmployeeTimeRemainingServiceImpl implements EmployeeTimeRemainingSe
 
 
     @Override
-    public ResponseEntity<BaseResponse<EmployeeTimeRemainingResponse, Void>> getEmployeeRemainingTime(TimeRemainingRequest timeRemainingRequest) {
+    public ResponseEntity<BaseResponse<EmployeeTimeRemainingResponse, Void>> getEmployeeRemainingTime(Long requestTypeId,
+                                                                                                      int month,
+                                                                                                      int yearOfRequest) {
         ResponseEntity<BaseResponse<EmployeeTimeRemainingResponse, Void>> responseEntity = null;
+        List<Long> listRequestTypesId = requestTypeRepository.getAllRequestTypeId();
+        if (!listRequestTypesId.contains(requestTypeId)) {
+            throw new BaseException(ErrorCode.REQUEST_TYPE_INVALID);
+        }
         EmployeeTimeRemainingResponse employeeTimeRemainingResponse = new EmployeeTimeRemainingResponse();
-        Year year = Year.of(timeRemainingRequest.getYear());
-        int month = timeRemainingRequest.getMonth();
-        Long requestTypeId = timeRemainingRequest.getRequestTypeId();
+        Year year = Year.of(yearOfRequest);
         if (requestTypeId == OT_TYPE_ID) {
             if (Integer.valueOf(month) == null) {
                 throw new BaseException(ErrorCode.MONTH_INVALID);
@@ -82,7 +91,7 @@ public class EmployeeTimeRemainingServiceImpl implements EmployeeTimeRemainingSe
                 responseEntity = BaseResponse.ofSucceededOffset(employeeTimeRemainingResponse, null);
             }
         } else {
-            responseEntity = BaseResponse.ofSucceededOffset(employeeTimeRemainingResponse, null);
+            responseEntity = BaseResponse.ofSucceededRemainingTime(employeeTimeRemainingResponse, null);
         }
 
         return responseEntity;

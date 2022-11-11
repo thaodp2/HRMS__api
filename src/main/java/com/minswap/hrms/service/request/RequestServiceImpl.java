@@ -80,7 +80,8 @@ public class RequestServiceImpl implements RequestService {
     private static final Integer OT_TYPE_ID = 7;
 
     private static final Integer ANNUAL_LEAVE_TYPE_ID = 1;
-
+    private static final Integer ALLOW_ROLLBACK = 1;
+    private static final Integer NOT_ALLOW_ROLLBACK = 0;
     public List<RequestDto> getQueryForRequestList(String type, Long managerId, Long personId, Boolean isLimit, Integer limit, Integer page, String createDateFrom, String createDateTo, Long requestTypeId, String status, String sort, String dir) {
         HashMap<String, Object> params = new HashMap<>();
         StringBuilder queryAllRequest = new StringBuilder("select r.request_id as requestId,p.roll_number as rollNumber, p.full_name as personName, rt.request_type_name as requestTypeName, r.create_date as createDate, r.start_time as startTime, r.end_time as endTime, r.reason as reason, r.status as status ");
@@ -209,7 +210,7 @@ public class RequestServiceImpl implements RequestService {
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(dateDto.getStartTime());
             Year year = Year.of(calendar.get(Calendar.YEAR));
-            int month = calendar.get(Calendar.MONTH);
+            int month = calendar.get(Calendar.MONTH) + 1;
             Integer requestType = requestTypeRepository.getRequestTypeByRequestId(id);
             Long personId = requestRepository.getPersonIdByRequestId(id);
             if (LEAVE_REQUEST_TYPE.contains(requestType)) {
@@ -230,6 +231,13 @@ public class RequestServiceImpl implements RequestService {
             }
             List<String> listImage = evidenceRepository.getListImageByRequest(id);
             requestDto.setListEvidence(listImage);
+            Date currentTime = getCurrentTime();
+            if (currentTime.after(requestDto.getStartTime())) {
+                requestDto.setIsAllowRollback(NOT_ALLOW_ROLLBACK);
+            }
+            else {
+                requestDto.setIsAllowRollback(ALLOW_ROLLBACK);
+            }
             RequestResponse requestResponse = new RequestResponse(requestDto);
             ResponseEntity<BaseResponse<RequestResponse, Void>> responseEntity
                     = BaseResponse.ofSucceededOffset(requestResponse, null);
@@ -290,16 +298,20 @@ public class RequestServiceImpl implements RequestService {
     @Override
     public ResponseEntity<BaseResponse<Void, Void>> editRequest(EditRequest editRequest, Long id) {
         ResponseEntity<BaseResponse<Void, Void>> responseEntity = null;
-        String status = requestRepository.getStatusOfRequestById(id);
-        if (status == null) {
+        if (!isRequestIdValid(id)) {
             throw new BaseException(ErrorCode.RESULT_NOT_FOUND);
         } else {
             Integer requestTypeId = requestTypeRepository.getRequestTypeByRequestId(id);
             if (requestTypeId.intValue() == BORROW_REQUEST_TYPE_ID) {
-                requestRepository.updateDeviceRequest(id,
-                        editRequest.getDeviceTypeId(),
-                        editRequest.getReason());
-            } else {
+                if (editRequest.getDeviceTypeId() == null) {
+                    throw new BaseException(ErrorCode.INVALID_DEVICE_TYPE_ID);
+                } else {
+                    requestRepository.updateDeviceRequest(id,
+                            editRequest.getDeviceTypeId(),
+                            editRequest.getReason());
+                }
+            }
+            else {
                 try {
                     Date createDate = requestRepository.getCreateDateById(id);
                     Date startTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
@@ -315,7 +327,7 @@ public class RequestServiceImpl implements RequestService {
                             startTime,
                             endTime,
                             editRequest.getReason());
-                    List<String> listImage = editRequest.getListImage();
+                    List<String> listImage = editRequest.getListEvidence();
                     evidenceRepository.deleteImageByRequestId(id);
                     if (!listImage.isEmpty()) {
                         for(String image : listImage) {
@@ -374,12 +386,16 @@ public class RequestServiceImpl implements RequestService {
     @Override
     public ResponseEntity<BaseResponse<Void, Void>> createRequest(CreateRequest createRequest) throws ParseException {
         Long requestTypeId = createRequest.getRequestTypeId();
-        Long personId = createRequest.getPersonId();
+        Long personId = Long.valueOf(2);
         Long deviceTypeId = createRequest.getDeviceTypeId();
-        Date startTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
-                parse(createRequest.getStartTime());
-        Date endTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
-                parse(createRequest.getEndTime());
+        Date startTime = null;
+        Date endTime = null;
+        if (createRequest.getStartTime() != null && createRequest.getEndTime() != null) {
+            startTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
+                    parse(createRequest.getStartTime());
+            endTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
+                    parse(createRequest.getEndTime());
+        }
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         LocalDateTime localDateTime = LocalDateTime.now();
         String createDateStr = dateTimeFormatter.format(localDateTime);
@@ -395,9 +411,13 @@ public class RequestServiceImpl implements RequestService {
                 throw new BaseException(ErrorCode.NOT_FOUND_DEVICE_TYPE);
             }
         }
-        else if (startTime.before(createDate)
+        else if ((LEAVE_REQUEST_TYPE.contains(Integer.parseInt(requestTypeId + "")) || requestTypeId == Long.valueOf(OT_TYPE_ID))
+                && (createRequest.getStartTime() == null || createRequest.getEndTime() == null)) {
+            throw new BaseException(ErrorCode.DATE_INVALID_IN_LEAVE_REQUEST);
+        }
+        else if ((startTime.before(createDate)
                 || endTime.before(createDate)
-                || endTime.before(startTime)) {
+                || endTime.before(startTime)) && startTime != null && endTime != null) {
             throw new BaseException(ErrorCode.DATE_INVALID);
         }
 
@@ -410,6 +430,14 @@ public class RequestServiceImpl implements RequestService {
                                     createDate,
                                     PENDING_STATUS);
         requestRepository.save(request);
+        Long requestIdJustAdded = Long.valueOf(requestRepository.getLastRequestId());
+        List<String> listImage = createRequest.getListEvidence();
+        if (listImage != null) {
+            for(String image : listImage) {
+                Evidence evidence = new Evidence(requestIdJustAdded, image);
+                evidenceRepository.save(evidence);
+            }
+        }
         ResponseEntity<BaseResponse<Void, Void>> responseEntity = BaseResponse.ofSucceeded(null);
         return responseEntity;
     }
@@ -506,5 +534,14 @@ public class RequestServiceImpl implements RequestService {
         if (isUpdateSucceeded != CommonConstant.UPDATE_SUCCESS) {
             throw new BaseException(ErrorCode.UPDATE_FAIL);
         }
+    }
+
+    public Date getCurrentTime() throws ParseException {
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime localDateTime = LocalDateTime.now();
+        String currentTimeStr = dateTimeFormatter.format(localDateTime);
+        Date currentTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
+                parse(currentTimeStr);
+        return currentTime;
     }
 }
