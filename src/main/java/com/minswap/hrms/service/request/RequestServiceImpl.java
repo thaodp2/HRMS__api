@@ -80,7 +80,8 @@ public class RequestServiceImpl implements RequestService {
     private static final Integer OT_TYPE_ID = 7;
 
     private static final Integer ANNUAL_LEAVE_TYPE_ID = 1;
-
+    private static final Integer ALLOW_ROLLBACK = 1;
+    private static final Integer NOT_ALLOW_ROLLBACK = 0;
     public List<RequestDto> getQueryForRequestList(String type, Long managerId, Long personId, Boolean isLimit, Integer limit, Integer page, String createDateFrom, String createDateTo, Long requestTypeId, String status, String sort, String dir) {
         HashMap<String, Object> params = new HashMap<>();
         StringBuilder queryAllRequest = new StringBuilder("select r.request_id as requestId,p.roll_number as rollNumber, p.full_name as personName, rt.request_type_name as requestTypeName, r.create_date as createDate, r.start_time as startTime, r.end_time as endTime, r.reason as reason, r.status as status ");
@@ -230,6 +231,13 @@ public class RequestServiceImpl implements RequestService {
             }
             List<String> listImage = evidenceRepository.getListImageByRequest(id);
             requestDto.setListEvidence(listImage);
+            Date currentTime = getCurrentTime();
+            if (currentTime.after(requestDto.getStartTime())) {
+                requestDto.setIsAllowRollback(NOT_ALLOW_ROLLBACK);
+            }
+            else {
+                requestDto.setIsAllowRollback(ALLOW_ROLLBACK);
+            }
             RequestResponse requestResponse = new RequestResponse(requestDto);
             ResponseEntity<BaseResponse<RequestResponse, Void>> responseEntity
                     = BaseResponse.ofSucceededOffset(requestResponse, null);
@@ -526,5 +534,14 @@ public class RequestServiceImpl implements RequestService {
         if (isUpdateSucceeded != CommonConstant.UPDATE_SUCCESS) {
             throw new BaseException(ErrorCode.UPDATE_FAIL);
         }
+    }
+
+    public Date getCurrentTime() throws ParseException {
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime localDateTime = LocalDateTime.now();
+        String currentTimeStr = dateTimeFormatter.format(localDateTime);
+        Date currentTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
+                parse(currentTimeStr);
+        return currentTime;
     }
 }

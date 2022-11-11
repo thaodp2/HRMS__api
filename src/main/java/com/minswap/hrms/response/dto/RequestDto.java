@@ -64,4 +64,6 @@ public class RequestDto {
 
     private double timeRemaining;
 
+    private int isAllowRollback;
+
 }
