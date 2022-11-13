@@ -55,8 +55,11 @@ public class ErrorCode {
     public static final BusinessCode MONTH_INVALID = new BusinessCode(
             ErrorCodeEnum.MONTH_INVALID.getValue(), "Month can't be null", HttpStatus.NOT_FOUND);
 
-    public static final BusinessCode UPDATE_DEPARTMENT_FAIL = new BusinessCode(
-            ErrorCodeEnum.UPDATE_DEPARTMENT_FAIL.getValue(), "DepartmentName already exist", HttpStatus.ALREADY_REPORTED);
+    public static final BusinessCode INVALID_DEPARTMENT = new BusinessCode(
+            ErrorCodeEnum.INVALID_DEPARTMENT.getValue(), "Department already exist", HttpStatus.ALREADY_REPORTED);
+
+    public static final BusinessCode INVALID_POSITION = new BusinessCode(
+            ErrorCodeEnum.INVALID_POSITION.getValue(), "Position already exist", HttpStatus.ALREADY_REPORTED);
 
     public static final BusinessCode INVALID_PARAMETERS = new BusinessCode(
     		ErrorCodeEnum.BAD_REQUEST.getValue(), "Invalid parameters", HttpStatus.BAD_REQUEST);

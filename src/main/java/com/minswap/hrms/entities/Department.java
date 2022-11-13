@@ -15,8 +15,10 @@ import javax.persistence.*;
 public class Department {
     public static final String TABLE_NAME = "department";
 
-    public Department(String departmentName) {
+    public Department(String departmentName, int status, int total) {
         this.departmentName = departmentName;
+        this.status = status;
+        this.total = total;
     }
 
     @Id
@@ -26,4 +28,10 @@ public class Department {
 
     @Column(name = "department_name")
     private String departmentName;
+
+    @Column(name = "status")
+    private int status;
+
+    @Column(name = "total_employee")
+    private int total;
 }

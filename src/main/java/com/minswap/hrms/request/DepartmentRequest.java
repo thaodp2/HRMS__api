@@ -7,6 +7,7 @@ import lombok.Setter;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
+import java.util.List;
 
 @Getter
 @Setter
@@ -17,9 +18,19 @@ public class DepartmentRequest extends BasicRequest{
     @Pattern(regexp = "(.|\\s)*\\S(.|\\s)*", message = "415")
     private String departmentName;
 
+    @NotNull(message = "420")
+    private List<String> listPosition;
+
+    @NotNull(message = "608")
+    private int isActive;
+
     @JsonCreator
-    public DepartmentRequest(String departmentName) {
+    public DepartmentRequest(String departmentName,
+                         List<String> listPosition,
+                         int isActive) {
         this.departmentName = departmentName;
+        this.listPosition = listPosition;
+        this.isActive = isActive;
     }
 
 }

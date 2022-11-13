@@ -33,4 +33,9 @@ public interface DepartmentRepository extends JpaRepository<Department, Long> {
                              @Param("id") Long id);
 
     List<Department> findByDepartmentNameContainsIgnoreCase(String deviceTypeName);
+
+    List<Department> findAll();
+
+    @Query("select max(d.departmentId) from Department d")
+    Integer getLastDepartmentId();
 }

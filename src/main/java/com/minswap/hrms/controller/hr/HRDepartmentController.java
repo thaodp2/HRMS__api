@@ -33,7 +33,7 @@ public class HRDepartmentController {
                                                                      @Valid
                                                                      DepartmentRequest departmentRequest,
                                                                      BindingResult bindingResult) {
-        return departmentService.createDepartment(departmentRequest.getDepartmentName());
+        return departmentService.createDepartment(departmentRequest);
     }
 
     @PutMapping("/department/{id}")
