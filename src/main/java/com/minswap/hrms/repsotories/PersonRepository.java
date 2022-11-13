@@ -108,6 +108,13 @@ public interface PersonRepository extends JpaRepository<Person, Long>{
                                           @Param("search") String search,
                                           Pageable pageable);
 
+    @Query(" SELECT p.personId " +
+            " from Person p " +
+            " WHERE 1 = 1 " +
+            " AND (:search IS NULL OR p.fullName LIKE %:search%) ")
+    Page<Long> getListPersonIdByFullName(@Param("search") String search,
+                                          Pageable pageable);
+
     @Query("select new com.minswap.hrms.entities.Person(p.personId as personId, p.fullName as fullName) " +
             "from Person p, Person_Role pr, Role r " +
             "where p.personId = pr.pr.personId and pr.pr.roleId = r.roleId and r.roleId = :roleId " +

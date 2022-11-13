@@ -17,6 +17,8 @@ public class TimeCheckDto {
 
     private String personName;
 
+    private String rollNumber;
+
     private Date date;
 
     private Date timeIn;
