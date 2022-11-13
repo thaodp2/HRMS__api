@@ -390,11 +390,24 @@ public class RequestServiceImpl implements RequestService {
         Long deviceTypeId = createRequest.getDeviceTypeId();
         Date startTime = null;
         Date endTime = null;
+        double dayOffByMinutesInRequest = 0;
+        double otHoursInRequest = 0;
+        double dayOffByDaysInRequest = 0;
+        Year year = null;
+        int month = 0;
         if (createRequest.getStartTime() != null && createRequest.getEndTime() != null) {
             startTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
                     parse(createRequest.getStartTime());
             endTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
                     parse(createRequest.getEndTime());
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(startTime);
+            year = Year.of(calendar.get(Calendar.YEAR));
+            month = calendar.get(Calendar.MONTH) + 1;
+            DecimalFormat decimalFormat = new DecimalFormat("#.##");
+            dayOffByMinutesInRequest = ((endTime.getTime() - startTime.getTime()) / (60 * 1000));
+            otHoursInRequest = dayOffByMinutesInRequest / 60;
+            dayOffByDaysInRequest = Double.parseDouble(decimalFormat.format(((dayOffByMinutesInRequest) / 60) / 24));
         }
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         LocalDateTime localDateTime = LocalDateTime.now();
@@ -420,7 +433,25 @@ public class RequestServiceImpl implements RequestService {
                 || endTime.before(startTime)) && startTime != null && endTime != null) {
             throw new BaseException(ErrorCode.DATE_INVALID);
         }
-
+        else if (LEAVE_REQUEST_TYPE.contains(Integer.parseInt(requestTypeId + ""))) {
+            LeaveBudgetDto leaveBudgetDto = leaveBudgetRepository.getLeaveBudget(personId, year, requestTypeId);
+            double leaveBudget = leaveBudgetDto.getLeaveBudget();
+            double newNumberOfDayOff = 0;
+            newNumberOfDayOff = leaveBudgetDto.getNumberOfDayOff() + dayOffByDaysInRequest;
+            double remainDayOff = leaveBudget - newNumberOfDayOff;
+            if (remainDayOff < 0) {
+                throw new BaseException(ErrorCode.UPDATE_DAY_OFF_FAIL);
+            }
+        }
+        else if (requestTypeId == Long.valueOf(OT_TYPE_ID)) {
+            OTBudgetDto otBudgetDto = otBudgetRepository.getOTBudgetByPersonId(personId, year, month);
+            double newHoursWorked = 0;
+            newHoursWorked = otBudgetDto.getHoursWorked() + otHoursInRequest;
+            double remainHoursWork = otBudgetDto.getOtHoursBudget() - newHoursWorked;
+            if (remainHoursWork < 0) {
+                throw new BaseException(ErrorCode.UPDATE_DAY_OFF_FAIL);
+            }
+        }
         Request request = new Request(requestTypeId,
                                     personId,
                                     deviceTypeId,
