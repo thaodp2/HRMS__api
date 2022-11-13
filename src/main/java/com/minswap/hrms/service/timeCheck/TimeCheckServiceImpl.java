@@ -58,7 +58,10 @@ public class TimeCheckServiceImpl implements TimeCheckService{
                 timeCheckListOfThisDate.add(timeCheckDto);
                 timeCheckPerDateMap.put(timeCheckDate, timeCheckListOfThisDate);
             }
-
+            Optional<Person> personFromDB = personRepository.findPersonByPersonId(personId);
+            if(!personFromDB.isPresent()){
+                throw new Exception("Person not exist");
+            }
             getDatesInRange(startDateFormat, endDateFormat).forEach((date) -> {
                 if (!Optional.ofNullable(timeCheckPerDateMap.get(date)).isPresent()) {
                     Date dateAdd = date;
@@ -67,6 +70,8 @@ public class TimeCheckServiceImpl implements TimeCheckService{
                     timeCheckPerDateMap.put(date, Arrays.asList(
                             TimeCheckDto.builder()
                                     .personId(personId)
+                                    .personName(personFromDB.get().getFullName())
+                                    .rollNumber(personFromDB.get().getRollNumber())
                                     .date(dateAdd)
                                     .workingTime(0d)
                                     .requestTypeName(reason)
@@ -193,5 +198,70 @@ public class TimeCheckServiceImpl implements TimeCheckService{
         }
         return responseEntity;
 
+    }
+
+    @Override
+    public ResponseEntity<BaseResponse<TimeCheckResponse.TimeCheckEachSubordinateResponse, Pageable>> getListTimeCheckByHR(
+            String search, String startDate, String endDate, Integer page, Integer limit) throws Exception {
+
+        ResponseEntity<BaseResponse<TimeCheckResponse.TimeCheckEachSubordinateResponse, Pageable>> responseEntity = null;
+        try {
+            Pagination pagination = new Pagination(page - 1, limit);
+            Date startDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(startDate);
+            Date endDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(endDate);
+
+            List<TimeCheckEachSubordinateDto> timeCheckSubordinateList = new ArrayList<>();
+            Page<Long> listPersonIdPage = personRepository.getListPersonIdByFullName(search, pagination);
+            List<Long> listPersonId = listPersonIdPage.getContent();
+
+            List<Date> listDate = getDatesInRange(startDateFormat, endDateFormat);
+            for (Long personId : listPersonId ) {
+                Optional<Person> personFromDB = personRepository.findPersonByPersonId(personId);
+                if(!personFromDB.isPresent()){
+                    throw new Exception("Person not exist");
+                }
+                TimeCheckEachSubordinateDto eachSubordinateDto = new TimeCheckEachSubordinateDto();
+                eachSubordinateDto.setId(personId);
+                eachSubordinateDto.setPersonName(personFromDB.get().getFullName());
+                eachSubordinateDto.setRollNumber(personFromDB.get().getRollNumber());
+                int dateCount = 2;
+                for (Date item : listDate){
+                    Date dateAdd = item;
+                    dateAdd.setTime(dateAdd.getTime() + MILLISECOND_7_HOURS);
+                    DailyTimeCheckDto timeCheckDto = timeCheckRepository.getDailyTimeCheck(personId,dateAdd);
+
+                    if(dateCount == 2){
+                        eachSubordinateDto.setMon(timeCheckDto);
+                    }
+                    if(dateCount == 3){
+                        eachSubordinateDto.setTue(timeCheckDto);
+                    }
+                    if(dateCount == 4){
+                        eachSubordinateDto.setWed(timeCheckDto);
+                    }
+                    if(dateCount == 5){
+                        eachSubordinateDto.setThu(timeCheckDto);
+                    }
+                    if(dateCount == 6){
+                        eachSubordinateDto.setFri(timeCheckDto);
+                    }
+                    if(dateCount == 7){
+                        eachSubordinateDto.setSat(timeCheckDto);
+                    }
+                    if(dateCount == 8){
+                        eachSubordinateDto.setSun(timeCheckDto);
+                    }
+                    dateCount++;
+                }
+
+                timeCheckSubordinateList.add(eachSubordinateDto);
+            }
+            pagination.setTotalRecords(timeCheckSubordinateList.size());
+            pagination.setPage(page);
+            responseEntity = BaseResponse.ofSucceededOffset(TimeCheckResponse.TimeCheckEachSubordinateResponse.of(timeCheckSubordinateList), pagination);
+        }catch(Exception ex){
+            throw new Exception(ex.getMessage());
+        }
+        return responseEntity;
     }
 }

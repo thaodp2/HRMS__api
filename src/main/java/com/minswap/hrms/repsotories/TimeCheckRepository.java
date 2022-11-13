@@ -19,7 +19,8 @@ public interface TimeCheckRepository extends JpaRepository<TimeCheck, Long> {
     @Query("SELECT new com.minswap.hrms.response.dto.TimeCheckDto( " +
             " tc.personId as id,  " +
             " tc.personId ,  " +
-            " p.fullName as personName,  " +
+            " p.fullName as personName," +
+            " p.rollNumber as rollNumber,  " +
             " tc.timeIn as date, " +
             " tc.timeIn as timeIn,  " +
             " tc.timeOut  as timeOut, " +
@@ -52,7 +53,8 @@ public interface TimeCheckRepository extends JpaRepository<TimeCheck, Long> {
     @Query("SELECT new com.minswap.hrms.response.dto.TimeCheckDto( " +
             " tc.personId as id,  " +
             " tc.personId as personId,  " +
-            " p.fullName as personName,  " +
+            " p.fullName as personName," +
+            " p.rollNumber as rollNumber, " +
             " tc.timeIn as date, " +
             " tc.timeIn as timeIn,  " +
             " tc.timeOut  as timeOut, " +
