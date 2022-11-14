@@ -12,5 +12,6 @@ import java.util.List;
 public interface PositionRepository extends JpaRepository<Position, Long> {
     List<Position> findByDepartmentId(Long departmentId);
     List<Position> findByDepartmentIdAndPositionNameContainsIgnoreCase(Long departmentId, String search);
+    List<Position> findByPositionNameContainsIgnoreCase(String search);
     List<Position> findAll();
 }
