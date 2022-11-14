@@ -8,6 +8,7 @@ import com.minswap.hrms.exception.model.BaseException;
 import com.minswap.hrms.exception.model.Pagination;
 import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.repsotories.DepartmentRepository;
+import com.minswap.hrms.repsotories.PersonRepository;
 import com.minswap.hrms.repsotories.PositionRepository;
 import com.minswap.hrms.request.DepartmentRequest;
 import com.minswap.hrms.response.MasterDataResponse;
@@ -34,26 +35,24 @@ public class DepartmentServiceImpl implements DepartmentService{
     DepartmentRepository departmentRepository;
     @Autowired
     PositionRepository positionRepository;
+    @Autowired
+    PersonRepository personRepository;
 
     HttpStatus httpStatus;
-
-    private static final int DEFAULT_TOTAL_EMPLOYEE = 0;
-
     private static final String SORT_DESC = "desc";
-
     private static final String SORT_ASC = "asc";
     @Override
     public ResponseEntity<BaseResponse<ListDepartmentDto, Pageable>> getListDepartment(Integer page,
                                                                                        Integer limit,
                                                                                        String search,
-                                                                                       Integer status,
                                                                                        String sort) {
         ResponseEntity<BaseResponse<ListDepartmentDto, Pageable>> responseEntity = null;
         Pagination pagination = new Pagination(page - 1, limit);
-        Page<DepartmentDto> listDepartmentDto = departmentRepository.getListDepartmentBySearch(search,
-                                                                                                status,
-                                                                                                pagination);
-        List<DepartmentDto> departmentDtos = null;
+        Page<DepartmentDto> listDepartmentDto = departmentRepository.getListDepartmentBySearch(search, pagination);
+        List<DepartmentDto> departmentDtos = listDepartmentDto.getContent();
+        for (DepartmentDto departmentDto : departmentDtos) {
+            departmentDto.setTotalEmployee(personRepository.getNumberOfEmplInDepartment(departmentDto.getId()));
+        }
         if (sort != null && (sort.equalsIgnoreCase(SORT_ASC) || sort.equalsIgnoreCase(SORT_DESC))) {
             departmentDtos = listDepartmentDto.getContent()
                                                .stream().sorted((o1, o2) -> {
@@ -72,10 +71,6 @@ public class DepartmentServiceImpl implements DepartmentService{
                                                })
                                                .collect(Collectors.toList());
         }
-        else {
-            departmentDtos = listDepartmentDto.getContent();
-        }
-
         pagination.setTotalRecords(listDepartmentDto);
         pagination.setPage(page);
         responseEntity = BaseResponse.ofSucceededOffset(ListDepartmentDto.of(departmentDtos), pagination);
@@ -99,9 +94,7 @@ public class DepartmentServiceImpl implements DepartmentService{
                     httpStatus.ALREADY_REPORTED));
         }
         ResponseEntity<BaseResponse<Void, Void>> responseEntity = null;
-        Department department = new Department(departmentName,
-                                               departmentRequest.getIsActive(),
-                                               DEFAULT_TOTAL_EMPLOYEE);
+        Department department = new Department(departmentName);
         departmentRepository.save(department);
         Integer departmentIdJustAdded = departmentRepository.getLastDepartmentId();
         for (String positionName : listFormattedPositionName) {
@@ -176,14 +169,9 @@ public class DepartmentServiceImpl implements DepartmentService{
     }
 
     public String getPositionAlreadyExist(List<String> listPositionName) {
-        List<Position> listPosition = positionRepository.findAll();
-        List<String> listFormattedPositionName = new ArrayList<>();
         for (String positionName : listPositionName) {
-            listFormattedPositionName.add(getFormattedName(positionName));
-        }
-        for (Position position : listPosition) {
-            if (listFormattedPositionName.contains(position.getPositionName())) {
-                return position.getPositionName();
+            if (positionRepository.isPositionAlreadyExist(positionName) != null) {
+                return positionName;
             }
         }
         return null;

@@ -21,16 +21,11 @@ public class DepartmentRequest extends BasicRequest{
     @NotNull(message = "420")
     private List<String> listPosition;
 
-    @NotNull(message = "608")
-    private int isActive;
-
     @JsonCreator
     public DepartmentRequest(String departmentName,
-                         List<String> listPosition,
-                         int isActive) {
+                         List<String> listPosition) {
         this.departmentName = departmentName;
         this.listPosition = listPosition;
-        this.isActive = isActive;
     }
 
 }

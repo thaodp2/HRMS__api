@@ -131,4 +131,6 @@ public interface PersonRepository extends JpaRepository<Person, Long>{
                            @Param("rollNumber") String rollNumber
     );
 
+    @Query("select count(p.personId) from Person p where p.departmentId=:departmentId")
+    Integer getNumberOfEmplInDepartment(@Param("departmentId") Long departmentId);
 }
