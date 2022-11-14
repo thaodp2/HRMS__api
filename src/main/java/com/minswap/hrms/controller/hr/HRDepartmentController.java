@@ -46,7 +46,7 @@ public class HRDepartmentController {
                                                                    DepartmentRequest departmentRequest,
                                                                    BindingResult bindingResult,
                                                                    @PathVariable Long id) {
-        return departmentService.editDepartment(id, departmentRequest.getDepartmentName());
+        return departmentService.editDepartment(id, departmentRequest);
     }
 
     @DeleteMapping("department/{id}")
