@@ -13,6 +13,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 
 @RestController
 @RequestMapping(CommonConstant.HR)
@@ -22,10 +23,13 @@ public class HRDepartmentController {
     DepartmentService departmentService;
 
     @GetMapping("/department")
-    public ResponseEntity<BaseResponse<ListDepartmentDto, Pageable>> getListDepartment(@RequestParam Integer page,
-                                                                                       @RequestParam Integer limit,
-                                                                                       @RequestParam(required = false) String departmentName) {
-        return departmentService.getListDepartment(page, limit, departmentName);
+    public ResponseEntity<BaseResponse<ListDepartmentDto, Pageable>>
+                            getListDepartment(@RequestParam @Min(1) Integer page,
+                                              @RequestParam @Min(0) Integer limit,
+                                              @RequestParam (required = false) String search,
+                                              @RequestParam (required = false) Integer status,
+                                              @RequestParam (required = false) String sort) {
+        return departmentService.getListDepartment(page, limit, search, status, sort);
     }
     @PostMapping("/department")
     @ServiceProcessingValidateAnnotation

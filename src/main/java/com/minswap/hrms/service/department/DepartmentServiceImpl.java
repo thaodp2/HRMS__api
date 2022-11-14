@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -38,15 +39,45 @@ public class DepartmentServiceImpl implements DepartmentService{
 
     private static final int DEFAULT_TOTAL_EMPLOYEE = 0;
 
+    private static final String SORT_DESC = "desc";
+
+    private static final String SORT_ASC = "asc";
     @Override
     public ResponseEntity<BaseResponse<ListDepartmentDto, Pageable>> getListDepartment(Integer page,
                                                                                        Integer limit,
-                                                                                       String departmentName) {
+                                                                                       String search,
+                                                                                       Integer status,
+                                                                                       String sort) {
         ResponseEntity<BaseResponse<ListDepartmentDto, Pageable>> responseEntity = null;
-        Pagination pagination = new Pagination(page, limit);
-        Page<DepartmentDto> listDepartmentDto = departmentRepository.getListDepartmentBySearch(departmentName, pagination);
-        List<DepartmentDto> departmentDtos = listDepartmentDto.getContent();
+        Pagination pagination = new Pagination(page - 1, limit);
+        Page<DepartmentDto> listDepartmentDto = departmentRepository.getListDepartmentBySearch(search,
+                                                                                                status,
+                                                                                                pagination);
+        List<DepartmentDto> departmentDtos = null;
+        if (sort != null && (sort.equalsIgnoreCase(SORT_ASC) || sort.equalsIgnoreCase(SORT_DESC))) {
+            departmentDtos = listDepartmentDto.getContent()
+                                               .stream().sorted((o1, o2) -> {
+                                                   if (sort.equalsIgnoreCase(SORT_DESC)) {
+                                                       if (o1.getTotalEmployee() > o2.getTotalEmployee()) {
+                                                           return -1;
+                                                       }
+                                                       return 1;
+                                                   }
+                                                   else {
+                                                       if (o1.getTotalEmployee() < o2.getTotalEmployee()) {
+                                                           return -1;
+                                                       }
+                                                       return 1;
+                                                   }
+                                               })
+                                               .collect(Collectors.toList());
+        }
+        else {
+            departmentDtos = listDepartmentDto.getContent();
+        }
+
         pagination.setTotalRecords(listDepartmentDto);
+        pagination.setPage(page);
         responseEntity = BaseResponse.ofSucceededOffset(ListDepartmentDto.of(departmentDtos), pagination);
         return responseEntity;
     }
@@ -151,10 +182,8 @@ public class DepartmentServiceImpl implements DepartmentService{
             listFormattedPositionName.add(getFormattedName(positionName));
         }
         for (Position position : listPosition) {
-            for (String positionName : listFormattedPositionName) {
-                if (positionName.equalsIgnoreCase(position.getPositionName())) {
-                    return positionName;
-                }
+            if (listFormattedPositionName.contains(position.getPositionName())) {
+                return position.getPositionName();
             }
         }
         return null;
