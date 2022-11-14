@@ -7,7 +7,7 @@ import com.minswap.hrms.repsotories.DeviceTypeRepository;
 import com.minswap.hrms.request.ChangeStatusEmployeeRequest;
 import com.minswap.hrms.request.EmployeeRequest;
 import com.minswap.hrms.response.EmployeeInfoResponse;
-import com.minswap.hrms.service.EmployeeHRService;
+import com.minswap.hrms.service.person.PersonService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -21,14 +21,14 @@ import javax.validation.Valid;
 public class HRPersonController {
 
   @Autowired
-  private EmployeeHRService employeeHRService;
+  private PersonService personService;
 
   @Autowired
   private DeviceTypeRepository deviceTypeRepository;
     
     @GetMapping("/employee/{rollNumber}")
     public ResponseEntity<BaseResponse<EmployeeInfoResponse, Void>> getDetailEmployee(@PathVariable String rollNumber) {
-      return employeeHRService.getDetailEmployee(rollNumber);
+      return personService.getDetailEmployee(rollNumber);
     }
 
   @GetMapping("/employee")
@@ -43,7 +43,7 @@ public class HRPersonController {
           @RequestParam (name = "positionId", required = false)Long positionId
 
   ) {
-    return employeeHRService.getSearchListEmployee(page,limit,fullName,email,departmentId,rollNumber,active,positionId, "");
+    return personService.getSearchListEmployee(page,limit,fullName,email,departmentId,rollNumber,active,positionId, "");
   }
 
 
@@ -53,7 +53,7 @@ public class HRPersonController {
 		  @RequestBody @Valid EmployeeRequest employeeRequest ,
 		  BindingResult bindingResult,
           @PathVariable String rollNumber) {
-    return employeeHRService.updateEmployee(employeeRequest, rollNumber);
+    return personService.updateEmployee(employeeRequest, rollNumber);
   }
 
   @PostMapping("/employee")
@@ -61,7 +61,7 @@ public class HRPersonController {
   public ResponseEntity<BaseResponse<Void, Void>> createEmployee(
 		  @RequestBody @Valid EmployeeRequest employeeRequest , 
 		  BindingResult bindingResult) {
-    return employeeHRService.createEmployee(employeeRequest);
+    return personService.createEmployee(employeeRequest);
   }
   @PutMapping("/status/employee/{rollNumber}")
   @ServiceProcessingValidateAnnotation
@@ -69,7 +69,7 @@ public class HRPersonController {
           @RequestBody @Valid ChangeStatusEmployeeRequest changeStatusEmployeeRequest ,
           BindingResult bindingResult,
           @PathVariable String rollNumber) {
-    return employeeHRService.updateStatusEmployee(changeStatusEmployeeRequest, rollNumber);
+    return personService.updateStatusEmployee(changeStatusEmployeeRequest, rollNumber);
   }
 //  @GetMapping("/employee/export")
 //  public ResponseEntity<BaseResponse<Void, Void>> exportToExcel(
