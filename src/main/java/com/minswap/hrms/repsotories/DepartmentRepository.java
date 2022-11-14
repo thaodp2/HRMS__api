@@ -18,9 +18,12 @@ import java.util.List;
 @Repository
 public interface DepartmentRepository extends JpaRepository<Department, Long> {
 
-    @Query("SELECT new com.minswap.hrms.response.dto.DepartmentDto(d.departmentId, d.departmentName) from Department d " +
-            "where (:departmentName IS NULL OR d.departmentName like %:departmentName%)")
+    @Query("SELECT new com.minswap.hrms.response.dto.DepartmentDto(d.departmentId, d.departmentName,d.status, d.total) " +
+            "from Department d " +
+            "where (:departmentName IS NULL OR d.departmentName like %:departmentName%) " +
+            "and (:status is null or d.status =:status)")
     Page<DepartmentDto> getListDepartmentBySearch(@Param("departmentName") String departmentName,
+                                                  @Param("status") Integer status,
                                                   Pageable pageable);
 
     @Query("select d.departmentName from Department d where d.departmentId <>:id")

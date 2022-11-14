@@ -9,12 +9,18 @@ import lombok.Setter;
 @NoArgsConstructor
 public class DepartmentDto {
 
-    public DepartmentDto(Long departmentId, String departmentName) {
-        this.departmentId = departmentId;
+    public DepartmentDto(Long id, String departmentName, int status, int totalEmployee) {
+        this.id = id;
         this.departmentName = departmentName;
+        this.status = status;
+        this.totalEmployee = totalEmployee;
     }
 
-    private Long departmentId;
+    private Long id;
 
     private String departmentName;
+
+    private int status;
+
+    private int totalEmployee;
 }
