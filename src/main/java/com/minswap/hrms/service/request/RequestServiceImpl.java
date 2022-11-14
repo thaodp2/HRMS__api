@@ -82,7 +82,8 @@ public class RequestServiceImpl implements RequestService {
     private static final Integer ANNUAL_LEAVE_TYPE_ID = 1;
     private static final Integer ALLOW_ROLLBACK = 1;
     private static final Integer NOT_ALLOW_ROLLBACK = 0;
-    public List<RequestDto> getQueryForRequestList(String type, Long managerId, Long personId, Boolean isLimit, Integer limit, Integer page, String createDateFrom, String createDateTo, Long requestTypeId, String status, String sort, String dir) {
+
+    public List<RequestDto> getQueryForRequestList(String type, Long managerId, Long personId, Boolean isLimit, Integer limit, Integer page, String createDateFrom, String createDateTo, Long requestTypeId, String status, String sort, String dir) throws ParseException {
         HashMap<String, Object> params = new HashMap<>();
         StringBuilder queryAllRequest = new StringBuilder("select r.request_id as requestId,p.roll_number as rollNumber, p.full_name as personName, rt.request_type_name as requestTypeName, r.create_date as createDate, r.start_time as startTime, r.end_time as endTime, r.reason as reason, r.status as status ");
         queryAllRequest.append("from request r " +
@@ -142,6 +143,9 @@ public class RequestServiceImpl implements RequestService {
                 case CommonConstant.END_TIME_FIELD:
                     orderByBuild.append("r.end_time ");
                     break;
+                case CommonConstant.ROLL_NUMBER_FIELD:
+                    orderByBuild.append("p.roll_number ");
+                    break;
             }
             if (dir != null && dir.equalsIgnoreCase("desc")) {
                 orderByBuild.append("desc ");
@@ -171,10 +175,19 @@ public class RequestServiceImpl implements RequestService {
 
         params.forEach(query::setParameter);
         List<RequestDto> dtos = query.getResultList();
+
+        Date currentTime = getCurrentTime();
+        for (int i = 0; i < dtos.size(); i++) {
+            if (currentTime.after(dtos.get(i).getStartTime())) {
+                dtos.get(i).setIsAllowRollback(NOT_ALLOW_ROLLBACK);
+            } else {
+                dtos.get(i).setIsAllowRollback(ALLOW_ROLLBACK);
+            }
+        }
         return dtos;
     }
 
-    public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getRequestByPermission(String type, Long managerId, Long personId, Integer page, Integer limit, String createDateFrom, String createDateTo, Long requestTypeId, String status, String sort, String dir) {
+    public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getRequestByPermission(String type, Long managerId, Long personId, Integer page, Integer limit, String createDateFrom, String createDateTo, Long requestTypeId, String status, String sort, String dir) throws ParseException {
         Pagination pagination = new Pagination(page, limit);
         pagination.setTotalRecords(getQueryForRequestList(type, managerId, personId, false, limit, page, createDateFrom, createDateTo, requestTypeId, status, sort, dir).size());
         List<RequestDto> requestDtos = getQueryForRequestList(type, managerId, personId, true, limit, page, createDateFrom, createDateTo, requestTypeId, status, sort, dir);
@@ -185,17 +198,17 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
-    public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getAllRequest(Integer page, Integer limit, String createDateFrom, String createDateTo, Long requestTypeId, String status, String sort, String dir) {
+    public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getAllRequest(Integer page, Integer limit, String createDateFrom, String createDateTo, Long requestTypeId, String status, String sort, String dir) throws ParseException {
         return getRequestByPermission(CommonConstant.ALL, null, null, page, limit, createDateFrom, createDateTo, requestTypeId, status, sort, dir);
     }
 
     @Override
-    public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getSubordinateRequest(Long managerId, Integer page, Integer limit, String createDateFrom, String createDateTo, Long requestTypeId, String status, String sort, String dir) {
+    public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getSubordinateRequest(Long managerId, Integer page, Integer limit, String createDateFrom, String createDateTo, Long requestTypeId, String status, String sort, String dir) throws ParseException {
         return getRequestByPermission(CommonConstant.SUBORDINATE, managerId, null, page, limit, createDateFrom, createDateTo, requestTypeId, status, sort, dir);
     }
 
     @Override
-    public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getMyRequest(Long personId, Integer page, Integer limit, String createDateFrom, String createDateTo, Long requestTypeId, String status, String sort, String dir) {
+    public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getMyRequest(Long personId, Integer page, Integer limit, String createDateFrom, String createDateTo, Long requestTypeId, String status, String sort, String dir) throws ParseException {
         return getRequestByPermission(CommonConstant.MY, null, personId, page, limit, createDateFrom, createDateTo, requestTypeId, status, sort, dir);
     }
 
@@ -217,16 +230,13 @@ public class RequestServiceImpl implements RequestService {
                 LeaveBudgetDto leaveBudgetDto = leaveBudgetRepository.getLeaveBudget(personId, year, Long.valueOf(requestType));
                 requestDto.setTimeRemaining(leaveBudgetDto.getRemainDayOff());
                 requestDto.setRequestTypeName(LEAVE_TYPE);
-            }
-            else if (requestType == OT_TYPE_ID){
+            } else if (requestType == OT_TYPE_ID) {
                 OTBudgetDto otBudgetDto = otBudgetRepository.getOTBudgetByPersonId(personId, year, month);
                 requestDto.setTimeRemaining(otBudgetDto.getOtHoursBudget() - otBudgetDto.getHoursWorked());
                 requestDto.setRequestTypeName(OT_TYPE);
-            }
-            else if (requestType == BORROW_REQUEST_TYPE_ID) {
+            } else if (requestType == BORROW_REQUEST_TYPE_ID) {
                 requestDto.setRequestTypeName(DEVICE_TYPE);
-            }
-            else {
+            } else {
                 requestDto.setRequestTypeName(OTHER_TYPE);
             }
             List<String> listImage = evidenceRepository.getListImageByRequest(id);
@@ -234,8 +244,7 @@ public class RequestServiceImpl implements RequestService {
             Date currentTime = getCurrentTime();
             if (currentTime.after(requestDto.getStartTime())) {
                 requestDto.setIsAllowRollback(NOT_ALLOW_ROLLBACK);
-            }
-            else {
+            } else {
                 requestDto.setIsAllowRollback(ALLOW_ROLLBACK);
             }
             RequestResponse requestResponse = new RequestResponse(requestDto);
@@ -264,18 +273,15 @@ public class RequestServiceImpl implements RequestService {
         String currentStatus = requestRepository.getStatusOfRequestById(id);
         if (currentStatus.equalsIgnoreCase(status)) {
             throw new BaseException(ErrorCode.STATUS_INVALID);
-        }
-        else if (status.equalsIgnoreCase(PENDING_STATUS)) {
+        } else if (status.equalsIgnoreCase(PENDING_STATUS)) {
             Integer isUpdatedSuccess = requestRepository.updateStatusRequest(status, id, null);
             if (isUpdatedSuccess == CommonConstant.UPDATE_FAIL) {
                 throw new BaseException(ErrorCode.UPDATE_FAIL);
             }
-        }
-        else {
+        } else {
             if (status.equalsIgnoreCase(APPROVED_STATUS)) {
                 isReturnNumOfDayOff = false;
-            }
-            else {
+            } else {
                 isReturnNumOfDayOff = true;
             }
             // Get approval date
@@ -310,8 +316,7 @@ public class RequestServiceImpl implements RequestService {
                             editRequest.getDeviceTypeId(),
                             editRequest.getReason());
                 }
-            }
-            else {
+            } else {
                 try {
                     Date createDate = requestRepository.getCreateDateById(id);
                     Date startTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
@@ -330,7 +335,7 @@ public class RequestServiceImpl implements RequestService {
                     List<String> listImage = editRequest.getListEvidence();
                     evidenceRepository.deleteImageByRequestId(id);
                     if (!listImage.isEmpty()) {
-                        for(String image : listImage) {
+                        for (String image : listImage) {
                             Evidence evidence = new Evidence(id, image);
                             evidenceRepository.save(evidence);
                         }
@@ -417,23 +422,19 @@ public class RequestServiceImpl implements RequestService {
         List<Long> listRequestTypesId = requestTypeRepository.getAllRequestTypeId();
         if (!listRequestTypesId.contains(requestTypeId)) {
             throw new BaseException(ErrorCode.REQUEST_TYPE_INVALID);
-        }
-        else if (requestTypeId == BORROW_REQUEST_TYPE_ID) {
+        } else if (requestTypeId == BORROW_REQUEST_TYPE_ID) {
             List<Long> listDeviceTypesId = deviceTypeRepository.getAllDeviceTypeId();
             if (!listDeviceTypesId.contains(deviceTypeId)) {
                 throw new BaseException(ErrorCode.NOT_FOUND_DEVICE_TYPE);
             }
-        }
-        else if ((LEAVE_REQUEST_TYPE.contains(Integer.parseInt(requestTypeId + "")) || requestTypeId == Long.valueOf(OT_TYPE_ID))
+        } else if ((LEAVE_REQUEST_TYPE.contains(Integer.parseInt(requestTypeId + "")) || requestTypeId == Long.valueOf(OT_TYPE_ID))
                 && (createRequest.getStartTime() == null || createRequest.getEndTime() == null)) {
             throw new BaseException(ErrorCode.DATE_INVALID_IN_LEAVE_REQUEST);
-        }
-        else if ((startTime.before(createDate)
+        } else if ((startTime.before(createDate)
                 || endTime.before(createDate)
                 || endTime.before(startTime)) && startTime != null && endTime != null) {
             throw new BaseException(ErrorCode.DATE_INVALID);
-        }
-        else if (LEAVE_REQUEST_TYPE.contains(Integer.parseInt(requestTypeId + ""))) {
+        } else if (LEAVE_REQUEST_TYPE.contains(Integer.parseInt(requestTypeId + ""))) {
             LeaveBudgetDto leaveBudgetDto = leaveBudgetRepository.getLeaveBudget(personId, year, requestTypeId);
             double leaveBudget = leaveBudgetDto.getLeaveBudget();
             double newNumberOfDayOff = 0;
@@ -442,8 +443,7 @@ public class RequestServiceImpl implements RequestService {
             if (remainDayOff < 0) {
                 throw new BaseException(ErrorCode.UPDATE_DAY_OFF_FAIL);
             }
-        }
-        else if (requestTypeId == Long.valueOf(OT_TYPE_ID)) {
+        } else if (requestTypeId == Long.valueOf(OT_TYPE_ID)) {
             OTBudgetDto otBudgetDto = otBudgetRepository.getOTBudgetByPersonId(personId, year, month);
             double newHoursWorked = 0;
             newHoursWorked = otBudgetDto.getHoursWorked() + otHoursInRequest;
@@ -453,18 +453,18 @@ public class RequestServiceImpl implements RequestService {
             }
         }
         Request request = new Request(requestTypeId,
-                                    personId,
-                                    deviceTypeId,
-                                    startTime,
-                                    endTime,
-                                    createRequest.getReason(),
-                                    createDate,
-                                    PENDING_STATUS);
+                personId,
+                deviceTypeId,
+                startTime,
+                endTime,
+                createRequest.getReason(),
+                createDate,
+                PENDING_STATUS);
         requestRepository.save(request);
         Long requestIdJustAdded = Long.valueOf(requestRepository.getLastRequestId());
         List<String> listImage = createRequest.getListEvidence();
         if (listImage != null) {
-            for(String image : listImage) {
+            for (String image : listImage) {
                 Evidence evidence = new Evidence(requestIdJustAdded, image);
                 evidenceRepository.save(evidence);
             }
@@ -477,8 +477,7 @@ public class RequestServiceImpl implements RequestService {
         Integer isRequestIdValid = requestRepository.isRequestIdValid(id);
         if (isRequestIdValid == null) {
             return false;
-        }
-        else {
+        } else {
             return true;
         }
     }
@@ -503,14 +502,13 @@ public class RequestServiceImpl implements RequestService {
         double otHoursInRequest = dayOffByMinutesInRequest / 60;
         double dayOffByDaysInRequest = Double.parseDouble(decimalFormat.format(((dayOffByMinutesInRequest) / 60) / 24));
         if (LEAVE_REQUEST_TYPE.contains(requestTypeId)) {
-            updateLeaveBudget(Long.valueOf (requestTypeId),
-                                            personId,
-                                            year,
-                                            dayOffByDaysInRequest,
-                                            isReturnNumOfDayOff
-                                            );
-        }
-        else if (requestTypeId == OT_TYPE_ID) {
+            updateLeaveBudget(Long.valueOf(requestTypeId),
+                    personId,
+                    year,
+                    dayOffByDaysInRequest,
+                    isReturnNumOfDayOff
+            );
+        } else if (requestTypeId == OT_TYPE_ID) {
             updateOTBudget(personId, month, year, otHoursInRequest, isReturnNumOfDayOff);
         }
     }
@@ -525,8 +523,7 @@ public class RequestServiceImpl implements RequestService {
         double newNumberOfDayOff = 0;
         if (isReturnNumOfDayOff) {
             newNumberOfDayOff = leaveBudgetDto.getNumberOfDayOff() - numberOfDayOffInRequest;
-        }
-        else {
+        } else {
             newNumberOfDayOff = leaveBudgetDto.getNumberOfDayOff() + numberOfDayOffInRequest;
         }
         double remainDayOff = leaveBudget - newNumberOfDayOff;
@@ -534,27 +531,26 @@ public class RequestServiceImpl implements RequestService {
             throw new BaseException(ErrorCode.UPDATE_DAY_OFF_FAIL);
         }
         Integer isUpdateSucceeded = leaveBudgetRepository.updateLeaveBudget(personId,
-                                                                            newNumberOfDayOff,
-                                                                            remainDayOff,
-                                                                            year,
-                                                                            requestTypeId);
+                newNumberOfDayOff,
+                remainDayOff,
+                year,
+                requestTypeId);
         if (isUpdateSucceeded != CommonConstant.UPDATE_SUCCESS) {
             throw new BaseException(ErrorCode.UPDATE_FAIL);
         }
     }
 
 
-    public void updateOTBudget (Long personId,
-                                int month,
-                                Year year,
-                                double otHoursInRequest,
-                                boolean isReturnNumOfDayOff) {
+    public void updateOTBudget(Long personId,
+                               int month,
+                               Year year,
+                               double otHoursInRequest,
+                               boolean isReturnNumOfDayOff) {
         OTBudgetDto otBudgetDto = otBudgetRepository.getOTBudgetByPersonId(personId, year, month);
         double newHoursWorked = 0;
-        if(isReturnNumOfDayOff) {
+        if (isReturnNumOfDayOff) {
             newHoursWorked = otBudgetDto.getHoursWorked() - otHoursInRequest;
-        }
-        else {
+        } else {
             newHoursWorked = otBudgetDto.getHoursWorked() + otHoursInRequest;
         }
         double remainHoursWork = otBudgetDto.getOtHoursBudget() - newHoursWorked;

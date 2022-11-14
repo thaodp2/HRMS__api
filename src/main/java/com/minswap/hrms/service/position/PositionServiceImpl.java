@@ -25,7 +25,13 @@ public class PositionServiceImpl implements PositionService{
     @Override
     public ResponseEntity<BaseResponse<MasterDataResponse, Pageable>> getMasterDataPositionByDepartmentId(Long departmentId, String search) {
         List<Position> positions;
-        if(search != null){
+        if(departmentId == -1){
+            if(search == null){
+                positions = positionRepository.findAll();
+            }else {
+                positions = positionRepository.findByPositionNameContainsIgnoreCase(search.trim());
+            }
+        }else if(search != null){
             positions = positionRepository.findByDepartmentIdAndPositionNameContainsIgnoreCase(departmentId, search.trim());
         }else {
             positions = positionRepository.findByDepartmentId(departmentId);
