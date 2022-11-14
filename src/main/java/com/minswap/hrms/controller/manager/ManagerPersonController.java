@@ -3,7 +3,7 @@ package com.minswap.hrms.controller.manager;
 import com.minswap.hrms.constants.CommonConstant;
 import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.response.EmployeeInfoResponse;
-import com.minswap.hrms.service.EmployeeHRService;
+import com.minswap.hrms.service.person.PersonService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 public class ManagerPersonController {
 
   @Autowired
-  private EmployeeHRService employeeHRService;
+  private PersonService personService;
 
   @GetMapping("/employee")
   public ResponseEntity<BaseResponse<EmployeeInfoResponse, Pageable>> getSearchListEmployee(
@@ -29,6 +29,6 @@ public class ManagerPersonController {
           @RequestParam (name = "managerRoll", required = false)String managerRoll
 
   ) {
-    return employeeHRService.getSearchListEmployee(page,limit,fullName,email,departmentId,rollNumber,active,positionId,managerRoll);
+    return personService.getSearchListEmployee(page,limit,fullName,email,departmentId,rollNumber,active,positionId,managerRoll);
   }
 }
