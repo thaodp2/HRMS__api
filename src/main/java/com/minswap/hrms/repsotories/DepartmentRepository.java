@@ -39,4 +39,7 @@ public interface DepartmentRepository extends JpaRepository<Department, Long> {
 
     @Query("select max(d.departmentId) from Department d")
     Integer getLastDepartmentId();
+
+    @Query("select d.departmentId from Department d")
+    List<Long> getAllDepartmentId();
 }

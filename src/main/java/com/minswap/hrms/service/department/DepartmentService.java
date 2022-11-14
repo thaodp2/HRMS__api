@@ -16,7 +16,7 @@ public interface DepartmentService {
     ResponseEntity<BaseResponse<Void, Void>> createDepartment (DepartmentRequest departmentRequest);
 
     ResponseEntity<BaseResponse<Void, Void>> editDepartment (Long id,
-                                                             String departmentName);
+                                                             DepartmentRequest departmentRequest);
     ResponseEntity<BaseResponse<Void, Void>> deleteDepartment (Long id);
 
     ResponseEntity<BaseResponse<MasterDataResponse, Pageable>> getMasterDataDepartment (String search);
