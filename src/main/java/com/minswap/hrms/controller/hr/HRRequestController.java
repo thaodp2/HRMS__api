@@ -33,7 +33,7 @@ public class HRRequestController {
             @RequestParam (required = false) Long requestTypeId,
             @RequestParam (required = false) String status,
             @RequestParam (required = false) String sort,
-            @RequestParam (required = false) String dir) {
+            @RequestParam (required = false) String dir) throws ParseException {
 
             return requestService.getAllRequest(page,limit,createDateFrom,createDateTo,requestTypeId, status, sort, dir);
     }
