@@ -2,6 +2,7 @@ package com.minswap.hrms.service.devicetype;
 
 import com.minswap.hrms.constants.ErrorCode;
 import com.minswap.hrms.entities.DeviceType;
+import com.minswap.hrms.entities.Position;
 import com.minswap.hrms.exception.model.BaseException;
 import com.minswap.hrms.exception.model.Pagination;
 import com.minswap.hrms.model.BaseResponse;
@@ -12,6 +13,7 @@ import com.minswap.hrms.response.dto.MasterDataDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -29,10 +31,10 @@ public class DeviceTypeServiceImpl implements DeviceTypeService {
     public ResponseEntity<BaseResponse<DeviceTypeResponse, Pageable>> getAllDeviceType(Integer page, Integer limit, String deviceTypeName) {
         Pagination pagination = new Pagination(page - 1, limit);
         List<DeviceType> deviceTypes = null;
-        if(deviceTypeName != null){
+        if (deviceTypeName != null) {
             pagination.setTotalRecords(deviceTypeRepository.findByDeviceTypeNameContainsIgnoreCase(deviceTypeName).size());
             deviceTypes = deviceTypeRepository.findByDeviceTypeNameContainsIgnoreCase(deviceTypeName, pagination);
-        }else {
+        } else {
             pagination.setTotalRecords(deviceTypeRepository.findAll().size());
             deviceTypes = deviceTypeRepository.findAll(pagination).getContent();
         }
@@ -42,38 +44,66 @@ public class DeviceTypeServiceImpl implements DeviceTypeService {
         return responseEntity;
     }
 
+    public boolean checkDuplicateDeviceType(List<String> deviceTypeName){
+        for (String item : deviceTypeName) {
+            List<DeviceType> deviceTypes = deviceTypeRepository.findByDeviceTypeNameIgnoreCase(item);
+            if (deviceTypes.size() != 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean checkItemEmpty(List<String> deviceTypeName){
+        for (String item : deviceTypeName) {
+            if (item.trim().isEmpty()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
-    public ResponseEntity<BaseResponse<Void, Void>> createDeviceType(String deviceTypeName) {
-        ResponseEntity<BaseResponse<Void, Void>> responseEntity = null;
-        List<DeviceType> deviceTypes = deviceTypeRepository.findByDeviceTypeNameIgnoreCase(deviceTypeName);
-        if(deviceTypes.size() != 0){
-            // fails
-            throw new BaseException(ErrorCode.DUPLICATE_DEVICE_TYPE);
+    public ResponseEntity<BaseResponse<HttpStatus, Void>> createDeviceType(List<String> deviceTypeName) {
+        ResponseEntity<BaseResponse<HttpStatus, Void>> responseEntity = null;
+        if(deviceTypeName != null && !deviceTypeName.isEmpty()) {
+            if (checkDuplicateDeviceType(deviceTypeName)) {
+                throw new BaseException(ErrorCode.DUPLICATE_DEVICE_TYPE);
+            }
+            if (checkItemEmpty(deviceTypeName)) {
+                throw new BaseException(ErrorCode.DEVICE_TYPE_NULL_OR_EMPTY);
+            }
+            for (String item : deviceTypeName) {
+                DeviceType deviceType = new DeviceType(item.trim());
+                deviceTypeRepository.save(deviceType);
+            }
+            responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.OK, null);
         }else {
-            //create
-            DeviceType deviceType = new DeviceType(deviceTypeName);
-            deviceTypeRepository.save(deviceType);
-            responseEntity = BaseResponse.ofSucceeded(null);
+            throw new BaseException(ErrorCode.INVALID_PARAMETERS);
         }
         return responseEntity;
     }
 
     @Override
-    public ResponseEntity<BaseResponse<Void, Void>> editDeviceType(Long id, String deviceTypeName) {
-        ResponseEntity<BaseResponse<Void, Void>> responseEntity = null;
-        DeviceType deviceType = deviceTypeRepository.findById(id).orElse(null);
-        if(deviceType != null){
-            List<DeviceType> deviceTypes = deviceTypeRepository.findByDeviceTypeNameIgnoreCase(deviceTypeName);
-            deviceTypes.remove(deviceType);
-            if(deviceTypes.size() != 0) {
-                throw new BaseException(ErrorCode.DUPLICATE_DEVICE_TYPE);
-            }else {
-                deviceType.setDeviceTypeName(deviceTypeName);
-                deviceTypeRepository.save(deviceType);
-                responseEntity = BaseResponse.ofSucceeded(null);
+    public ResponseEntity<BaseResponse<HttpStatus, Void>> editDeviceType(Long id, String deviceTypeName) {
+        ResponseEntity<BaseResponse<HttpStatus, Void>> responseEntity = null;
+        if(deviceTypeName != null && !deviceTypeName.trim().isEmpty()) {
+            DeviceType deviceType = deviceTypeRepository.findById(id).orElse(null);
+            if (deviceType != null) {
+                List<DeviceType> deviceTypes = deviceTypeRepository.findByDeviceTypeNameIgnoreCase(deviceTypeName.trim());
+                deviceTypes.remove(deviceType);
+                if (deviceTypes.size() != 0) {
+                    throw new BaseException(ErrorCode.DUPLICATE_DEVICE_TYPE);
+                } else {
+                    deviceType.setDeviceTypeName(deviceTypeName.trim());
+                    deviceTypeRepository.save(deviceType);
+                    responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.OK, null);
+                }
+            } else {
+                throw new BaseException(ErrorCode.NOT_FOUND_DEVICE_TYPE);
             }
-        }else {
-            throw new BaseException(ErrorCode.NOT_FOUND_DEVICE_TYPE);
+        }else{
+            throw new BaseException(ErrorCode.DEVICE_TYPE_NULL_OR_EMPTY);
         }
         return responseEntity;
     }
@@ -82,10 +112,10 @@ public class DeviceTypeServiceImpl implements DeviceTypeService {
     public ResponseEntity<BaseResponse<Void, Void>> deleteDeviceType(Long id) {
         ResponseEntity<BaseResponse<Void, Void>> responseEntity = null;
         DeviceType deviceType = deviceTypeRepository.findById(id).orElse(null);
-        if(deviceType != null){
+        if (deviceType != null) {
             deviceTypeRepository.deleteById(id);
             responseEntity = BaseResponse.ofSucceeded(null);
-        }else {
+        } else {
             throw new BaseException(ErrorCode.NOT_FOUND_DEVICE_TYPE);
         }
         return responseEntity;
@@ -94,9 +124,9 @@ public class DeviceTypeServiceImpl implements DeviceTypeService {
     @Override
     public ResponseEntity<BaseResponse<MasterDataResponse, Pageable>> getMasterDataDeviceType(String search) {
         List<DeviceType> deviceTypes;
-        if(search != null){
+        if (search != null) {
             deviceTypes = deviceTypeRepository.findByDeviceTypeNameContainsIgnoreCase(search.trim());
-        }else {
+        } else {
             deviceTypes = deviceTypeRepository.findAll();
         }
         List<MasterDataDto> masterDataDtos = new ArrayList<>();
