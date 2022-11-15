@@ -6,9 +6,12 @@ import com.minswap.hrms.request.EmployeeRequest;
 import com.minswap.hrms.request.UpdateUserRequest;
 import com.minswap.hrms.response.EmployeeInfoResponse;
 import com.minswap.hrms.response.MasterDataResponse;
+import com.minswap.hrms.response.dto.EmployeeListDto;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
+import java.util.List;
 
 public interface PersonService {
     ResponseEntity<BaseResponse<HttpStatus, Void>> updateUserInformation(UpdateUserRequest persondto) throws Exception;
@@ -19,7 +22,7 @@ public interface PersonService {
 
     ResponseEntity<BaseResponse<EmployeeInfoResponse, Pageable>> getSearchListEmployee(int page, int limit, String fullName,String email,Long departmentId,String rollNumber,String status,Long positionId, String managerRoll);
 
-    ResponseEntity<BaseResponse<Void, Void>> exportEmployee();
+    List<EmployeeListDto> exportEmployee(String fullName, String email, Long departmentId, String rollNumber, Long positionId);
     ResponseEntity<BaseResponse<Void, Void>> updateEmployee(EmployeeRequest employeeRequest, String rollNumber );
 
     ResponseEntity<BaseResponse<Void, Void>> createEmployee(EmployeeRequest employeeRequest);

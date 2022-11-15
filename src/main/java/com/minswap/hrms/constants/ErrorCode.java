@@ -73,6 +73,9 @@ public class ErrorCode {
     public static final BusinessCode NOT_FOUND_DEVICE_TYPE = new BusinessCode(
             ErrorCodeEnum.NOT_FOUND_DEVICE_TYPE.getValue(), "Not found device type", HttpStatus.NOT_FOUND);
 
+    public static final BusinessCode NO_DATA = new BusinessCode(
+            ErrorCodeEnum.NO_DATA.getValue(), "Don't have data", HttpStatus.NO_CONTENT);
+
     public static final BusinessCode LIST_POSITION_NAME_EMPTY = new BusinessCode(
             ErrorCodeEnum.LIST_POSITION_NAME_EMPTY.getValue(), "List position name can't be empty!", HttpStatus.NO_CONTENT);
 

@@ -180,8 +180,10 @@ public class PersonServiceImpl implements PersonService{
     }
 
     @Override
-    public ResponseEntity<BaseResponse<Void, Void>> exportEmployee() {
-        return null;
+    public List<EmployeeListDto> exportEmployee(String fullName,String email,Long departmentId,String rollNumber,Long positionId) {
+        Page<EmployeeListDto> pageInfo = personRepository.getSearchListPerson(fullName, email,departmentId,rollNumber,positionId,null,null);
+        List<EmployeeListDto> employeeListDtos = pageInfo.getContent();
+        return employeeListDtos;
     }
     private String convertRollNumber() {
         long count = personRepository.count()+1;

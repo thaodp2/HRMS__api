@@ -33,6 +33,21 @@ public class CommonConstant {
 
     public static final Set<Long> LIST_REQUEST_TYPE_ID_IN_LEAVE_BUDGET = new HashSet<Long>(Arrays.<Long>asList(Long.valueOf(1), Long.valueOf(3), Long.valueOf(6), Long.valueOf(8), Long.valueOf(10)));
 
+    public static String[] LIST_HEADER_EMPLOYEE = {
+            "Roll Number",
+            "Employee Name",
+            "Email",
+            "Department",
+            "Position",
+            "Status"
+    };
+
+    public static String[] LIST_HEADER_LEAVE_BUDGET = {
+            "Employee Name",
+            "Leave Budget",
+            "Number of day off",
+            "Remain day off"
+    };
     public static final Long ROLE_ID_OF_MANAGER = Long.valueOf(2);
     public static final String PENDING_STATUS = "Pending";
 }
