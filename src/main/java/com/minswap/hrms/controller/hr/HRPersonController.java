@@ -102,17 +102,6 @@ public class HRPersonController {
             excelExporter.init(response, fileName);
             excelExporter.exportEmployee(response);
         }
-//    response.setContentType("application/octet-stream");
-//    String headerKey = "Content-Disposition";
-//    DateFormat dateFormat = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS);
-//    String currentDateTime = dateFormat.format(new Date());
-//    String fileName = "employee";
-//    String headerValue = "attachment; filename=" + fileName;
-//    response.setHeader(headerKey, headerValue);
-
-        //List<EmployeeListDto> employeeListDtos = personService.exportEmployee(fullName,email,departmentId,rollNumber,positionId);
-//    ExcelExporter excelExporter = new ExcelExporter(employeeListDtos);
-//    excelExporter.exportEmployee(response);
         return null;
     }
 }
