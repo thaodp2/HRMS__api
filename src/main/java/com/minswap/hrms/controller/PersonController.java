@@ -17,7 +17,7 @@ public class PersonController {
     PersonService personService;
 
     @PutMapping("/user/information")
-    public ResponseEntity<BaseResponse<HttpStatus, Void>> getRequestDetail(@RequestBody UpdateUserRequest updateUserDto) throws Exception {
+    public ResponseEntity<BaseResponse<HttpStatus, Void>> updateUserInformation(@RequestBody UpdateUserRequest updateUserDto) throws Exception {
         return personService.updateUserInformation(updateUserDto);
     }
 

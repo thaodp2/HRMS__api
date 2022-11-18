@@ -1,9 +1,11 @@
 package com.minswap.hrms.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
+@AllArgsConstructor
 public class UpdateUserRequest {
 
     @JsonProperty("personId")
@@ -48,20 +50,11 @@ public class UpdateUserRequest {
     @JsonProperty("status")
     private String status;
 
-    public UpdateUserRequest(Long personId, String fullName, String address, String citizenIdentification, String phoneNumber, String email, String onBoardDate, String rankId, String departmentId, Integer managerId, int gender, String rollNumber, String dateOfBirth, String status) {
-        this.personId = personId;
-        this.fullName = fullName;
-        this.address = address;
-        this.citizenIdentification = citizenIdentification;
-        this.phoneNumber = phoneNumber;
-        this.email = email;
-        this.onBoardDate = onBoardDate;
-        this.rankId = rankId;
-        this.departmentId = departmentId;
-        this.managerId = managerId;
-        this.gender = gender;
-        this.rollNumber = rollNumber;
-        this.dateOfBirth = dateOfBirth;
-        this.status = status;
-    }
+    @JsonProperty("positionId")
+    private Long positionId;
+
+    @JsonProperty("annualLeaveBudget")
+    private Double annualLeaveBudget;
+
+
 }
