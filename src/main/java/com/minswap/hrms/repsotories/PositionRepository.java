@@ -27,4 +27,7 @@ public interface PositionRepository extends JpaRepository<Position, Long> {
     @Transactional
     @Query("delete from Position p where p.departmentId=:departmentId")
     Integer deletePositionByDepartmentId(@Param("departmentId") Long departmentId);
+
+    @Query("select p.positionName from Position p where p.departmentId =:id")
+    List<String> getListPosition(Long id);
 }
