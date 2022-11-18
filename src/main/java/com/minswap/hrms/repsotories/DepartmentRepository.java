@@ -42,4 +42,10 @@ public interface DepartmentRepository extends JpaRepository<Department, Long> {
 
     @Query("select d.departmentId from Department d")
     List<Long> getAllDepartmentId();
+
+    Department getDepartmentByDepartmentId(Long id);
+
+    @Query("select count(p.personId) from Department d left join Person p on p.departmentId = d.departmentId " +
+            "where d.departmentId=:id")
+    Integer getNumberOfEmployeeInDepartment(@Param("id") Long id);
 }

@@ -12,6 +12,7 @@ import com.minswap.hrms.repsotories.PersonRepository;
 import com.minswap.hrms.repsotories.PositionRepository;
 import com.minswap.hrms.request.DepartmentRequest;
 import com.minswap.hrms.response.MasterDataResponse;
+import com.minswap.hrms.response.RequestResponse;
 import com.minswap.hrms.response.dto.DepartmentDto;
 import com.minswap.hrms.response.dto.ListDepartmentDto;
 import com.minswap.hrms.response.dto.MasterDataDto;
@@ -170,8 +171,14 @@ public class DepartmentServiceImpl implements DepartmentService{
     @Override
     public ResponseEntity<BaseResponse<Void, Void>> deleteDepartment(Long id) {
         ResponseEntity<BaseResponse<Void, Void>> responseEntity = null;
+        if (!isIdValid(id)) {
+            throw new BaseException(ErrorCode.newErrorCode(404,
+                    "Department ID not found!",
+                    httpStatus.NOT_FOUND));
+        }
         try {
             departmentRepository.deleteById(id);
+            positionRepository.deletePositionByDepartmentId(id);
             responseEntity = BaseResponse.ofSucceeded(null);
             return responseEntity;
         }
@@ -197,6 +204,24 @@ public class DepartmentServiceImpl implements DepartmentService{
         MasterDataResponse response = new MasterDataResponse(masterDataDtos);
         ResponseEntity<BaseResponse<MasterDataResponse, Pageable>> responseEntity
                 = BaseResponse.ofSucceededOffset(response, null);
+        return responseEntity;
+    }
+
+    @Override
+    public ResponseEntity<BaseResponse<DepartmentDto, Void>> getRequestDetail(Long id) {
+        if (!isIdValid(id)) {
+            throw new BaseException(ErrorCode.newErrorCode(404,
+                    "Department ID not found!",
+                    httpStatus.NOT_FOUND));
+        }
+        Department department = departmentRepository.getDepartmentByDepartmentId(id);
+        List<String> listPosition = positionRepository.getListPosition(id);
+        Integer numberOfEmployeeInDepartment = departmentRepository.getNumberOfEmployeeInDepartment(id);
+        DepartmentDto departmentDto = new DepartmentDto(department.getDepartmentId(), department.getDepartmentName());
+        departmentDto.setTotalEmployee(numberOfEmployeeInDepartment);
+        departmentDto.setListPosition(listPosition);
+        ResponseEntity<BaseResponse<DepartmentDto, Void>> responseEntity
+                = BaseResponse.ofSucceededOffset(departmentDto, null);
         return responseEntity;
     }
 

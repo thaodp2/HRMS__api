@@ -4,6 +4,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -17,4 +19,6 @@ public class DepartmentDto {
     private String departmentName;
 
     private int totalEmployee;
+
+    private List<String> listPosition;
 }
