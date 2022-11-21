@@ -30,4 +30,6 @@ public interface RequestService {
     ResponseEntity<BaseResponse<Void, Void>> cancelRequest (Long id);
 
     ResponseEntity<BaseResponse<Void, Void>> createRequest(CreateRequest createRequest) throws ParseException;
+
+    void autoUpdateRequestStatus();
 }
