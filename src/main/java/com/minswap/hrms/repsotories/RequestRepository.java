@@ -93,4 +93,11 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
 
     @Query("select max(r.requestId) from Request r")
     Integer getLastRequestId();
+    @Modifying
+    @Transactional
+    @Query("update Request r set r.status =:rejected where (r.startTime between :start and :end) and r.status=:pending")
+    Integer autoRejectRequestNotProcessed(@Param("start") Date start,
+                                          @Param("end") Date end,
+                                          @Param("rejected") String rejected,
+                                          @Param("pending") String pending);
 }

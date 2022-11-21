@@ -20,6 +20,7 @@ import org.hibernate.Session;
 import org.hibernate.transform.Transformers;
 import org.hibernate.type.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -60,6 +61,8 @@ public class RequestServiceImpl implements RequestService {
 
     @Autowired
     EvidenceRepository evidenceRepository;
+
+    private HttpStatus httpStatus;
 
     /*
         ANNUAL_LEAVE_TYPE_ID = 1;
@@ -349,30 +352,6 @@ public class RequestServiceImpl implements RequestService {
         return responseEntity;
     }
 
-//    @Override
-//    public ResponseEntity<BaseResponse<ListRequestDto, Pageable>> searchRequest(Long userId, String startDate,
-//                                                                                String endDate, Integer page,
-//                                                                                Integer limit) throws Exception {
-//
-//        ResponseEntity<BaseResponse<ListRequestDto, Pageable>> responseEntity = null;
-//        try {
-//
-//            Pagination pagination = new Pagination(page, limit);
-//            Date startDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(startDate);
-//            Date endDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(endDate);
-//
-//            Page<RequestDto> listRequestDto = requestRepository.getListRequestBySearch(
-//                    userId, startDateFormat, endDateFormat, pagination);
-//            List<RequestDto> requestDtos = listRequestDto.getContent();
-//            pagination.setTotalRecords(listRequestDto);
-//
-//            responseEntity = BaseResponse.ofSucceededOffset(ListRequestDto.of(requestDtos), pagination);
-//        } catch (Exception ex) {
-//            throw new Exception(ex.getMessage());
-//        }
-//        return responseEntity;
-//    }
-
     @Override
     public ResponseEntity<BaseResponse<Void, Void>> cancelRequest(Long id) {
         String status = requestRepository.getStatusOfRequestById(id);
@@ -414,11 +393,15 @@ public class RequestServiceImpl implements RequestService {
             otHoursInRequest = dayOffByMinutesInRequest / 60;
             dayOffByDaysInRequest = Double.parseDouble(decimalFormat.format(((dayOffByMinutesInRequest) / 60) / 24));
         }
+        Calendar calendarStart = Calendar.getInstance();
+        calendarStart.setTime(startTime);
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         LocalDateTime localDateTime = LocalDateTime.now();
         String createDateStr = dateTimeFormatter.format(localDateTime);
         Date createDate = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
                 parse(createDateStr);
+        Calendar calendarCreate = Calendar.getInstance();
+        calendarCreate.setTime(createDate);
         List<Long> listRequestTypesId = requestTypeRepository.getAllRequestTypeId();
         if (!listRequestTypesId.contains(requestTypeId)) {
             throw new BaseException(ErrorCode.REQUEST_TYPE_INVALID);
@@ -430,11 +413,18 @@ public class RequestServiceImpl implements RequestService {
         } else if ((LEAVE_REQUEST_TYPE.contains(Integer.parseInt(requestTypeId + "")) || requestTypeId == Long.valueOf(OT_TYPE_ID))
                 && (createRequest.getStartTime() == null || createRequest.getEndTime() == null)) {
             throw new BaseException(ErrorCode.DATE_INVALID_IN_LEAVE_REQUEST);
-        } else if ((startTime.before(createDate)
+        }
+        else if ((startTime.before(createDate)
                 || endTime.before(createDate)
                 || endTime.before(startTime)) && startTime != null && endTime != null) {
             throw new BaseException(ErrorCode.DATE_INVALID);
-        } else if (LEAVE_REQUEST_TYPE.contains(Integer.parseInt(requestTypeId + ""))) {
+        }
+        else if (calendarStart.get(Calendar.DAY_OF_MONTH) == calendarCreate.get(Calendar.DAY_OF_MONTH)) {
+            throw new BaseException(ErrorCode.newErrorCode(208,
+                    "The effective request time cannot be on the same day as the creation date",
+                    httpStatus.NOT_ACCEPTABLE));
+        }
+        else if (LEAVE_REQUEST_TYPE.contains(Integer.parseInt(requestTypeId + ""))) {
             LeaveBudgetDto leaveBudgetDto = leaveBudgetRepository.getLeaveBudget(personId, year, requestTypeId);
             double leaveBudget = leaveBudgetDto.getLeaveBudget();
             double newNumberOfDayOff = 0;
@@ -471,6 +461,23 @@ public class RequestServiceImpl implements RequestService {
         }
         ResponseEntity<BaseResponse<Void, Void>> responseEntity = BaseResponse.ofSucceeded(null);
         return responseEntity;
+    }
+
+    @Override
+    public void autoUpdateRequestStatus() {
+        try {
+            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            LocalDateTime localDateTime = LocalDateTime.now();
+            String start = dateTimeFormatter.format(localDateTime) + " 00:00:00";
+            String end = dateTimeFormatter.format(localDateTime) + " 23:59:59";
+            Date startTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
+                    parse(start);
+            Date endTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
+                    parse(end);
+            requestRepository.autoRejectRequestNotProcessed(startTime, endTime, REJECTED_STATUS, PENDING_STATUS);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public boolean isRequestIdValid(Long id) {
