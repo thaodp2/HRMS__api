@@ -33,11 +33,10 @@ public class ManagerTimeCheckController {
 
     @GetMapping("/all-subordinate")
     public ResponseEntity<BaseResponse<TimeCheckResponse.TimeCheckEachSubordinateResponse, Pageable>> getListSubordinateTimeCheck(@RequestParam (required = false) String search,
-                                                                                                                                  @RequestParam Long managerId,
                                                                                                                                   @RequestParam @Pattern(regexp = "[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1]) (2[0-3]|[01][0-9]):[0-5][0-9]:[0-5][0-9]", message = "Invalid createDateFrom") String startDate,
                                                                                                                                   @RequestParam @Pattern(regexp = "[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1]) (2[0-3]|[01][0-9]):[0-5][0-9]:[0-5][0-9]", message = "Invalid createDateTo") String endDate,
-                                                                                                                                  @RequestParam (defaultValue = "1") Integer page,
-                                                                                                                                  @RequestParam (defaultValue = "10") Integer limit) throws Exception {
+                                                                                                                                  @RequestParam (defaultValue = "1") Integer page, @RequestParam (defaultValue = "10") Integer limit) throws Exception {
+        Long managerId = 3L;
         return timeCheckService.getListTimeCheck(search, managerId, startDate, endDate, page, limit);
     }
 }

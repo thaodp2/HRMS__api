@@ -3,26 +3,32 @@ package com.minswap.hrms.service.department;
 import com.minswap.hrms.constants.CommonConstant;
 import com.minswap.hrms.constants.ErrorCode;
 import com.minswap.hrms.entities.Department;
-import com.minswap.hrms.entities.DeviceType;
+import com.minswap.hrms.entities.Position;
 import com.minswap.hrms.exception.model.BaseException;
 import com.minswap.hrms.exception.model.Pagination;
 import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.repsotories.DepartmentRepository;
+import com.minswap.hrms.repsotories.PersonRepository;
+import com.minswap.hrms.repsotories.PositionRepository;
+import com.minswap.hrms.request.DepartmentRequest;
 import com.minswap.hrms.response.MasterDataResponse;
+import com.minswap.hrms.response.RequestResponse;
 import com.minswap.hrms.response.dto.DepartmentDto;
 import com.minswap.hrms.response.dto.ListDepartmentDto;
-import com.minswap.hrms.response.dto.ListRequestDto;
 import com.minswap.hrms.response.dto.MasterDataDto;
-import io.lettuce.core.dynamic.annotation.Param;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -30,46 +36,131 @@ public class DepartmentServiceImpl implements DepartmentService{
 
     @Autowired
     DepartmentRepository departmentRepository;
+    @Autowired
+    PositionRepository positionRepository;
+    @Autowired
+    PersonRepository personRepository;
+
+    HttpStatus httpStatus;
+    private static final String SORT_DESC = "desc";
+    private static final String SORT_ASC = "asc";
     @Override
     public ResponseEntity<BaseResponse<ListDepartmentDto, Pageable>> getListDepartment(Integer page,
                                                                                        Integer limit,
-                                                                                       String departmentName) {
+                                                                                       String search,
+                                                                                       String sort) {
         ResponseEntity<BaseResponse<ListDepartmentDto, Pageable>> responseEntity = null;
-        Pagination pagination = new Pagination(page, limit);
-        Page<DepartmentDto> listDepartmentDto = departmentRepository.getListDepartmentBySearch(departmentName, pagination);
+        Pagination pagination = new Pagination(page - 1, limit);
+        Page<DepartmentDto> listDepartmentDto = departmentRepository.getListDepartmentBySearch(search, pagination);
         List<DepartmentDto> departmentDtos = listDepartmentDto.getContent();
+        for (DepartmentDto departmentDto : departmentDtos) {
+            departmentDto.setTotalEmployee(personRepository.getNumberOfEmplInDepartment(departmentDto.getId()));
+        }
+        if (sort != null && (sort.equalsIgnoreCase(SORT_ASC) || sort.equalsIgnoreCase(SORT_DESC))) {
+            departmentDtos = listDepartmentDto.getContent()
+                                               .stream().sorted((o1, o2) -> {
+                                                   if (sort.equalsIgnoreCase(SORT_DESC)) {
+                                                       if (o1.getTotalEmployee() > o2.getTotalEmployee()) {
+                                                           return -1;
+                                                       }
+                                                       return 1;
+                                                   }
+                                                   else {
+                                                       if (o1.getTotalEmployee() < o2.getTotalEmployee()) {
+                                                           return -1;
+                                                       }
+                                                       return 1;
+                                                   }
+                                               })
+                                               .collect(Collectors.toList());
+        }
         pagination.setTotalRecords(listDepartmentDto);
+        pagination.setPage(page);
         responseEntity = BaseResponse.ofSucceededOffset(ListDepartmentDto.of(departmentDtos), pagination);
         return responseEntity;
     }
 
     @Override
-    public ResponseEntity<BaseResponse<Void, Void>> createDepartment(String departmentName) {
+    public ResponseEntity<BaseResponse<Void, Void>> createDepartment(DepartmentRequest departmentRequest) {
+        String departmentName = getFormattedName(departmentRequest.getDepartmentName());
+        List<String> listPositionName = departmentRequest.getListPosition();
+        List<String> listFormattedPositionName = getListPositionNameAfterFormat(departmentRequest);
+        if(isDepartmentAlreadyExist(departmentName)) {
+            throw new BaseException(ErrorCode.INVALID_DEPARTMENT);
+        }
+        else if (getListPositionAlreadyExist(listPositionName, null) != null) {
+            String message = getMessageWhenPositionDuplicate(getListPositionAlreadyExist(listPositionName, null));
+            throw new BaseException(ErrorCode.newErrorCode(208,
+                                                                message,
+                                                                httpStatus.ALREADY_REPORTED));
+        }
+        else if (departmentRequest.getListPosition().isEmpty()) {
+            throw new BaseException(ErrorCode.newErrorCode(208,
+                    "List position name can't be empty",
+                    httpStatus.ALREADY_REPORTED));
+        }
+        else if (isListPositionNameDuplicateElement(departmentRequest)) {
+            throw new BaseException(ErrorCode.newErrorCode(208,
+                    "In the same department can't have the same position!",
+                    httpStatus.ALREADY_REPORTED));
+        }
         ResponseEntity<BaseResponse<Void, Void>> responseEntity = null;
         Department department = new Department(departmentName);
         departmentRepository.save(department);
+        Integer departmentIdJustAdded = departmentRepository.getLastDepartmentId();
+        for (String positionName : listFormattedPositionName) {
+            Position position = new Position(positionName, Long.valueOf(departmentIdJustAdded));
+            positionRepository.save(position);
+        }
         responseEntity = BaseResponse.ofSucceeded(null);
         return responseEntity;
     }
 
     @Override
-    public ResponseEntity<BaseResponse<Void, Void>> editDepartment(Long id, String departmentName) {
+    public ResponseEntity<BaseResponse<Void, Void>> editDepartment(Long id, DepartmentRequest departmentRequest) {
         ResponseEntity<BaseResponse<Void, Void>> responseEntity = null;
-        List<String> listDepartmentName = departmentRepository.getOtherDepartmentName(id);
-        String[] splited = departmentName.split("\\s+");
-        String formatedDepartName = "";
-        for (int i = 0; i < splited.length; i++) {
-            formatedDepartName += splited[i] + " ";
+        if (!isIdValid(id)) {
+            throw new BaseException(ErrorCode.newErrorCode(404,
+                    "Department ID not found!",
+                    httpStatus.NOT_FOUND));
         }
-
+        List<String> listDepartmentName = departmentRepository.getOtherDepartmentName(id);
+        String formattedDepartName = getFormattedName(departmentRequest.getDepartmentName());
         for (String departName : listDepartmentName) {
-            if (departName.trim().equalsIgnoreCase(formatedDepartName.trim())) {
-                throw new BaseException(ErrorCode.UPDATE_DEPARTMENT_FAIL);
+            if (departName.trim().equalsIgnoreCase(formattedDepartName)) {
+                throw new BaseException(ErrorCode.INVALID_DEPARTMENT);
             }
         }
-        Integer isUpdateSuccessed = departmentRepository.updateDepartment(formatedDepartName, id);
-        if (isUpdateSuccessed == CommonConstant.UPDATE_SUCCESS) {
-            responseEntity = BaseResponse.ofSucceeded(null);
+        if (getListPositionAlreadyExist(departmentRequest.getListPosition(), id) != null) {
+            String message = getMessageWhenPositionDuplicate(getListPositionAlreadyExist(departmentRequest.getListPosition(), id));
+            throw new BaseException(ErrorCode.newErrorCode(208,
+                                                                message,
+                                                                httpStatus.ALREADY_REPORTED));
+        }
+        else if (departmentRequest.getListPosition().isEmpty()) {
+            throw new BaseException(ErrorCode.newErrorCode(208,
+                                                        "List position name can't be empty",
+                                                                httpStatus.ALREADY_REPORTED));
+        }
+        else if (isListPositionNameDuplicateElement(departmentRequest)) {
+            throw new BaseException(ErrorCode.newErrorCode(208,
+                                                        "In the same department can't have the same position!",
+                                                                httpStatus.ALREADY_REPORTED));
+        }
+        Integer isUpdateSucceeded = departmentRepository.updateDepartment(formattedDepartName, id);
+        if (isUpdateSucceeded == CommonConstant.UPDATE_SUCCESS) {
+            Integer deleteResult = positionRepository.deletePositionByDepartmentId(id);
+            if (deleteResult != CommonConstant.UPDATE_FAIL) {
+                List<String> listFormattedPositionName = getListPositionNameAfterFormat(departmentRequest);
+                for (String positionName : listFormattedPositionName) {
+                    Position position = new Position(positionName, id);
+                    positionRepository.save(position);
+                }
+                responseEntity = BaseResponse.ofSucceeded(null);
+            }
+            else {
+                throw new BaseException(ErrorCode.UPDATE_FAIL);
+            }
         }
         else {
             throw new BaseException(ErrorCode.UPDATE_FAIL);
@@ -80,8 +171,14 @@ public class DepartmentServiceImpl implements DepartmentService{
     @Override
     public ResponseEntity<BaseResponse<Void, Void>> deleteDepartment(Long id) {
         ResponseEntity<BaseResponse<Void, Void>> responseEntity = null;
+        if (!isIdValid(id)) {
+            throw new BaseException(ErrorCode.newErrorCode(404,
+                    "Department ID not found!",
+                    httpStatus.NOT_FOUND));
+        }
         try {
             departmentRepository.deleteById(id);
+            positionRepository.deletePositionByDepartmentId(id);
             responseEntity = BaseResponse.ofSucceeded(null);
             return responseEntity;
         }
@@ -92,8 +189,13 @@ public class DepartmentServiceImpl implements DepartmentService{
     }
 
     @Override
-    public ResponseEntity<BaseResponse<MasterDataResponse, Pageable>> getMasterDataDepartment() {
-        List<Department> departments = departmentRepository.findAll();
+    public ResponseEntity<BaseResponse<MasterDataResponse, Pageable>> getMasterDataDepartment(String search) {
+        List<Department> departments;
+        if(search != null){
+            departments = departmentRepository.findByDepartmentNameContainsIgnoreCase(search.trim());
+        }else {
+            departments = departmentRepository.findAll();
+        }
         List<MasterDataDto> masterDataDtos = new ArrayList<>();
         for (int i = 0; i < departments.size(); i++) {
             MasterDataDto masterDataDto = new MasterDataDto(departments.get(i).getDepartmentName(), departments.get(i).getDepartmentId());
@@ -105,5 +207,94 @@ public class DepartmentServiceImpl implements DepartmentService{
         return responseEntity;
     }
 
+    @Override
+    public ResponseEntity<BaseResponse<DepartmentDto, Void>> getRequestDetail(Long id) {
+        if (!isIdValid(id)) {
+            throw new BaseException(ErrorCode.newErrorCode(404,
+                    "Department ID not found!",
+                    httpStatus.NOT_FOUND));
+        }
+        Department department = departmentRepository.getDepartmentByDepartmentId(id);
+        List<String> listPosition = positionRepository.getListPosition(id);
+        Integer numberOfEmployeeInDepartment = departmentRepository.getNumberOfEmployeeInDepartment(id);
+        DepartmentDto departmentDto = new DepartmentDto(department.getDepartmentId(), department.getDepartmentName());
+        departmentDto.setTotalEmployee(numberOfEmployeeInDepartment);
+        departmentDto.setListPosition(listPosition);
+        ResponseEntity<BaseResponse<DepartmentDto, Void>> responseEntity
+                = BaseResponse.ofSucceededOffset(departmentDto, null);
+        return responseEntity;
+    }
 
+    public boolean isDepartmentAlreadyExist(String departmentName) {
+        List<Department> listDepartment = departmentRepository.findAll();
+        for (Department department : listDepartment) {
+            if (department.getDepartmentName().equalsIgnoreCase(departmentName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public List<String> getListPositionAlreadyExist(List<String> listPositionName, Long id) {
+        List<String> listPositionNameAlreadyExist = new ArrayList<>();
+        for (String positionName : listPositionName) {
+            if (positionRepository.isPositionAlreadyExist(positionName, id) != null) {
+                listPositionNameAlreadyExist.add(positionName);
+            }
+        }
+
+        if (listPositionNameAlreadyExist.isEmpty()) {
+            return null;
+        }
+        else {
+            return listPositionNameAlreadyExist;
+        }
+
+    }
+
+    public String getFormattedName(String name) {
+        String[] splited = name.split("\\s+");
+        String formattedName = "";
+        for (int i = 0; i < splited.length; i++) {
+            formattedName += splited[i] + " ";
+        }
+        return formattedName.trim();
+    }
+
+    public String getMessageWhenPositionDuplicate(List<String> listPositionNameAlreadyExist) {
+        String message = "";
+        String positionExist = "";
+        for (String positionName : listPositionNameAlreadyExist) {
+            positionExist += "'" + positionName + "', ";
+        }
+        positionExist = positionExist.replaceAll(", $", "");
+        message = "Position name: " + positionExist + " already exist in another department";
+        return message;
+    }
+
+    public boolean isIdValid(Long id) {
+        if (departmentRepository.getAllDepartmentId().contains(id)) {
+            return true;
+        }
+        return false;
+    }
+
+    public List<String> getListPositionNameAfterFormat(DepartmentRequest departmentRequest) {
+        List<String> listFormattedPositionName = new ArrayList<>();
+        for (String posName : departmentRequest.getListPosition()) {
+            listFormattedPositionName.add(getFormattedName(posName));
+        }
+        return listFormattedPositionName;
+    }
+
+    public boolean isListPositionNameDuplicateElement(DepartmentRequest departmentRequest) {
+        List<String> listPositionName = getListPositionNameAfterFormat(departmentRequest);
+        Set<String> store = new HashSet<>();
+        for (String positionName : listPositionName) {
+            if (store.add(positionName.toLowerCase()) == false){
+                return true;
+            }
+        }
+        return false;
+    }
 }

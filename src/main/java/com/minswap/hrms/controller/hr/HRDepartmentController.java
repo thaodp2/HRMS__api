@@ -4,6 +4,7 @@ import com.minswap.hrms.constants.CommonConstant;
 import com.minswap.hrms.exception.annotation.ServiceProcessingValidateAnnotation;
 import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.request.DepartmentRequest;
+import com.minswap.hrms.response.dto.DepartmentDto;
 import com.minswap.hrms.response.dto.ListDepartmentDto;
 import com.minswap.hrms.service.department.DepartmentService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 
 @RestController
 @RequestMapping(CommonConstant.HR)
@@ -22,10 +24,12 @@ public class HRDepartmentController {
     DepartmentService departmentService;
 
     @GetMapping("/department")
-    public ResponseEntity<BaseResponse<ListDepartmentDto, Pageable>> getListDepartment(@RequestParam Integer page,
-                                                                                       @RequestParam Integer limit,
-                                                                                       @RequestParam(required = false) String departmentName) {
-        return departmentService.getListDepartment(page, limit, departmentName);
+    public ResponseEntity<BaseResponse<ListDepartmentDto, Pageable>>
+                            getListDepartment(@RequestParam @Min(1) Integer page,
+                                              @RequestParam @Min(0) Integer limit,
+                                              @RequestParam (required = false) String search,
+                                              @RequestParam (required = false) String sort) {
+        return departmentService.getListDepartment(page, limit, search, sort);
     }
     @PostMapping("/department")
     @ServiceProcessingValidateAnnotation
@@ -33,7 +37,7 @@ public class HRDepartmentController {
                                                                      @Valid
                                                                      DepartmentRequest departmentRequest,
                                                                      BindingResult bindingResult) {
-        return departmentService.createDepartment(departmentRequest.getDepartmentName());
+        return departmentService.createDepartment(departmentRequest);
     }
 
     @PutMapping("/department/{id}")
@@ -43,7 +47,7 @@ public class HRDepartmentController {
                                                                    DepartmentRequest departmentRequest,
                                                                    BindingResult bindingResult,
                                                                    @PathVariable Long id) {
-        return departmentService.editDepartment(id, departmentRequest.getDepartmentName());
+        return departmentService.editDepartment(id, departmentRequest);
     }
 
     @DeleteMapping("department/{id}")
@@ -51,5 +55,9 @@ public class HRDepartmentController {
         return departmentService.deleteDepartment(id);
     }
 
+    @GetMapping("department/{id}")
+    public ResponseEntity<BaseResponse<DepartmentDto, Void>> getRequestDetail(@PathVariable Long id) {
+        return departmentService.getRequestDetail(id);
+    }
 
 }

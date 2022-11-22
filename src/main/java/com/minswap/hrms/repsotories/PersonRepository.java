@@ -109,8 +109,8 @@ public interface PersonRepository extends JpaRepository<Person, Long>{
                                           Pageable pageable);
 
     @Query("select new com.minswap.hrms.entities.Person(p.personId as personId, p.fullName as fullName) " +
-            "from Person p, Person_Role pr, Role r " +
-            "where p.personId = pr.pr.personId and pr.pr.roleId = r.roleId and r.roleId = :roleId " +
+            "from Person p, PersonRole pr, Role r " +
+            "where p.personId = pr.personId and pr.roleId = r.roleId and r.roleId = :roleId " +
             "AND (:search IS NULL OR p.fullName LIKE %:search%) ")
     List<Person> getMasterDataAllManager(@Param("roleId") Long roleId,
                                          @Param("search") String search);
@@ -124,4 +124,19 @@ public interface PersonRepository extends JpaRepository<Person, Long>{
                            @Param("rollNumber") String rollNumber
     );
 
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE Person p set " +
+            "p.status = :status " +
+            " where p.rollNumber = :rollNumber")
+    Integer updateStatusEmployee(@Param("status") String status,
+                           @Param("rollNumber") String rollNumber
+    );
+
+    @Query("select count(p.personId) from Person p where p.departmentId=:departmentId")
+    Integer getNumberOfEmplInDepartment(@Param("departmentId") Long departmentId);
+
+    @Query("SELECT p FROM Person p WHERE p.email = :email")
+    Person getUserByEmail(@Param("email") String email);
 }

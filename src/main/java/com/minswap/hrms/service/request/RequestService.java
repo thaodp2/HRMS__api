@@ -1,6 +1,7 @@
 package com.minswap.hrms.service.request;
 
 import com.minswap.hrms.model.BaseResponse;
+import com.minswap.hrms.request.CreateRequest;
 import com.minswap.hrms.request.EditRequest;
 import com.minswap.hrms.response.RequestResponse;
 import org.springframework.data.domain.Pageable;
@@ -10,9 +11,9 @@ import java.text.ParseException;
 
 
 public interface RequestService {
-    ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getAllRequest(Integer page, Integer limit, String createDateFrom, String createDateTo, Long requestTypeId, String status, String sort, String dir);
-    ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getSubordinateRequest(Long managerId, Integer page, Integer limit, String createDateFrom, String createDateTo, Long requestTypeId, String status, String sort, String dir);
-    ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getMyRequest(Long personId, Integer page, Integer limit, String createDateFrom, String createDateTo, Long requestTypeId, String status, String sort, String dir);
+    ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getAllRequest(Integer page, Integer limit, String createDateFrom, String createDateTo, Long requestTypeId, String status, String sort, String dir) throws ParseException;
+    ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getSubordinateRequest(Long managerId, Integer page, Integer limit, String createDateFrom, String createDateTo, Long requestTypeId, String status, String sort, String dir) throws ParseException;
+    ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getMyRequest(Long personId, Integer page, Integer limit, String createDateFrom, String createDateTo, Long requestTypeId, String status, String sort, String dir) throws ParseException;
 
     ResponseEntity<BaseResponse<RequestResponse, Void>> getEmployeeRequestDetail (Long id);
 
@@ -28,4 +29,7 @@ public interface RequestService {
 //                                                                          Integer page, Integer limit) throws Exception;
     ResponseEntity<BaseResponse<Void, Void>> cancelRequest (Long id);
 
+    ResponseEntity<BaseResponse<Void, Void>> createRequest(CreateRequest createRequest) throws ParseException;
+
+    void autoUpdateRequestStatus();
 }

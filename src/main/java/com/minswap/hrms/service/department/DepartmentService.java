@@ -1,7 +1,9 @@
 package com.minswap.hrms.service.department;
 
 import com.minswap.hrms.model.BaseResponse;
+import com.minswap.hrms.request.DepartmentRequest;
 import com.minswap.hrms.response.MasterDataResponse;
+import com.minswap.hrms.response.dto.DepartmentDto;
 import com.minswap.hrms.response.dto.ListDepartmentDto;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -10,14 +12,15 @@ public interface DepartmentService {
 
     ResponseEntity<BaseResponse<ListDepartmentDto, Pageable>> getListDepartment (Integer page,
                                                                                  Integer limit,
-                                                                                 String departmentName);
-    ResponseEntity<BaseResponse<Void, Void>> createDepartment (String departmentName);
+                                                                                 String search,
+                                                                                 String sort);
+    ResponseEntity<BaseResponse<Void, Void>> createDepartment (DepartmentRequest departmentRequest);
 
     ResponseEntity<BaseResponse<Void, Void>> editDepartment (Long id,
-                                                             String departmentName);
+                                                             DepartmentRequest departmentRequest);
     ResponseEntity<BaseResponse<Void, Void>> deleteDepartment (Long id);
 
-    ResponseEntity<BaseResponse<MasterDataResponse, Pageable>> getMasterDataDepartment ();
+    ResponseEntity<BaseResponse<MasterDataResponse, Pageable>> getMasterDataDepartment (String search);
 
-
+    ResponseEntity<BaseResponse<DepartmentDto, Void>> getRequestDetail(Long id);
 }

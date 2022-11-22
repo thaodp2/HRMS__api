@@ -8,6 +8,7 @@ import com.minswap.hrms.response.DeviceTypeResponse;
 import com.minswap.hrms.service.devicetype.DeviceTypeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
@@ -26,21 +27,21 @@ public class ITDeviceTypeController {
     @GetMapping("/device-type")
     public ResponseEntity<BaseResponse<DeviceTypeResponse, Pageable>> getAllDeviceType(@RequestParam @Min(1) Integer page,
                                                                                         @RequestParam @Min(0) Integer limit,
-                                                                                        @RequestParam (required = false) String deviceTypeName) {
-        return deviceTypeService.getAllDeviceType(page,limit,deviceTypeName);
+                                                                                        @RequestParam (required = false) String search) {
+        return deviceTypeService.getAllDeviceType(page,limit,search);
     }
 
     @PostMapping("/device-type")
     @ServiceProcessingValidateAnnotation
-    public ResponseEntity<BaseResponse<Void, Void>> createDeviceType(@RequestBody
+    public ResponseEntity<BaseResponse<HttpStatus, Void>> createDeviceType(@RequestBody
                                                                      @Valid DeviceTypeRequest deviceTypeRequest,
-                                                                     BindingResult bindingResult) {
-        return deviceTypeService.createDeviceType(deviceTypeRequest.getDeviceTypeName());
+                                                                           BindingResult bindingResult) {
+        return deviceTypeService.createDeviceType(deviceTypeRequest.getDeviceTypeNames());
     }
 
     @PutMapping("/device-type/{id}")
     @ServiceProcessingValidateAnnotation
-    public ResponseEntity<BaseResponse<Void, Void>> editDepartment(@RequestBody
+    public ResponseEntity<BaseResponse<HttpStatus, Void>> editDepartment(@RequestBody
                                                                    @Valid DeviceTypeRequest deviceTypeRequest,
                                                                    BindingResult bindingResult,
                                                                    @PathVariable Long id) {

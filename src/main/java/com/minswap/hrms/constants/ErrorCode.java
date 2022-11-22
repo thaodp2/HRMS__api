@@ -11,8 +11,18 @@ public class ErrorCode {
     public static final BusinessCode DATE_INVALID = new BusinessCode(
             ErrorCodeEnum.DATE_INVALID.getValue(), "CreateDate must be before StartTime and StartTime must be before EndTime", HttpStatus.BAD_REQUEST);
 
+    public static final BusinessCode INVALID_DATE = new BusinessCode(
+            ErrorCodeEnum.INVALID_DATE.getValue(), "StartTime must be before EndTime", HttpStatus.BAD_REQUEST);
+
     public static final BusinessCode RESULT_NOT_FOUND = new BusinessCode(
             ErrorCodeEnum.RESULT_NOT_FOUND.getValue(), "Result not found", HttpStatus.NOT_FOUND);
+
+    public static final BusinessCode DATE_INVALID_IN_LEAVE_REQUEST = new BusinessCode(
+            ErrorCodeEnum.DATE_INVALID_IN_LEAVE_REQUEST.getValue(),
+            "Start Time and End Time can't be null in leave request", HttpStatus.BAD_REQUEST);
+
+    public static final BusinessCode INVALID_DEVICE_TYPE_ID = new BusinessCode(
+            ErrorCodeEnum.INVALID_DEVICE_TYPE_ID.getValue(), "DeviceTypeId is not exist", HttpStatus.NOT_FOUND);
 
     public static final BusinessCode UPDATE_FAIL = new BusinessCode(
             ErrorCodeEnum.UPDATE_FAIL.getValue(), "Update failed", HttpStatus.NOT_FOUND);
@@ -23,6 +33,10 @@ public class ErrorCode {
     public static final BusinessCode REQUEST_INVALID = new BusinessCode(
             ErrorCodeEnum.REQUEST_INVALID.getValue(), "You can't cancel an approved or rejected request",
             HttpStatus.NOT_ACCEPTABLE);
+
+    public static final BusinessCode REQUEST_TYPE_INVALID = new BusinessCode(
+            ErrorCodeEnum.REQUEST_TYPE_INVALID.getValue(), "Request type not found",
+            HttpStatus.NOT_FOUND);
 
     public static final BusinessCode STATUS_INVALID = new BusinessCode(
             ErrorCodeEnum.STATUS_INVALID.getValue(), "You can't update status same as current",
@@ -41,8 +55,11 @@ public class ErrorCode {
     public static final BusinessCode MONTH_INVALID = new BusinessCode(
             ErrorCodeEnum.MONTH_INVALID.getValue(), "Month can't be null", HttpStatus.NOT_FOUND);
 
-    public static final BusinessCode UPDATE_DEPARTMENT_FAIL = new BusinessCode(
-            ErrorCodeEnum.UPDATE_DEPARTMENT_FAIL.getValue(), "DepartmentName already exist", HttpStatus.ALREADY_REPORTED);
+    public static final BusinessCode INVALID_DEPARTMENT = new BusinessCode(
+            ErrorCodeEnum.INVALID_DEPARTMENT.getValue(), "Department already exist", HttpStatus.ALREADY_REPORTED);
+
+    public static final BusinessCode INVALID_POSITION = new BusinessCode(
+            ErrorCodeEnum.INVALID_POSITION.getValue(), "Position already exist", HttpStatus.ALREADY_REPORTED);
 
     public static final BusinessCode INVALID_PARAMETERS = new BusinessCode(
     		ErrorCodeEnum.BAD_REQUEST.getValue(), "Invalid parameters", HttpStatus.BAD_REQUEST);
@@ -50,9 +67,17 @@ public class ErrorCode {
     		ErrorCodeEnum.UNAUTHORIZED.getValue(), "Unauthorized", HttpStatus.UNAUTHORIZED);
     public static final BusinessCode DUPLICATE_DEVICE_TYPE = new BusinessCode(
             ErrorCodeEnum.DUPLICATE_DEVICE_TYPE.getValue(), "Duplicate device type", HttpStatus.BAD_REQUEST);
+    public static final BusinessCode DEVICE_TYPE_NULL_OR_EMPTY = new BusinessCode(
+            ErrorCodeEnum.DEVICE_TYPE_NULL_OR_EMPTY.getValue(), "Device type can't null or empty", HttpStatus.BAD_REQUEST);
 
     public static final BusinessCode NOT_FOUND_DEVICE_TYPE = new BusinessCode(
             ErrorCodeEnum.NOT_FOUND_DEVICE_TYPE.getValue(), "Not found device type", HttpStatus.NOT_FOUND);
+
+    public static final BusinessCode NO_DATA = new BusinessCode(
+            ErrorCodeEnum.NO_DATA.getValue(), "Don't have data", HttpStatus.NO_CONTENT);
+
+    public static final BusinessCode LIST_POSITION_NAME_EMPTY = new BusinessCode(
+            ErrorCodeEnum.LIST_POSITION_NAME_EMPTY.getValue(), "List position name can't be empty!", HttpStatus.NO_CONTENT);
 
     public static final BusinessCode PERSON_NOT_EXIST = new BusinessCode(
             ErrorCodeEnum.PERSON_NOT_EXIST.getValue(), "Person not exist!", HttpStatus.NOT_FOUND);

@@ -21,4 +21,9 @@ public interface TimeCheckService {
                                                                                                                 String endDate, Integer page,
                                                                                                                 Integer limit) throws Exception;
 
+    ResponseEntity<BaseResponse<TimeCheckResponse.TimeCheckEachSubordinateResponse, Pageable>> getListTimeCheckByHR(String search,
+                                                                                                                    String startDate,
+                                                                                                                    String endDate, Integer page,
+                                                                                                                    Integer limit) throws Exception;
+
 }

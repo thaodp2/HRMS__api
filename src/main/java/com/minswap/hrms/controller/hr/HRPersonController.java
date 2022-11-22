@@ -7,87 +7,101 @@ import com.minswap.hrms.repsotories.DeviceTypeRepository;
 import com.minswap.hrms.request.ChangeStatusEmployeeRequest;
 import com.minswap.hrms.request.EmployeeRequest;
 import com.minswap.hrms.response.EmployeeInfoResponse;
-import com.minswap.hrms.service.EmployeeHRService;
+import com.minswap.hrms.response.dto.EmployeeListDto;
+import com.minswap.hrms.response.dto.LeaveBudgetDto;
+import com.minswap.hrms.service.person.PersonService;
+import com.minswap.hrms.util.ExcelExporter;
+import com.minswap.hrms.util.ExportEmployee;
+import com.minswap.hrms.util.ExportLeaveBudget;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import java.io.IOException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.Year;
+import java.util.Date;
+import java.util.List;
 
 @RestController
 @RequestMapping(CommonConstant.HR + "/")
 public class HRPersonController {
 
-  @Autowired
-  private EmployeeHRService employeeHRService;
+    @Autowired
+    private PersonService personService;
 
-  @Autowired
-  private DeviceTypeRepository deviceTypeRepository;
-    
+    @Autowired
+    private DeviceTypeRepository deviceTypeRepository;
+
     @GetMapping("/employee/{rollNumber}")
     public ResponseEntity<BaseResponse<EmployeeInfoResponse, Void>> getDetailEmployee(@PathVariable String rollNumber) {
-      return employeeHRService.getDetailEmployee(rollNumber);
+        return personService.getDetailEmployee(rollNumber);
     }
 
-  @GetMapping("/employee")
-  public ResponseEntity<BaseResponse<EmployeeInfoResponse, Pageable>> getSearchListEmployee(
-          @RequestParam int page,
-          @RequestParam int limit,
-          @RequestParam (name = "search", required = false)String fullName,
-          @RequestParam (name = "email", required = false)String email,
-          @RequestParam (name = "departmentId", required = false) Long departmentId,
-          @RequestParam (name = "rollNumber", required = false) String rollNumber,
-          @RequestParam (name = "active", required = false) String active,
-          @RequestParam (name = "positionId", required = false)Long positionId
+    @GetMapping("/employee")
+    public ResponseEntity<BaseResponse<EmployeeInfoResponse, Pageable>> getSearchListEmployee(
+            @RequestParam int page,
+            @RequestParam int limit,
+            @RequestParam(name = "search", required = false) String fullName,
+            @RequestParam(name = "email", required = false) String email,
+            @RequestParam(name = "departmentId", required = false) Long departmentId,
+            @RequestParam(name = "rollNumber", required = false) String rollNumber,
+            @RequestParam(name = "active", required = false) String active,
+            @RequestParam(name = "positionId", required = false) Long positionId
 
-  ) {
-    return employeeHRService.getSearchListEmployee(page,limit,fullName,email,departmentId,rollNumber,active,positionId, "");
-  }
+    ) {
+        return personService.getSearchListEmployee(page, limit, fullName, email, departmentId, rollNumber, active, positionId, "");
+    }
 
 
-  @PutMapping("/employee/{rollNumber}")
-  @ServiceProcessingValidateAnnotation
-  public ResponseEntity<BaseResponse<Void, Void>> updateEmployee(
-		  @RequestBody @Valid EmployeeRequest employeeRequest ,
-		  BindingResult bindingResult,
-          @PathVariable String rollNumber) {
-    return employeeHRService.updateEmployee(employeeRequest, rollNumber);
-  }
+    @PutMapping("/employee/{rollNumber}")
+    @ServiceProcessingValidateAnnotation
+    public ResponseEntity<BaseResponse<Void, Void>> updateEmployee(
+            @RequestBody @Valid EmployeeRequest employeeRequest,
+            BindingResult bindingResult,
+            @PathVariable String rollNumber) {
+        return personService.updateEmployee(employeeRequest, rollNumber);
+    }
 
-  @PostMapping("/employee")
-  @ServiceProcessingValidateAnnotation
-  public ResponseEntity<BaseResponse<Void, Void>> createEmployee(
-		  @RequestBody @Valid EmployeeRequest employeeRequest , 
-		  BindingResult bindingResult) {
-    return employeeHRService.createEmployee(employeeRequest);
-  }
-  @PutMapping("/status/employee/{rollNumber}")
-  @ServiceProcessingValidateAnnotation
-  public ResponseEntity<BaseResponse<Void, Void>> updateStatusEmployee(
-          @RequestBody @Valid ChangeStatusEmployeeRequest changeStatusEmployeeRequest ,
-          BindingResult bindingResult,
-          @PathVariable String rollNumber) {
-    return employeeHRService.updateStatusEmployee(changeStatusEmployeeRequest, rollNumber);
-  }
-//  @GetMapping("/employee/export")
-//  public ResponseEntity<BaseResponse<Void, Void>> exportToExcel(
-//          HttpServletResponse response
-//  ) throws IOException {
-//    response.setContentType("application/octet-stream");
-//    String headerKey = "Content-Disposition";
-//
-//    DateFormat dateFormat = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS);
-//    String currentDateTime = dateFormat.format(new Date());
-//    String fileName = "employees_" + currentDateTime + ".xlsx";
-//    String headerValue = "attachment; filename=" + fileName;
-//
-//    response.setHeader(headerKey, headerValue);
-//    List<DeviceType> deviceTypeList = deviceTypeRepository.findAll();
-//    ExcelExporter excelExporter = new ExcelExporter(deviceTypeList);
-//    excelExporter.export(response);
-//
-//    return null;
-//  }
+    @PostMapping("/employee")
+    @ServiceProcessingValidateAnnotation
+    public ResponseEntity<BaseResponse<Void, Void>> createEmployee(
+            @RequestBody @Valid EmployeeRequest employeeRequest,
+            BindingResult bindingResult) {
+        return personService.createEmployee(employeeRequest);
+    }
+
+    @PutMapping("/status/employee/{rollNumber}")
+    @ServiceProcessingValidateAnnotation
+    public ResponseEntity<BaseResponse<Void, Void>> updateStatusEmployee(
+            @RequestBody @Valid ChangeStatusEmployeeRequest changeStatusEmployeeRequest,
+            BindingResult bindingResult,
+            @PathVariable String rollNumber) {
+        return personService.updateStatusEmployee(changeStatusEmployeeRequest, rollNumber);
+    }
+
+    @GetMapping("/employee/export")
+    public ResponseEntity<BaseResponse<Void, Void>> exportToExcel(
+            HttpServletResponse response,
+            @RequestParam(name = "search", required = false) String fullName,
+            @RequestParam(name = "email", required = false) String email,
+            @RequestParam(name = "departmentId", required = false) Long departmentId,
+            @RequestParam(name = "rollNumber", required = false) String rollNumber,
+            @RequestParam(name = "positionId", required = false) Long positionId
+    ) throws IOException, ParseException {
+        List<EmployeeListDto> employeeListDtos = personService.exportEmployee(fullName, email, departmentId, rollNumber, positionId);
+        if (!employeeListDtos.isEmpty()) {
+            String fileName = "employee";
+            ExportEmployee excelExporter = new ExportEmployee(employeeListDtos);
+            excelExporter.init(response, fileName);
+            excelExporter.exportEmployee(response);
+        }
+        return null;
+    }
 }
