@@ -132,6 +132,11 @@ public class RequestServiceImpl implements RequestService {
             default:
                 break;
         }
+
+        if(type.equals(CommonConstant.ALL) || type.equals(CommonConstant.SUBORDINATE)){
+            whereBuild.append("and r.status != 'Cancel' ");
+        }
+
         queryAllRequest.append(whereBuild);
         //sort
         if (sort != null && (sort.equalsIgnoreCase(CommonConstant.CREATE_DATE_FIELD) || sort.equalsIgnoreCase(CommonConstant.START_TIME_FIELD) || sort.equalsIgnoreCase(CommonConstant.END_TIME_FIELD))) {

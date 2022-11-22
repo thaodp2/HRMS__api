@@ -1,8 +1,12 @@
 package com.minswap.hrms.repsotories;
 
 import com.minswap.hrms.entities.OTBudget;
+import com.minswap.hrms.response.dto.BenefitBudgetDto;
 import com.minswap.hrms.response.dto.OTBudgetDto;
 import io.lettuce.core.dynamic.annotation.Param;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -27,4 +31,17 @@ public interface OTBudgetRepository extends JpaRepository<OTBudget, Long> {
                            @Param("year") Year year,
                            @Param("month") int month,
                            @Param("hoursWorked") double hoursWorked);
+
+    @Query("SELECT new com.minswap.hrms.response.dto.BenefitBudgetDto(ob.otBudgetId as id, p.fullName as fullName, " +
+            "ob.otHoursBudget as budget, ob.hoursWorked as used, ob.timeRemaining as remain) " +
+            "from OTBudget ob inner join Person p on ob.personId = p.personId " +
+            "where ob.month = :month and ob.year = :year and (:search IS NULL OR p.fullName like %:search%) " +
+            "and (:managerId IS NULL OR p.managerId = :managerId) " +
+            "and (:personId IS NULL OR p.personId = :personId)")
+    Page<BenefitBudgetDto> getBenefitBudgetList(@Param("month") Integer month,
+                                                @Param("year") Year year,
+                                                @Param("search") String search,
+                                                @Param("managerId") Long managerId,
+                                                @Param("personId") Long personId,
+                                                Pageable pageable);
 }
