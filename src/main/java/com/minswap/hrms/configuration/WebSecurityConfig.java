@@ -26,31 +26,31 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http
-            .authorizeRequests()
-            .antMatchers("*").permitAll()
-            .antMatchers("/").permitAll()
-            .antMatchers("/login").permitAll()
-            .antMatchers("/oauth2/**").permitAll()
-            .anyRequest().authenticated()
-            .and()
-            .oauth2Login()
-            .loginPage("/login")
-            .userInfoEndpoint()
-            .userService(oAuth2UserService)
-            .and()
-            .successHandler((request, response, authentication) -> {
-                try {
-                    OAuth2User user = (OAuth2User) authentication.getPrincipal();
-                    Collection<? extends GrantedAuthority> authorities = user.getAuthorities();
-                    if (CollectionUtils.isEmpty(authorities)) {
-                        authentication.setAuthenticated(false);
-                        response.sendRedirect("/login");
-                    }
-                    response.sendRedirect("/");
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            });
+//        http
+//            .authorizeRequests()
+//            .antMatchers("*").permitAll()
+//            .antMatchers("/").permitAll()
+//            .antMatchers("/login").permitAll()
+//            .antMatchers("/oauth2/**").permitAll()
+//            .anyRequest().authenticated()
+//            .and()
+//            .oauth2Login()
+//            .loginPage("/login")
+//            .userInfoEndpoint()
+//            .userService(oAuth2UserService)
+//            .and()
+//            .successHandler((request, response, authentication) -> {
+//                try {
+//                    OAuth2User user = (OAuth2User) authentication.getPrincipal();
+//                    Collection<? extends GrantedAuthority> authorities = user.getAuthorities();
+//                    if (CollectionUtils.isEmpty(authorities)) {
+//                        authentication.setAuthenticated(false);
+//                        response.sendRedirect("/login");
+//                    }
+//                    response.sendRedirect("/");
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+//            });
     }
 }

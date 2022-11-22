@@ -29,9 +29,13 @@ public class CommonConstant {
     public static final String END_TIME_FIELD = "endTime";
     public static final String ROLL_NUMBER_FIELD = "rollNumber";
 
+    public static final String FULL_NAME_FIELD = "fullName";
+
+    public static final String USED_FIELD = "used";
+
     public static final Long REQUEST_TYPE_ID_OF_ANNUAL_LEAVE = Long.valueOf(1);
 
-    //public static final Set<Long> LIST_REQUEST_TYPE_ID_IN_LEAVE_BUDGET = new HashSet<Long>(Arrays.<Long>asList(Long.valueOf(1), Long.valueOf(3), Long.valueOf(6), Long.valueOf(8), Long.valueOf(10)));
+    public static final Long REQUEST_TYPE_ID_OF_OT = Long.valueOf(7);
 
     public static String[] LIST_HEADER_EMPLOYEE = {
             "Roll Number",
