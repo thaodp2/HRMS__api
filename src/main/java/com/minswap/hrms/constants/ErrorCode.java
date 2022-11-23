@@ -23,7 +23,7 @@ public class ErrorCode {
             "Start Time and End Time can't be null in leave request", HttpStatus.BAD_REQUEST);
 
     public static final BusinessCode INVALID_DEVICE_TYPE_ID = new BusinessCode(
-            ErrorCodeEnum.INVALID_DEVICE_TYPE_ID.getValue(), "DeviceTypeId is not exist", HttpStatus.NOT_FOUND);
+            ErrorCodeEnum.INVALID_DEVICE_TYPE_ID.getValue(), "Device type is not exist", HttpStatus.NOT_FOUND);
 
     public static final BusinessCode UPDATE_FAIL = new BusinessCode(
             ErrorCodeEnum.UPDATE_FAIL.getValue(), "Update failed", HttpStatus.NOT_FOUND);

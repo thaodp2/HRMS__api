@@ -20,7 +20,7 @@ public interface RequestService {
     ResponseEntity<BaseResponse<Void, Void>> updateRequestStatus (String status, Long id) throws ParseException;
 
     ResponseEntity<BaseResponse<Void, Void>> editRequest (EditRequest editRequest,
-                                                          Long id);
+                                                          Long id) throws ParseException;
     ResponseEntity<BaseResponse<Void, Void>> createRequest(CreateRequest createRequest) throws ParseException;
 
     void autoUpdateRequestStatus();

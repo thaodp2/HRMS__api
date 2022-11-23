@@ -47,7 +47,7 @@ public class RequestController {
                                                                 @Valid
                                                                 EditRequest editRequest,
                                                                 BindingResult bindingResult,
-                                                                @PathVariable Long id) {
+                                                                @PathVariable Long id) throws ParseException {
         return requestService.editRequest(editRequest, id);
     }
 
