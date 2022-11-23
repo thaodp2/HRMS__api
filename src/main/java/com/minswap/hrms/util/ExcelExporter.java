@@ -35,7 +35,7 @@ public class ExcelExporter {
         String headerKey = "Content-Disposition";
         DateFormat dateFormat = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS);
         String currentDateTime = dateFormat.format(new Date());
-        String fileNameAfter = "_" + currentDateTime + ".xlsx";
+        String fileNameAfter = " " + currentDateTime + ".xlsx";
         String headerValue = "attachment; filename=" + fileName + fileNameAfter;
         response.setHeader(headerKey, headerValue);
     }
