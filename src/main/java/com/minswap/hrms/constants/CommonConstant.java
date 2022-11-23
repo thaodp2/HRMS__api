@@ -46,11 +46,11 @@ public class CommonConstant {
             "Status"
     };
 
-    public static String[] LIST_HEADER_LEAVE_BUDGET = {
+    public static String[] LIST_HEADER_BENEFIT_BUDGET = {
             "Employee Name",
-            "Leave Budget",
-            "Number of day off",
-            "Remain day off"
+            "Budget",
+            "Used",
+            "Remain"
     };
 
     public static Long[] LIST_REQUEST_TYPE_ID_IN_LEAVE_BUDGET = {
