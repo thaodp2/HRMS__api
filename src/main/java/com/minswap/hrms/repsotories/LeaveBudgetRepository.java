@@ -40,7 +40,7 @@ public interface LeaveBudgetRepository extends JpaRepository<LeaveBudget, Long> 
                               @Param("requestTypeId") Long requestTypeId);
 
     @Query("SELECT new com.minswap.hrms.response.dto.BenefitBudgetDto(lb.leaveBudgetId as id, p.fullName as fullName, " +
-            "lb.leaveBudget as budget, lb.numberOfDayOff as used, lb.remainDayOff as remain, rt.requestTypeName as requestTypeName) " +
+            "lb.leaveBudget as budget, lb.numberOfDayOff as used, lb.remainDayOff as remainOfYear, rt.requestTypeName as requestTypeName) " +
             "from LeaveBudget lb LEFT join Person p on lb.personId = p.personId " +
             "left join RequestType rt on lb.requestTypeId = rt.requestTypeId " +
             "where lb.year = :year and (:search IS NULL OR p.fullName like %:search%) " +

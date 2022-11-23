@@ -9,24 +9,26 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class BenefitBudgetDto {
 
-    public BenefitBudgetDto(Long id, String fullName, Double budget, Double used, Double remain, String requestTypeName) {
+    public BenefitBudgetDto(Long id, String fullName, Double budget, Double used, Double remainOfYear, String requestTypeName) {
         this.id = id;
         this.fullName = fullName;
         this.budget = budget;
         this.used = used;
-        this.remain = remain;
+        this.remainOfYear = remainOfYear;
         this.requestTypeName = requestTypeName;
     }
 
-    public BenefitBudgetDto(Long id, String fullName, Double budget, Double used, Double remain) {
+    public BenefitBudgetDto(Long id, String fullName, Double budget, Double used, Double remainOfMonth, Double remainOfYear) {
         this.id = id;
         this.fullName = fullName;
         this.budget = budget;
         this.used = used;
-        this.remain = remain;
+        this.remainOfMonth = remainOfMonth;
+        this.remainOfYear = remainOfYear;
     }
 
     private Long id;
@@ -37,7 +39,9 @@ public class BenefitBudgetDto {
 
     private Double used;
 
-    private Double remain;
+    private Double remainOfMonth;
+
+    private Double remainOfYear;
 
     private String requestTypeName;
 }
