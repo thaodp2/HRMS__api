@@ -21,14 +21,6 @@ public interface RequestService {
 
     ResponseEntity<BaseResponse<Void, Void>> editRequest (EditRequest editRequest,
                                                           Long id);
-//
-//    ResponseEntity<BaseResponse<ListRequestDto, Pageable>> searchRequest (Long userId, String startDate, String endDate,
-//                                                                          Integer page, Integer limit) throws Exception;
-
-//    ResponseEntity<BaseResponse<ListRequestDto, Pageable>> searchRequest (Long userId, String startDate, String endDate,
-//                                                                          Integer page, Integer limit) throws Exception;
-    ResponseEntity<BaseResponse<Void, Void>> cancelRequest (Long id);
-
     ResponseEntity<BaseResponse<Void, Void>> createRequest(CreateRequest createRequest) throws ParseException;
 
     void autoUpdateRequestStatus();

@@ -11,6 +11,7 @@ public class CommonConstant {
     public static final String YYYY_MM_DD_HH_MM_SS = "yyyy-MM-dd HH:mm:ss";
     public static final String YYYY_MM_DD_HH_MM_SS_SSS = "yyyy-MM-dd HH:mm:ss.[SSS][SS][S]";
     public static final String YYYY_MM_DD_HH_MM = "yyyy-MM-dd HH:mm:ss";
+    public static final String HH_MM_SS = "HH:mm:ss";
     public static final String X_CHANNEL_CODE_HEADER = "X-Channel-Code";
     public static final String X_SESSION_ID_HEADER = "X-Session-ID";
     public static final String HEALTH_CHECK = "/actuator";

@@ -11,11 +11,9 @@ import com.minswap.hrms.repsotories.*;
 import com.minswap.hrms.request.CreateRequest;
 import com.minswap.hrms.request.EditRequest;
 import com.minswap.hrms.response.RequestResponse;
-import com.minswap.hrms.response.dto.LeaveBudgetDto;
-import com.minswap.hrms.response.dto.DateDto;
-import com.minswap.hrms.response.dto.OTBudgetDto;
-import com.minswap.hrms.response.dto.RequestDto;
+import com.minswap.hrms.response.dto.*;
 import lombok.extern.slf4j.Slf4j;
+import org.checkerframework.checker.units.qual.C;
 import org.hibernate.Session;
 import org.hibernate.transform.Transformers;
 import org.hibernate.type.*;
@@ -33,7 +31,9 @@ import java.text.DecimalFormat;
 import java.text.ParseException;
 
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.Year;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -62,6 +62,9 @@ public class RequestServiceImpl implements RequestService {
     @Autowired
     EvidenceRepository evidenceRepository;
 
+    @Autowired
+    OfficeTimeRepository officeTimeRepository;
+
     private HttpStatus httpStatus;
 
     /*
@@ -85,7 +88,8 @@ public class RequestServiceImpl implements RequestService {
     private static final Integer ANNUAL_LEAVE_TYPE_ID = 1;
     private static final Integer ALLOW_ROLLBACK = 1;
     private static final Integer NOT_ALLOW_ROLLBACK = 0;
-
+    private static final int OT_START_TIME = 22;
+    private static final int OT_END_TIME = 4;
     public List<RequestDto> getQueryForRequestList(String type, Long managerId, Long personId, Boolean isLimit, Integer limit, Integer page, String createDateFrom, String createDateTo, Long requestTypeId, String status, String sort, String dir) throws ParseException {
         HashMap<String, Object> params = new HashMap<>();
         StringBuilder queryAllRequest = new StringBuilder("select r.request_id as requestId,p.roll_number as rollNumber, p.full_name as personName, rt.request_type_name as requestTypeName, r.create_date as createDate, r.start_time as startTime, r.end_time as endTime, r.reason as reason, r.status as status ");
@@ -353,93 +357,89 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
-    public ResponseEntity<BaseResponse<Void, Void>> cancelRequest(Long id) {
-        String status = requestRepository.getStatusOfRequestById(id);
-        if (status == null) {
-            throw new BaseException(ErrorCode.DELETE_FAIL);
-        } else if (status.equalsIgnoreCase(APPROVED_STATUS)
-                || status.equalsIgnoreCase(REJECTED_STATUS)) {
-            throw new BaseException(ErrorCode.REQUEST_INVALID);
-        } else {
-            requestRepository.deleteById(id);
-            ResponseEntity<BaseResponse<Void, Void>> responseEntity = BaseResponse.ofSucceeded(null);
-            return responseEntity;
-        }
-    }
-
-    @Override
     public ResponseEntity<BaseResponse<Void, Void>> createRequest(CreateRequest createRequest) throws ParseException {
         Long requestTypeId = createRequest.getRequestTypeId();
         Long personId = Long.valueOf(2);
         Long deviceTypeId = createRequest.getDeviceTypeId();
         Date startTime = null;
         Date endTime = null;
-        double dayOffByMinutesInRequest = 0;
         double otHoursInRequest = 0;
-        double dayOffByDaysInRequest = 0;
         Year year = null;
         int month = 0;
-        if (createRequest.getStartTime() != null && createRequest.getEndTime() != null) {
-            startTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
-                    parse(createRequest.getStartTime());
-            endTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
-                    parse(createRequest.getEndTime());
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTime(startTime);
-            year = Year.of(calendar.get(Calendar.YEAR));
-            month = calendar.get(Calendar.MONTH) + 1;
-            DecimalFormat decimalFormat = new DecimalFormat("#.##");
-            dayOffByMinutesInRequest = ((endTime.getTime() - startTime.getTime()) / (60 * 1000));
-            otHoursInRequest = dayOffByMinutesInRequest / 60;
-            dayOffByDaysInRequest = Double.parseDouble(decimalFormat.format(((dayOffByMinutesInRequest) / 60) / 24));
-        }
-        Calendar calendarStart = Calendar.getInstance();
-        calendarStart.setTime(startTime);
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        LocalDateTime localDateTime = LocalDateTime.now();
-        String createDateStr = dateTimeFormatter.format(localDateTime);
-        Date createDate = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
-                parse(createDateStr);
+        Date createDate = getCurrentTime();
         Calendar calendarCreate = Calendar.getInstance();
         calendarCreate.setTime(createDate);
+        // Validate
         List<Long> listRequestTypesId = requestTypeRepository.getAllRequestTypeId();
         if (!listRequestTypesId.contains(requestTypeId)) {
             throw new BaseException(ErrorCode.REQUEST_TYPE_INVALID);
-        } else if (requestTypeId == BORROW_REQUEST_TYPE_ID) {
+        }
+        else if (requestTypeId == BORROW_REQUEST_TYPE_ID) {
+            if (deviceTypeId == null) {
+                throw new BaseException(ErrorCode.NOT_FOUND_DEVICE_TYPE);
+            }
             List<Long> listDeviceTypesId = deviceTypeRepository.getAllDeviceTypeId();
             if (!listDeviceTypesId.contains(deviceTypeId)) {
                 throw new BaseException(ErrorCode.NOT_FOUND_DEVICE_TYPE);
             }
-        } else if ((LEAVE_REQUEST_TYPE.contains(Integer.parseInt(requestTypeId + "")) || requestTypeId == Long.valueOf(OT_TYPE_ID))
-                && (createRequest.getStartTime() == null || createRequest.getEndTime() == null)) {
+        }
+        else if (createRequest.getStartTime() == null || createRequest.getEndTime() == null) {
             throw new BaseException(ErrorCode.DATE_INVALID_IN_LEAVE_REQUEST);
         }
-        else if ((startTime.before(createDate)
-                || endTime.before(createDate)
-                || endTime.before(startTime)) && startTime != null && endTime != null) {
-            throw new BaseException(ErrorCode.DATE_INVALID);
-        }
-        else if (calendarStart.get(Calendar.DAY_OF_MONTH) == calendarCreate.get(Calendar.DAY_OF_MONTH)) {
-            throw new BaseException(ErrorCode.newErrorCode(208,
-                    "The effective request time cannot be on the same day as the creation date",
-                    httpStatus.NOT_ACCEPTABLE));
-        }
-        else if (LEAVE_REQUEST_TYPE.contains(Integer.parseInt(requestTypeId + ""))) {
-            LeaveBudgetDto leaveBudgetDto = leaveBudgetRepository.getLeaveBudget(personId, year, requestTypeId);
-            double leaveBudget = leaveBudgetDto.getLeaveBudget();
-            double newNumberOfDayOff = 0;
-            newNumberOfDayOff = leaveBudgetDto.getNumberOfDayOff() + dayOffByDaysInRequest;
-            double remainDayOff = leaveBudget - newNumberOfDayOff;
-            if (remainDayOff < 0) {
-                throw new BaseException(ErrorCode.UPDATE_DAY_OFF_FAIL);
+        else {
+            startTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
+                    parse(createRequest.getStartTime());
+            endTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
+                    parse(createRequest.getEndTime());
+            Calendar calendarStart = Calendar.getInstance();
+            Calendar calendarEnd = Calendar.getInstance();
+            Calendar calendarCompare = Calendar.getInstance();
+            calendarCompare.setTime(startTime);
+            calendarCompare.add(Calendar.DAY_OF_MONTH, 1);
+            calendarStart.setTime(startTime);
+            calendarEnd.setTime(endTime);
+            year = Year.of(calendarStart.get(Calendar.YEAR));
+            month = calendarStart.get(Calendar.MONTH) + 1;
+            if (LEAVE_REQUEST_TYPE.contains(Integer.parseInt(requestTypeId + ""))) {
+                if ((startTime.before(createDate)
+                        || endTime.before(createDate)
+                        || endTime.before(startTime))) {
+                    throw new BaseException(ErrorCode.DATE_INVALID);
+                }
+                else if (calendarStart.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY
+                        && calendarEnd.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY
+                        && calendarCompare.get(Calendar.DAY_OF_MONTH) == calendarEnd.get(Calendar.DAY_OF_MONTH)) {
+                    throw new BaseException(ErrorCode.newErrorCode(208,
+                            "You can't make a request for leave from Saturday to Sunday",
+                            httpStatus.NOT_ACCEPTABLE));
+                }
+                else if (calendarCreate.get(Calendar.DAY_OF_MONTH) == calendarStart.get(Calendar.DAY_OF_MONTH)) {
+                    throw new BaseException(ErrorCode.newErrorCode(208,
+                            "You must make request 1 day before start date",
+                            httpStatus.NOT_ACCEPTABLE));
+                }
+                LeaveBudgetDto leaveBudgetDto = leaveBudgetRepository.getLeaveBudget(personId, year, requestTypeId);
+                double leaveBudget = leaveBudgetDto.getLeaveBudget();
+                double numberOfDayOff = calculateNumOfDayOff(createRequest.getStartTime(), createRequest.getEndTime());
+                double remainDayOff = leaveBudget - numberOfDayOff;
+                if (remainDayOff < 0) {
+                    throw new BaseException(ErrorCode.UPDATE_DAY_OFF_FAIL);
+                }
             }
-        } else if (requestTypeId == Long.valueOf(OT_TYPE_ID)) {
-            OTBudgetDto otBudgetDto = otBudgetRepository.getOTBudgetByPersonId(personId, year, month);
-            double newHoursWorked = 0;
-            newHoursWorked = otBudgetDto.getHoursWorked() + otHoursInRequest;
-            double remainHoursWork = otBudgetDto.getOtHoursBudget() - newHoursWorked;
-            if (remainHoursWork < 0) {
-                throw new BaseException(ErrorCode.UPDATE_DAY_OFF_FAIL);
+            else if (requestTypeId == Long.valueOf(OT_TYPE_ID)) {
+                if (calendarStart.get(Calendar.HOUR_OF_DAY) < OT_START_TIME
+                        || calendarEnd.get(Calendar.HOUR_OF_DAY) > OT_END_TIME) {
+                    throw new BaseException(ErrorCode.newErrorCode(208,
+                            "You can only OT between 10pm and 4am the next day",
+                            httpStatus.NOT_ACCEPTABLE));
+                }
+                OTBudgetDto otBudgetDto = otBudgetRepository.getOTBudgetByPersonId(personId, year, month);
+                double newHoursWorked = 0;
+                newHoursWorked = otBudgetDto.getHoursWorked() + getNumOfHoursOT(startTime, endTime);
+                double remainHoursWork = otBudgetDto.getOtHoursBudget() - newHoursWorked;
+                if (remainHoursWork < 0) {
+                    throw new BaseException(ErrorCode.UPDATE_DAY_OFF_FAIL);
+                }
             }
         }
         Request request = new Request(requestTypeId,
@@ -577,5 +577,70 @@ public class RequestServiceImpl implements RequestService {
         Date currentTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
                 parse(currentTimeStr);
         return currentTime;
+    }
+
+    public double calculateNumOfDayOff(String startTime, String endTime) {
+        double numberOfDayOff = 0;
+        Calendar startCalendar = Calendar.getInstance();
+        Calendar endCalendar = Calendar.getInstance();
+        try {
+            Date startTimeDate = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
+                    parse(startTime);
+            Date endTimeDate = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
+                    parse(endTime);
+
+            LocalDateTime dateTimeStart = LocalDateTime.parse(startTime,
+                    DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+            LocalDateTime dateTimeEnd = LocalDateTime.parse(endTime,
+                    DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+
+            String timStart = DateTimeFormatter.ofPattern("HH:mm:ss").format(dateTimeStart);
+            String timEnd = DateTimeFormatter.ofPattern("HH:mm:ss").format(dateTimeEnd);
+
+            startCalendar.setTime(startTimeDate);
+            endCalendar.setTime(endTimeDate);
+
+            OfficeTimeDto officeTimeDto = officeTimeRepository.getOfficeTime();
+            String startOfficeTime = officeTimeDto.getTimeStart();
+            String finishOfficeTime = officeTimeDto.getTimeEnd();
+            double workingTimeHoursInOneDay = (Duration.between(LocalTime.parse(startOfficeTime),
+                                                LocalTime.parse(finishOfficeTime)).getSeconds())/(60*60);
+
+            if (startCalendar.get(Calendar.DAY_OF_MONTH) == endCalendar.get(Calendar.DAY_OF_MONTH)) {
+                numberOfDayOff = (Duration.between(LocalTime.parse(timStart),
+                        LocalTime.parse(timEnd)).getSeconds())/ (60*60*workingTimeHoursInOneDay);
+            }
+            else {
+                int numOfDaysOffBetweenStartAndEnd = -1;
+                do {
+                    startCalendar.add(Calendar.DAY_OF_MONTH, 1);
+                    if (startCalendar.get(Calendar.DAY_OF_WEEK) != Calendar.SATURDAY && startCalendar.get(Calendar.DAY_OF_WEEK) != Calendar.SUNDAY) {
+                        ++numOfDaysOffBetweenStartAndEnd;
+                    }
+                } while (startCalendar.get(Calendar.DAY_OF_MONTH) < endCalendar.get(Calendar.DAY_OF_MONTH));
+                double dayOffInStartDay = 0;
+                double dayOffInEndDay = 0;
+                if (startCalendar.get(Calendar.DAY_OF_WEEK) != Calendar.SATURDAY
+                        && startCalendar.get(Calendar.DAY_OF_WEEK) != Calendar.SUNDAY) {
+                    dayOffInStartDay = (Duration.between(LocalTime.parse(timStart),
+                            LocalTime.parse(finishOfficeTime)).getSeconds())/ (60*60);
+                }
+                if (endCalendar.get(Calendar.DAY_OF_WEEK) != Calendar.SATURDAY
+                        && endCalendar.get(Calendar.DAY_OF_WEEK) != Calendar.SUNDAY) {
+                    dayOffInEndDay = (Duration.between(LocalTime.parse(startOfficeTime),
+                            LocalTime.parse(timEnd)).getSeconds())/ (60*60);
+                }
+                numberOfDayOff = numOfDaysOffBetweenStartAndEnd + (dayOffInStartDay + dayOffInEndDay) / workingTimeHoursInOneDay;
+            }
+            DecimalFormat decimalFormat = new DecimalFormat("#.##");
+            return Double.parseDouble(decimalFormat.format(numberOfDayOff));
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public double getNumOfHoursOT(Date startTime, Date endTime) {
+        double hoursWorked = (startTime.getTime() - endTime.getTime()) / (1000 * 60 * 60);
+        return hoursWorked;
     }
 }

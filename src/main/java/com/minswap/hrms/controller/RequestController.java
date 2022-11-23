@@ -65,11 +65,6 @@ public class RequestController {
             return requestService.getMyRequest(id,page,limit,createDateFrom,createDateTo,requestTypeId, status, sort, dir);
     }
 
-    @DeleteMapping("/request/{id}")
-    public ResponseEntity<BaseResponse<Void, Void>> cancelRequest(@PathVariable Long id) {
-        return requestService.cancelRequest(id);
-    }
-
     @PostMapping("/request")
     @ServiceProcessingValidateAnnotation
     public ResponseEntity<BaseResponse<Void, Void>> createRequest(@RequestBody @Valid CreateRequest createRequest,
