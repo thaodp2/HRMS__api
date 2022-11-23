@@ -33,7 +33,7 @@ public interface OTBudgetRepository extends JpaRepository<OTBudget, Long> {
                            @Param("hoursWorked") double hoursWorked);
 
     @Query("SELECT new com.minswap.hrms.response.dto.BenefitBudgetDto(ob.otBudgetId as id, p.fullName as fullName, " +
-            "ob.otHoursBudget as budget, ob.hoursWorked as used, ob.timeRemaining as remain) " +
+            "ob.otHoursBudget as budget, ob.hoursWorked as used, ob.timeRemainingOfMonth as remainOfMonth, ob.timeRemainingOfYear as remainOfYear) " +
             "from OTBudget ob inner join Person p on ob.personId = p.personId " +
             "where ob.month = :month and ob.year = :year and (:search IS NULL OR p.fullName like %:search%) " +
             "and (:managerId IS NULL OR p.managerId = :managerId) " +

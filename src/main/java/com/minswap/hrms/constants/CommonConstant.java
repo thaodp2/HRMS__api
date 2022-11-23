@@ -50,7 +50,8 @@ public class CommonConstant {
             "Employee Name",
             "Budget",
             "Used",
-            "Remain"
+            "Remain Of Month",
+            "Remain Of Year"
     };
 
     public static Long[] LIST_REQUEST_TYPE_ID_IN_LEAVE_BUDGET = {

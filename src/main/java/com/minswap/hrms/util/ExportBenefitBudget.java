@@ -2,12 +2,13 @@ package com.minswap.hrms.util;
 
 import com.minswap.hrms.constants.CommonConstant;
 import com.minswap.hrms.response.dto.BenefitBudgetDto;
+import net.logstash.logback.encoder.org.apache.commons.lang.ArrayUtils;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.List;
+import java.util.*;
 
 public class ExportBenefitBudget extends ExcelExporter {
     private List<BenefitBudgetDto> benefitBudgetDtoList;
@@ -15,16 +16,20 @@ public class ExportBenefitBudget extends ExcelExporter {
     public ExportBenefitBudget(List<BenefitBudgetDto> benefitBudgetDtoList) {
         super();
         this.benefitBudgetDtoList = benefitBudgetDtoList;
-        getSheets().add(getWorkbook().createSheet(benefitBudgetDtoList.get(0).getRequestTypeName() == null ? "OT Budget": benefitBudgetDtoList.get(0).getRequestTypeName()));
+        getSheets().add(getWorkbook().createSheet(benefitBudgetDtoList.get(0).getRequestTypeName() == null ? "OT Budget" : benefitBudgetDtoList.get(0).getRequestTypeName()));
     }
 
-    private void writeDataRowsLeaveBudget() {
+    private void writeDataRowsBenefitBudget() {
         int rowCount = 1;
+        String[] header = CommonConstant.LIST_HEADER_BENEFIT_BUDGET;
+        if (benefitBudgetDtoList.get(0).getRequestTypeName() != null) {
+            header = (String[]) ArrayUtils.remove(header, 3);
+        }
         for (int j = 0; j < benefitBudgetDtoList.size(); j++) {
             Row row = getSheets().get(0).createRow(rowCount++);
-            for (int i = 0; i < CommonConstant.LIST_HEADER_BENEFIT_BUDGET.length; i++) {
+            for (int i = 0; i < header.length; i++) {
                 Cell cell = row.createCell(i);
-                switch (i){
+                switch (i) {
                     case 0:
                         cell.setCellValue(benefitBudgetDtoList.get(j).getFullName());
                         break;
@@ -35,7 +40,14 @@ public class ExportBenefitBudget extends ExcelExporter {
                         cell.setCellValue(benefitBudgetDtoList.get(j).getUsed());
                         break;
                     case 3:
-                        cell.setCellValue(benefitBudgetDtoList.get(j).getRemain());
+                        if (benefitBudgetDtoList.get(0).getRequestTypeName() == null) {
+                            cell.setCellValue(benefitBudgetDtoList.get(j).getRemainOfMonth());
+                        } else {
+                            cell.setCellValue(benefitBudgetDtoList.get(j).getRemainOfYear());
+                        }
+                        break;
+                    case 4:
+                        cell.setCellValue(benefitBudgetDtoList.get(j).getRemainOfYear());
                         break;
                 }
                 getSheets().get(0).autoSizeColumn(i);
@@ -44,8 +56,12 @@ public class ExportBenefitBudget extends ExcelExporter {
     }
 
     public void exportBenefitBudget(HttpServletResponse response) throws IOException {
-        writeHeaderMultiSheet(CommonConstant.LIST_HEADER_BENEFIT_BUDGET);
-        writeDataRowsLeaveBudget();
+        String[] header = CommonConstant.LIST_HEADER_BENEFIT_BUDGET;
+        if (benefitBudgetDtoList.get(0).getRequestTypeName() != null) {
+            header = (String[]) ArrayUtils.remove(header, 3);
+        }
+        writeHeader(header);
+        writeDataRowsBenefitBudget();
         export(response);
     }
 }

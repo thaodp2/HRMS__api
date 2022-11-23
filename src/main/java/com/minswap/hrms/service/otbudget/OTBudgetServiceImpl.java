@@ -31,7 +31,7 @@ public class OTBudgetServiceImpl implements OTBudgetService{
         List<OTBudget> otBudgetList = new ArrayList<>();
         if(!personList.isEmpty()) {
             for (Person person : personList) {
-                otBudgetList.add(new OTBudget(person.getPersonId(), 40, 0, 40, java.time.LocalDateTime.now().getMonthValue(), Year.now()));
+                //otBudgetList.add(new OTBudget(person.getPersonId(), 40, 0, 40, java.time.LocalDateTime.now().getMonthValue(), Year.now()));
             }
             otBudgetRepository.saveAll(otBudgetList);
         }
