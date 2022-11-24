@@ -1,5 +1,6 @@
 package com.minswap.hrms.repsotories;
 
+import com.minswap.hrms.entities.LeaveBudget;
 import com.minswap.hrms.entities.OTBudget;
 import com.minswap.hrms.response.dto.BenefitBudgetDto;
 import com.minswap.hrms.response.dto.OTBudgetDto;
@@ -17,6 +18,9 @@ import java.time.Year;
 
 @Repository
 public interface OTBudgetRepository extends JpaRepository<OTBudget, Long> {
+
+    OTBudget findByPersonIdAndMonthAndYear(Long personId, Integer month, Year year);
+
     @Query("SELECT new com.minswap.hrms.response.dto.OTBudgetDto(ob.otHoursBudget, ob.hoursWorked) " +
             "from OTBudget ob " +
             "where ob.personId =:id and ob.year =:year and ob.month =:month")
