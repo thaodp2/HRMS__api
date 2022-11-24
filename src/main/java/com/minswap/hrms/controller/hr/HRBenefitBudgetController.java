@@ -1,11 +1,14 @@
 package com.minswap.hrms.controller.hr;
 
 import com.minswap.hrms.constants.CommonConstant;
+import com.minswap.hrms.entities.Person;
 import com.minswap.hrms.model.BaseResponse;
+import com.minswap.hrms.repsotories.PersonRepository;
 import com.minswap.hrms.response.BenefitBudgetResponse;
 import com.minswap.hrms.response.dto.BenefitBudgetDto;
 import com.minswap.hrms.service.benefitbudget.BenefitBudgetService;
 import com.minswap.hrms.service.otbudget.OTBudgetService;
+import com.minswap.hrms.service.person.PersonService;
 import com.minswap.hrms.util.ExportBenefitBudget;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -31,9 +34,6 @@ import java.util.List;
 public class HRBenefitBudgetController {
     @Autowired
     private BenefitBudgetService benefitBudgetService;
-
-    @Autowired
-    private OTBudgetService otBudgetService;
 
     @GetMapping("/benefit-budget")
     public ResponseEntity<BaseResponse<BenefitBudgetResponse.BenefitBudgetListResponse, Pageable>> getBenefitBudgetOfSubordinate(

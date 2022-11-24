@@ -23,6 +23,7 @@ public interface PersonRepository extends JpaRepository<Person, Long>{
 
     Optional<Person> findPersonByPersonId(Long id);
     Optional<Person> findPersonByRollNumberEquals(String rollNumber);
+    List<Person> findByRankIdIsNot(Long rankId);
 
     @Query("select new com.minswap.hrms.response.dto.EmployeeDetailDto("+
             " p.personId as personId," +
