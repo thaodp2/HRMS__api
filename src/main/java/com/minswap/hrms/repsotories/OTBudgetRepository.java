@@ -57,4 +57,6 @@ public interface OTBudgetRepository extends JpaRepository<OTBudget, Long> {
                                                 @Param("personId") Long personId,
                                                 Pageable pageable);
 
+    OTBudget findByPersonIdAndMonthAndYear(Long personId, Integer month, Year year);
+
 }

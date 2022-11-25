@@ -87,6 +87,7 @@ public class RequestServiceImpl implements RequestService {
     private static final Integer NOT_ALLOW_ROLLBACK = 0;
     private static final String OT_START_TIME = "22:00:00";
     private static final String OT_END_TIME = "04:00:00";
+    private static final int ASSIGNED = 1;
     private static final int TIME_ALLOW_TO_ROLLBACK = 2;
     private static final int OT_START_TIME_HOUR = 22;
     private static final int OT_END_TIME_HOUR = 4;
@@ -242,37 +243,40 @@ public class RequestServiceImpl implements RequestService {
             if (requestDto == null) {
                 throw new NullPointerException();
             }
-            DateDto dateDto = requestRepository.getStartAndEndTimeByRequestId(id);
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTime(dateDto.getStartTime());
-            Year year = Year.of(calendar.get(Calendar.YEAR));
-            int month = calendar.get(Calendar.MONTH) + 1;
             Integer requestType = requestTypeRepository.getRequestTypeByRequestId(id);
-            Long personId = requestRepository.getPersonIdByRequestId(id);
-            if (LEAVE_REQUEST_TYPE.contains(requestType)) {
-                LeaveBudgetDto leaveBudgetDto = leaveBudgetRepository.getLeaveBudget(personId, year, Long.valueOf(requestType));
-                requestDto.setTimeRemaining(leaveBudgetDto.getRemainDayOff());
-                requestDto.setRequestTypeName(LEAVE_TYPE);
-            } else if (requestType == OT_TYPE_ID) {
-                OTBudgetDto otBudgetDto = otBudgetRepository.getOTBudgetByPersonId(personId, year, month);
-                requestDto.setTimeRemaining(otBudgetDto.getOtHoursBudget() - otBudgetDto.getHoursWorked());
-                requestDto.setRequestTypeName(OT_TYPE);
-            } else if (requestType == BORROW_REQUEST_TYPE_ID) {
+            if (requestType == BORROW_REQUEST_TYPE_ID) {
                 requestDto.setRequestTypeName(DEVICE_TYPE);
-            } else if (requestType == FORGOT_CHECK_IN_OUT) {
-                requestDto.setRequestTypeName(FORGOT_CHECK_IN_CHECK_OUT_TYPE);
             }
             else {
-                requestDto.setRequestTypeName(OTHER_TYPE);
+                DateDto dateDto = requestRepository.getStartAndEndTimeByRequestId(id);
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(dateDto.getStartTime());
+                Year year = Year.of(calendar.get(Calendar.YEAR));
+                int month = calendar.get(Calendar.MONTH) + 1;
+                Long personId = requestRepository.getPersonIdByRequestId(id);
+                if (LEAVE_REQUEST_TYPE.contains(requestType)) {
+                    LeaveBudgetDto leaveBudgetDto = leaveBudgetRepository.getLeaveBudget(personId, year, Long.valueOf(requestType));
+                    requestDto.setTimeRemaining(leaveBudgetDto.getRemainDayOff());
+                    requestDto.setRequestTypeName(LEAVE_TYPE);
+                } else if (requestType == OT_TYPE_ID) {
+                    OTBudgetDto otBudgetDto = otBudgetRepository.getOTBudgetByPersonId(personId, year, month);
+                    requestDto.setTimeRemaining(otBudgetDto.getOtHoursBudget() - otBudgetDto.getHoursWorked());
+                    requestDto.setRequestTypeName(OT_TYPE);
+                } else if (requestType == FORGOT_CHECK_IN_OUT) {
+                    requestDto.setRequestTypeName(FORGOT_CHECK_IN_CHECK_OUT_TYPE);
+                }
+                else {
+                    requestDto.setRequestTypeName(OTHER_TYPE);
+                }
+                Date currentTime = getCurrentTime();
+                if (currentTime.after(requestDto.getStartTime())) {
+                    requestDto.setIsAllowRollback(NOT_ALLOW_ROLLBACK);
+                } else {
+                    requestDto.setIsAllowRollback(ALLOW_ROLLBACK);
+                }
             }
             List<String> listImage = evidenceRepository.getListImageByRequest(id);
             requestDto.setListEvidence(listImage);
-            Date currentTime = getCurrentTime();
-            if (currentTime.after(requestDto.getStartTime())) {
-                requestDto.setIsAllowRollback(NOT_ALLOW_ROLLBACK);
-            } else {
-                requestDto.setIsAllowRollback(ALLOW_ROLLBACK);
-            }
             RequestResponse requestResponse = new RequestResponse(requestDto);
             ResponseEntity<BaseResponse<RequestResponse, Void>> responseEntity
                     = BaseResponse.ofSucceededOffset(requestResponse, null);

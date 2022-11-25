@@ -25,7 +25,8 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class RequestDto {
     public RequestDto(Long requestId, String personName, Long requestTypeId, String requestTypeName, Date createDate, Date startTime,
-                      Date endTime, String reason, String status, String receiver, Long deviceTypeId, Date approvalDate) {
+                      Date endTime, String reason, String status, String receiver, Long deviceTypeId, Date approvalDate,
+                      Integer isAssigned) {
         this.requestId = requestId;
         this.personName = personName;
         this.requestTypeId = requestTypeId;
@@ -38,6 +39,7 @@ public class RequestDto {
         this.receiver = receiver;
         this.deviceTypeId = deviceTypeId;
         this.approvalDate = approvalDate;
+        this.isAssigned = isAssigned;
     }
 
     public RequestDto(Long requestId, String rollNumber, String personName, Date createDate, String reason, String receiver, String deviceTypeName, Date approvalDate, Integer isAssigned) {

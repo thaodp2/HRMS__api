@@ -37,7 +37,7 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
     @Query("select new com.minswap.hrms.response.dto.RequestDto(" +
             "r.requestId as requestId, p.fullName as personName,rt.requestTypeId as requestTypeId, rt.requestTypeName as requestTypeName, r.createDate as createDate, " +
             "r.startTime as startTime, r.endTime as endTime, " +
-            "r.reason as reason, r.status as status, p2.fullName as receiver, dt.deviceTypeId as deviceTypeId, r.approvalDate as approvalDate) " +
+            "r.reason as reason, r.status as status, p2.fullName as receiver, dt.deviceTypeId as deviceTypeId, r.approvalDate as approvalDate, r.isAssigned as isAssigned) " +
             "from Request r " +
             "left join RequestType rt on " +
             "r.requestTypeId = rt.requestTypeId " +
