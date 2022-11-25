@@ -12,10 +12,8 @@ import com.minswap.hrms.request.CreateRequest;
 import com.minswap.hrms.request.EditRequest;
 import com.minswap.hrms.response.BenefitBudgetResponse;
 import com.minswap.hrms.response.RequestResponse;
-import com.minswap.hrms.response.dto.LeaveBudgetDto;
-import com.minswap.hrms.response.dto.DateDto;
-import com.minswap.hrms.response.dto.OTBudgetDto;
-import com.minswap.hrms.response.dto.RequestDto;
+import com.minswap.hrms.response.dto.*;
+import com.minswap.hrms.util.CommonUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Session;
 import org.hibernate.transform.Transformers;
@@ -438,21 +436,6 @@ public class RequestServiceImpl implements RequestService {
             responseEntity = BaseResponse.ofSucceeded(null);
         }
         return responseEntity;
-    }
-
-    @Override
-    public ResponseEntity<BaseResponse<Void, Void>> cancelRequest(Long id) {
-        String status = requestRepository.getStatusOfRequestById(id);
-        if (status == null) {
-            throw new BaseException(ErrorCode.DELETE_FAIL);
-        } else if (status.equalsIgnoreCase(APPROVED_STATUS)
-                || status.equalsIgnoreCase(REJECTED_STATUS)) {
-            throw new BaseException(ErrorCode.REQUEST_INVALID);
-        } else {
-            requestRepository.deleteById(id);
-            ResponseEntity<BaseResponse<Void, Void>> responseEntity = BaseResponse.ofSucceeded(null);
-            return responseEntity;
-        }
     }
 
     @Override
