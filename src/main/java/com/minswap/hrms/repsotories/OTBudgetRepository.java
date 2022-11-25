@@ -13,7 +13,10 @@ import java.time.Year;
 
 @Repository
 public interface OTBudgetRepository extends JpaRepository<OTBudget, Long> {
-    @Query("SELECT new com.minswap.hrms.response.dto.OTBudgetDto(ob.otHoursBudget, ob.hoursWorked) " +
+    @Query("SELECT new com.minswap.hrms.response.dto.OTBudgetDto(ob.otHoursBudget, " +
+            "ob.hoursWorked, " +
+            "ob.otHoursRemainOfMonth, " +
+            "ob.otHoursRemainOfYear) " +
             "from OTBudget ob " +
             "where ob.personId =:id and ob.year =:year and ob.month =:month")
     OTBudgetDto getOTBudgetByPersonId(@Param("id") Long id,
@@ -21,10 +24,18 @@ public interface OTBudgetRepository extends JpaRepository<OTBudget, Long> {
                                       @Param("month") int month);
     @Modifying
     @Transactional
-    @Query("Update OTBudget ob set ob.hoursWorked =:hoursWorked " +
+    @Query("Update OTBudget ob set ob.hoursWorked =:hoursWorked, " +
+            "ob.otHoursRemainOfMonth=:otHoursRemainOfMonth " +
             "where ob.personId =:personId and ob.year=:year and ob.month =:month")
-    Integer updateOTBudget(@Param("personId") Long personId,
-                           @Param("year") Year year,
-                           @Param("month") int month,
-                           @Param("hoursWorked") double hoursWorked);
+    Integer updateOTBudgetOfMonth(@Param("personId") Long personId,
+                                  @Param("year") Year year,
+                                  @Param("month") int month,
+                                  @Param("hoursWorked") double hoursWorked,
+                                  @Param("otHoursRemainOfMonth") double otHoursRemainOfMonth);
+
+    @Query("Update OTBudget ob set ob.otHoursRemainOfYear=:otHoursRemainOfYear " +
+            "where ob.personId=:personId and ob.year=:year")
+    Integer updateOTBudgetOfYear(@Param("personId") Long personId,
+                                 @Param("year") Year year,
+                                 @Param("otHoursRemainOfYear") double otHoursRemainOfYear);
 }

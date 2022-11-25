@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import javax.transaction.Transactional;
 import java.util.Date;
+import java.util.List;
 
 @Repository
 public interface RequestRepository extends JpaRepository<Request, Long> {
@@ -96,4 +97,18 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
                                           @Param("end") Date end,
                                           @Param("rejected") String rejected,
                                           @Param("pending") String pending);
+
+    @Query("select r.startTime, r.endTime " +
+           "from Request r " +
+            "where r.personId=:personId " +
+            "and r.requestTypeId=:requestTypeId " +
+            "and ((r.startTime between :start and :end) or (r.endTime between :start and :end)) " +
+            "and r.status=:status")
+    List<DateDto> getListOTRequestApprovedByDate(@Param("personId") Long personId,
+                                              @Param("requestTypeId") Long requestTypeId,
+                                              @Param("start") Date start,
+                                              @Param("end") Date end,
+                                              @Param("status") String status);
+
+
 }
