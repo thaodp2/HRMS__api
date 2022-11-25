@@ -32,4 +32,6 @@ public interface RequestService {
     ResponseEntity<BaseResponse<Void, Void>> createRequest(CreateRequest createRequest) throws ParseException;
 
     void autoUpdateRequestStatus();
+
+    ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getBorrowDeviceRequestList(Integer page, Integer limit, String search, String approvalDateFrom, String approvalDateTo, Integer isAssigned, String sort, String dir) throws ParseException;
 }

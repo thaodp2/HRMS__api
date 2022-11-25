@@ -10,16 +10,18 @@ import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.repsotories.*;
 import com.minswap.hrms.request.CreateRequest;
 import com.minswap.hrms.request.EditRequest;
+import com.minswap.hrms.response.BenefitBudgetResponse;
 import com.minswap.hrms.response.RequestResponse;
-import com.minswap.hrms.response.dto.LeaveBudgetDto;
-import com.minswap.hrms.response.dto.DateDto;
-import com.minswap.hrms.response.dto.OTBudgetDto;
-import com.minswap.hrms.response.dto.RequestDto;
+import com.minswap.hrms.response.dto.*;
+import com.minswap.hrms.util.CommonUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Session;
 import org.hibernate.transform.Transformers;
 import org.hibernate.type.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -63,6 +65,8 @@ public class RequestServiceImpl implements RequestService {
     EvidenceRepository evidenceRepository;
 
     private HttpStatus httpStatus;
+
+    private static final long MILLISECOND_7_HOURS = 7 * 60 * 60 * 1000;
 
     /*
         ANNUAL_LEAVE_TYPE_ID = 1;
@@ -493,6 +497,26 @@ public class RequestServiceImpl implements RequestService {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getBorrowDeviceRequestList(Integer page, Integer limit, String search, String approvalDateFrom, String approvalDateTo, Integer isAssigned, String sort, String dir) throws ParseException {
+        Pagination pagination = null;
+        Sort.Direction dirSort = CommonUtil.getSortDirection(sort,dir);
+        Date startDateFormat = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).parse(approvalDateFrom);
+        startDateFormat.setTime(startDateFormat.getTime() + MILLISECOND_7_HOURS);
+        Date endDateFormat = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).parse(approvalDateTo);
+        endDateFormat.setTime(endDateFormat.getTime() + MILLISECOND_7_HOURS);
+        Page<RequestDto> requestDtoPage = requestRepository.getBorrowDeviceRequestList((search == null || search.trim().isEmpty()) ? null:search.trim(), startDateFormat,endDateFormat,isAssigned, PageRequest.of(page-1,limit,dirSort == null ? Sort.by(Sort.Direction.DESC,"approvalDate") : Sort.by(dirSort, sort)));
+        List<RequestDto> requestDtoList = requestDtoPage.getContent();
+        if(page != null & limit != null) {
+            pagination = new Pagination(page, limit);
+            pagination.setTotalRecords(requestDtoPage);
+        }
+        RequestResponse.RequestListResponse response = new RequestResponse.RequestListResponse(requestDtoList);
+        ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> responseEntity
+                = BaseResponse.ofSucceededOffset(response, pagination);
+        return responseEntity;
     }
 
     public boolean isRequestIdValid(Long id) {
