@@ -30,17 +30,17 @@ public class ExcelExporter {
         sheets = new ArrayList<>();
     }
 
-    public void init(HttpServletResponse response,String fileName) {
+    public void init(HttpServletResponse response, String fileName) {
         response.setContentType("application/octet-stream");
         String headerKey = "Content-Disposition";
         DateFormat dateFormat = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS);
         String currentDateTime = dateFormat.format(new Date());
-        String fileNameAfter = "_" + currentDateTime + ".xlsx";
+        String fileNameAfter = " " + currentDateTime + ".xlsx";
         String headerValue = "attachment; filename=" + fileName + fileNameAfter;
         response.setHeader(headerKey, headerValue);
     }
 
-    public void setHeader(Row row, String[] header){
+    public void setHeader(Row row, String[] header) {
         for (int i = 0; i < header.length; i++) {
             Cell cell = row.createCell(i);
             cell.setCellValue(header[i]);
@@ -53,7 +53,7 @@ public class ExcelExporter {
         setHeader(row, header);
     }
 
-    public CellStyle style(){
+    public CellStyle style() {
         CellStyle style = getWorkbook().createCellStyle();
         XSSFFont font = getWorkbook().createFont();
         font.setBold(true);

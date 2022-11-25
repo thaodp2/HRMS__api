@@ -99,7 +99,7 @@ public class RequestServiceImpl implements RequestService {
     private static final String O_AM = "00:00:00";
     public List<RequestDto> getQueryForRequestList(String type, Long managerId, Long personId, Boolean isLimit, Integer limit, Integer page, String createDateFrom, String createDateTo, Long requestTypeId, String status, String sort, String dir) throws ParseException {
         HashMap<String, Object> params = new HashMap<>();
-        StringBuilder queryAllRequest = new StringBuilder("select r.request_id as requestId,p.roll_number as rollNumber, p.full_name as personName, rt.request_type_name as requestTypeName, r.create_date as createDate, r.start_time as startTime, r.end_time as endTime, r.reason as reason, r.status as status ");
+        StringBuilder queryAllRequest = new StringBuilder("select r.request_id as requestId,p.roll_number as rollNumber, p.full_name as personName, rt.request_type_name as requestTypeName, r.create_date as createDate, r.start_time as startTime, r.end_time as endTime, r.reason as reason, r.status as status, r.is_assigned as isAssigned, r.request_type_id as requestTypeId ");
         queryAllRequest.append("from request r " +
                 "left join request_type rt on " +
                 "r.request_type_id = rt.request_type_id " +
@@ -125,7 +125,7 @@ public class RequestServiceImpl implements RequestService {
             }
             if (status != null) {
                 whereBuild.append("and r.status = :status ");
-                params.put("status", status);
+                params.put("status", status.trim());
             }
         }
         // role
@@ -143,6 +143,11 @@ public class RequestServiceImpl implements RequestService {
             default:
                 break;
         }
+
+        if(type.equals(CommonConstant.ALL) || type.equals(CommonConstant.SUBORDINATE)){
+            whereBuild.append("and r.status != 'Cancel' ");
+        }
+
         queryAllRequest.append(whereBuild);
         //sort
         if (sort != null && (sort.equalsIgnoreCase(CommonConstant.CREATE_DATE_FIELD) || sort.equalsIgnoreCase(CommonConstant.START_TIME_FIELD) || sort.equalsIgnoreCase(CommonConstant.END_TIME_FIELD))) {
@@ -185,6 +190,8 @@ public class RequestServiceImpl implements RequestService {
                 .addScalar("endTime", new TimestampType())
                 .addScalar("reason", StringType.INSTANCE)
                 .addScalar("status", StringType.INSTANCE)
+                .addScalar("isAssigned", IntegerType.INSTANCE)
+                .addScalar("requestTypeId", LongType.INSTANCE)
                 .setResultTransformer(Transformers.aliasToBean(RequestDto.class));
 
         params.forEach(query::setParameter);
@@ -192,10 +199,18 @@ public class RequestServiceImpl implements RequestService {
 
         Date currentTime = getCurrentTime();
         for (int i = 0; i < dtos.size(); i++) {
-            if (currentTime.after(dtos.get(i).getStartTime())) {
-                dtos.get(i).setIsAllowRollback(NOT_ALLOW_ROLLBACK);
+            if (dtos.get(i).getRequestTypeId() != CommonConstant.REQUEST_TYPE_ID_OF_BORROW_DEVICE) {
+                if(currentTime.after(dtos.get(i).getStartTime())){
+                    dtos.get(i).setIsAllowRollback(NOT_ALLOW_ROLLBACK);
+                }else{
+                    dtos.get(i).setIsAllowRollback(ALLOW_ROLLBACK);
+                }
             } else {
-                dtos.get(i).setIsAllowRollback(ALLOW_ROLLBACK);
+                if(dtos.get(i).getIsAssigned() == 0){
+                    dtos.get(i).setIsAllowRollback(ALLOW_ROLLBACK);
+                }else{
+                    dtos.get(i).setIsAllowRollback(NOT_ALLOW_ROLLBACK);
+                }
             }
         }
         return dtos;
