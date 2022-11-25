@@ -71,8 +71,10 @@ public class EmployeeTimeRemainingServiceImpl implements EmployeeTimeRemainingSe
             if (otBudgetDto == null) {
                 throw new BaseException(ErrorCode.RESULT_NOT_FOUND);
             } else {
-                double timeRemaining = otBudgetDto.getOtHoursBudget() - otBudgetDto.getHoursWorked();
-                EmployeeTimeRemainingDto employeeTimeRemainingDto = new EmployeeTimeRemainingDto(timeRemaining);
+                double otTimeRemainingOfMonth = otBudgetDto.getOtHoursRemainOfMonth();
+                double otTimeRemainingOfYear = otBudgetDto.getOtHoursRemainOfYear();
+                EmployeeTimeRemainingDto employeeTimeRemainingDto = new EmployeeTimeRemainingDto(otTimeRemainingOfMonth,
+                                                                                                 otTimeRemainingOfYear);
                 employeeTimeRemainingResponse = new EmployeeTimeRemainingResponse(employeeTimeRemainingDto);
                 responseEntity = BaseResponse.ofSucceededOffset(employeeTimeRemainingResponse, null);
             }
@@ -81,9 +83,9 @@ public class EmployeeTimeRemainingServiceImpl implements EmployeeTimeRemainingSe
                 throw new BaseException(ErrorCode.YEAR_INVALID);
             }
             EmployeeTimeRemainingDto employeeTimeRemainingDto =
-                    employeeTimeRemainingRepository.getTimeRemaining(Long.valueOf(2),
-                                                                    requestTypeId,
-                                                                    year);
+                    employeeTimeRemainingRepository.getLeaveBudgetTimeRemaining(Long.valueOf(2),
+                                                                                requestTypeId,
+                                                                                year);
             if (employeeTimeRemainingDto == null) {
                 throw new BaseException(ErrorCode.RESULT_NOT_FOUND);
             } else {

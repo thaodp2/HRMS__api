@@ -9,7 +9,8 @@ public class ErrorCode {
     		ErrorCodeEnum.INTERNAL_SERVER_ERROR.getValue(), "Internal server error", HttpStatus.INTERNAL_SERVER_ERROR);
 
     public static final BusinessCode DATE_INVALID = new BusinessCode(
-            ErrorCodeEnum.DATE_INVALID.getValue(), "CreateDate must be before StartTime and StartTime must be before EndTime", HttpStatus.BAD_REQUEST);
+            ErrorCodeEnum.DATE_INVALID.getValue(), "Create date must be before start time " +
+            "and start time must be before end time", HttpStatus.BAD_REQUEST);
 
     public static final BusinessCode INVALID_DATE = new BusinessCode(
             ErrorCodeEnum.INVALID_DATE.getValue(), "StartTime must be before EndTime", HttpStatus.BAD_REQUEST);
@@ -22,7 +23,7 @@ public class ErrorCode {
             "Start Time and End Time can't be null in leave request", HttpStatus.BAD_REQUEST);
 
     public static final BusinessCode INVALID_DEVICE_TYPE_ID = new BusinessCode(
-            ErrorCodeEnum.INVALID_DEVICE_TYPE_ID.getValue(), "DeviceTypeId is not exist", HttpStatus.NOT_FOUND);
+            ErrorCodeEnum.INVALID_DEVICE_TYPE_ID.getValue(), "Device type is not exist", HttpStatus.NOT_FOUND);
 
     public static final BusinessCode UPDATE_FAIL = new BusinessCode(
             ErrorCodeEnum.UPDATE_FAIL.getValue(), "Update failed", HttpStatus.NOT_FOUND);

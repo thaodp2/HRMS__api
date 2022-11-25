@@ -14,7 +14,7 @@ public interface EmployeeTimeRemainingRepository extends JpaRepository<LeaveBudg
     @Query("select new com.minswap.hrms.response.dto.EmployeeTimeRemainingDto(lb.remainDayOff) " +
             "from LeaveBudget lb " +
             "where lb.personId=:personId and lb.requestTypeId=:requestTypeId and lb.year=:year")
-    EmployeeTimeRemainingDto getTimeRemaining(@Param("personId") Long personId,
-                                              @Param("requestTypeId") Long requestTypeId,
-                                              @Param("year") Year year);
-}
+    EmployeeTimeRemainingDto getLeaveBudgetTimeRemaining(@Param("personId") Long personId,
+                                                         @Param("requestTypeId") Long requestTypeId,
+                                                         @Param("year") Year year);
+   }

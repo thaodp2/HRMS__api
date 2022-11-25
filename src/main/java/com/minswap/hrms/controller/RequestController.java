@@ -48,7 +48,7 @@ public class RequestController {
                                                                 @Valid
                                                                 EditRequest editRequest,
                                                                 BindingResult bindingResult,
-                                                                @PathVariable Long id) {
+                                                                @PathVariable Long id) throws ParseException {
         return requestService.editRequest(editRequest, id);
     }
 
@@ -64,11 +64,6 @@ public class RequestController {
             @RequestParam (required = false) String dir) throws ParseException {
         Long id = Long.valueOf(2);
             return requestService.getMyRequest(id,page,limit,createDateFrom,createDateTo,requestTypeId, status, sort, dir);
-    }
-
-    @DeleteMapping("/request/{id}")
-    public ResponseEntity<BaseResponse<Void, Void>> cancelRequest(@PathVariable Long id) {
-        return requestService.cancelRequest(id);
     }
 
     @PostMapping("/request")
