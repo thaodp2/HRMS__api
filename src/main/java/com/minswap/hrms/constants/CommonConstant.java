@@ -37,6 +37,8 @@ public class CommonConstant {
 
     public static final Long REQUEST_TYPE_ID_OF_OT = Long.valueOf(7);
 
+    public static final Long REQUEST_TYPE_ID_OF_BORROW_DEVICE = Long.valueOf(11);
+
     public static String[] LIST_HEADER_EMPLOYEE = {
             "Roll Number",
             "Employee Name",

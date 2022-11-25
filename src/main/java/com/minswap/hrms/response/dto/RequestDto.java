@@ -40,6 +40,18 @@ public class RequestDto {
         this.approvalDate = approvalDate;
     }
 
+    public RequestDto(Long requestId, String rollNumber, String personName, Date createDate, String reason, String receiver, String deviceTypeName, Date approvalDate, Integer isAssigned) {
+        this.requestId = requestId;
+        this.rollNumber = rollNumber;
+        this.personName = personName;
+        this.createDate = createDate;
+        this.reason = reason;
+        this.receiver = receiver;
+        this.deviceTypeName = deviceTypeName;
+        this.approvalDate = approvalDate;
+        this.isAssigned = isAssigned;
+    }
+
     @JsonProperty("id")
     private Long requestId;
 
@@ -59,11 +71,15 @@ public class RequestDto {
     private String status;
     private String receiver;
     private Long deviceTypeId;
+
+    private String deviceTypeName;
     @JsonFormat(pattern = CommonConstant.YYYY_MM_DD_HH_MM_SS, shape = JsonFormat.Shape.STRING)
     private Date approvalDate;
 
     private double timeRemaining;
 
     private int isAllowRollback;
+
+    private Integer isAssigned;
 
 }

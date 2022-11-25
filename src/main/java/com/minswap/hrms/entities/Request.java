@@ -1,5 +1,6 @@
 package com.minswap.hrms.entities;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -9,6 +10,7 @@ import java.util.Date;
 @Entity
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
 @Table(name = Request.TABLE_NAME)
 public class Request {
     public static final String TABLE_NAME = "request";
@@ -56,4 +58,7 @@ public class Request {
 
     @Column(name = "status")
     private String status;
+
+    @Column(name = "is_assigned")
+    private Integer isAssigned;
 }
