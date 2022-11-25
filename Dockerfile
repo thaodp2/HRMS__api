@@ -23,6 +23,11 @@ WORKDIR /app
 RUN chmod -R 755 /app/
 
 COPY --from=builder /app/target/HRMS__api-0.0.1-SNAPSHOT.jar /app/HRMS__api.jar
+ENV VIRTUAL_HOST="api.ms-hrms.software"
+ENV VIRTUAL_PORT=6689
+ENV LETSENCRYPT_HOST="api.ms-hrms.software"
+ENV LETSENCRYPT_EMAIL="thaodphe141294@fpt.edu.vn"
+EXPOSE 6689
 ENTRYPOINT ["java", "-Dlog4j2.formatMsgNoLookups=false", "-Dspring.profiles.active=prod", "-Xdebug", "-Xrunjdwp:server=y,transport=dt_socket,address=6699,suspend=n", "-jar", "HRMS__api.jar"]
 # Launch the verticle
 #ENTRYPOINT java $JAVA_OPTS -Dlog4j2.formatMsgNoLookups=true -jar /app/HRMS__api.jar

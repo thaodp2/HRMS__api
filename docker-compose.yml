@@ -7,5 +7,4 @@ services:
     build:
       context: .
     ports:
-      - '80:6689'
       - '6699:6699'
