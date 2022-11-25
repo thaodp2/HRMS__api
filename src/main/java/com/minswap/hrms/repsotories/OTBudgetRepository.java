@@ -18,7 +18,10 @@ import java.time.Year;
 
 @Repository
 public interface OTBudgetRepository extends JpaRepository<OTBudget, Long> {
-    @Query("SELECT new com.minswap.hrms.response.dto.OTBudgetDto(ob.otHoursBudget, ob.hoursWorked) " +
+    @Query("SELECT new com.minswap.hrms.response.dto.OTBudgetDto(ob.otHoursBudget, " +
+            "ob.hoursWorked, " +
+            "ob.otHoursRemainOfMonth, " +
+            "ob.otHoursRemainOfYear) " +
             "from OTBudget ob " +
             "where ob.personId =:id and ob.year =:year and ob.month =:month")
     OTBudgetDto getOTBudgetByPersonId(@Param("id") Long id,
