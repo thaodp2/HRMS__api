@@ -1,4 +1,5 @@
 package com.minswap.hrms.repsotories;
+
 import com.minswap.hrms.entities.Request;
 import com.minswap.hrms.response.dto.DateDto;
 import com.minswap.hrms.response.dto.ListRequestDto;
@@ -18,25 +19,6 @@ import java.util.List;
 @Repository
 public interface RequestRepository extends JpaRepository<Request, Long> {
 
-//    @Query(" SELECT new com.minswap.hrms.response.dto.RequestDto(" +
-//            " r.requestId as requestId, p.fullName as sender, rt.requestTypeName as requestTypeName, r.createDate as createDate, " +
-//            " r.startTime as startTime, r.endTime as endTime, r.reason as reason, r.status as status, p2.fullName as receiver," +
-//            " dt.deviceTypeName as deviceTypeName, r.approvalDate as approvalDate) " +
-//            " from Request r " +
-//            " left join RequestType rt on " +
-//            " r.requestTypeId = rt.requestTypeId " +
-//            " left join Person p on " +
-//            " p.personId = r.personId " +
-//            " left join Person p2 on " +
-//            " p2.personId = p.managerId " +
-//            " left join DeviceType dt on " +
-//            " r.deviceTypeId = dt.deviceTypeId " +
-//            " WHERE p.personId =:personId " +
-//            " AND r.createDate BETWEEN :fromDate and :toDate ")
-//    Page<RequestDto> getListRequestBySearch(@Param("personId") Long personId,
-//                                            @Param("fromDate") Date fromDate,
-//                                            @Param("toDate") Date toDate,
-//                                            Pageable pageable);
     @Query("select new com.minswap.hrms.response.dto.RequestDto(" +
             "r.requestId as requestId, p.fullName as personName,rt.requestTypeId as requestTypeId, rt.requestTypeName as requestTypeName, r.createDate as createDate, " +
             "r.startTime as startTime, r.endTime as endTime, " +
@@ -93,6 +75,7 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
 
     @Query("select max(r.requestId) from Request r")
     Integer getLastRequestId();
+
     @Modifying
     @Transactional
     @Query("update Request r set r.status =:rejected where (r.startTime between :start and :end) and r.status=:pending")
@@ -100,4 +83,24 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
                                           @Param("end") Date end,
                                           @Param("rejected") String rejected,
                                           @Param("pending") String pending);
+
+    @Query("select new com.minswap.hrms.response.dto.RequestDto(" +
+            "r.requestId as requestId, p.rollNumber as rollNumber, p.fullName as personName, r.createDate as createDate, r.reason as reason, " +
+            "p2.fullName as receiver, dt.deviceTypeName as deviceTypeName, r.approvalDate as approvalDate, r.isAssigned as isAssigned) " +
+            "from Request r " +
+            "left join DeviceType dt on " +
+            "r.deviceTypeId = dt.deviceTypeId " +
+            "left join Person p on " +
+            "r.personId = p.personId " +
+            "left join Person p2 on " +
+            "p2.personId = p.managerId " +
+            "WHERE r.requestTypeId = 11 and r.status = 'Approved' " +
+            "and (:search IS NULL OR p.fullName like %:search%) " +
+            "and ((:fromDate IS NULL and :toDate IS NULL) OR (r.approvalDate BETWEEN :fromDate and :toDate )) " +
+            "and (:isAssigned IS NULL OR r.isAssigned = :isAssigned) ")
+    Page<RequestDto> getBorrowDeviceRequestList(@Param("search") String search,
+                                                @Param("fromDate") Date fromDate,
+                                                @Param("toDate") Date toDate,
+                                                @Param("isAssigned") Integer isAssigned,
+                                                Pageable pageable);
 }

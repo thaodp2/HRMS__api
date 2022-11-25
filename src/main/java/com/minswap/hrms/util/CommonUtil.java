@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.ibatis.reflection.MetaObject;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.springframework.data.domain.Sort;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -67,6 +68,18 @@ public class CommonUtil {
 
     public static String encodeBasicAuthentication(String username, String password) {
         return Base64.getEncoder().encodeToString((username + ":" + password).getBytes());
+    }
+
+    public static Sort.Direction getSortDirection(String sort, String dir){
+        Sort.Direction dirSort = null;
+        if (sort != null && !sort.trim().isEmpty()) {
+            if (dir == null || dir.trim().equalsIgnoreCase("asc")) {
+                dirSort = Sort.Direction.ASC;
+            } else if (dir.trim().equalsIgnoreCase("desc")) {
+                dirSort = Sort.Direction.DESC;
+            }
+        }
+        return dirSort;
     }
 
 
