@@ -5,7 +5,9 @@ import com.minswap.hrms.exception.annotation.ServiceProcessingValidateAnnotation
 import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.request.DeviceTypeRequest;
 import com.minswap.hrms.response.DeviceTypeResponse;
+import com.minswap.hrms.response.RequestResponse;
 import com.minswap.hrms.service.devicetype.DeviceTypeService;
+import com.minswap.hrms.service.request.RequestService;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -21,10 +23,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.Pattern;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.ParseException;
 import java.util.logging.Logger;
 
 //import static com.sun.xml.internal.ws.spi.db.BindingContextFactory.LOGGER;
@@ -35,6 +39,9 @@ import java.util.logging.Logger;
 public class ITDeviceTypeController {
     @Autowired
     DeviceTypeService deviceTypeService;
+
+    @Autowired
+    private RequestService requestService;
 
     @GetMapping("/device-type")
     public ResponseEntity<BaseResponse<DeviceTypeResponse, Pageable>> getAllDeviceType(@RequestParam @Min(1) Integer page,
@@ -65,7 +72,20 @@ public class ITDeviceTypeController {
         return deviceTypeService.deleteDeviceType(id);
     }
 
-//    @GetMapping("/import")
+    @GetMapping("/request")
+    public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getAllBorrowDeviceRequest(
+            @RequestParam @Min(1) Integer page,
+            @RequestParam @Min(0) Integer limit,
+            @RequestParam (required = false) String search,
+            @RequestParam (required = false) @Pattern(regexp = "[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1]) (2[0-3]|[01][0-9]):[0-5][0-9]:[0-5][0-9]", message = "Invalid aprrovalDateFrom") String approvalDateFrom,
+            @RequestParam (required = false) @Pattern(regexp = "[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1]) (2[0-3]|[01][0-9]):[0-5][0-9]:[0-5][0-9]", message = "Invalid aprrovalDateTo") String approvalDateTo,
+            @RequestParam (required = false) Integer isAssigned,
+            @RequestParam (required = false) String sort,
+            @RequestParam (required = false) String dir) throws ParseException {
+        return requestService.getBorrowDeviceRequestList(page, limit, search, approvalDateFrom, approvalDateTo, isAssigned, sort, dir);
+    }
+
+//    @PostMapping("/test-import")
 //    public void importExcel() throws IOException {
 //        File tempFile = new File("D:\\Downloads\\test.xlsx");
 //        //public void importExcel(@RequestParam("file") MultipartFile file) throws IOException {
