@@ -9,10 +9,19 @@ import java.util.List;
 
 @Data
 public class DepartmentResponse {
-    @JsonProperty("items")
+    @JsonProperty("item")
     private DepartmentDto departmentDto;
 
     public DepartmentResponse (DepartmentDto departmentDto) {
         this.departmentDto = departmentDto;
+    }
+
+    @Data
+    public static class DepartmentListResponse {
+        @JsonProperty(value = "items")
+        private List<DepartmentDto> departmentDtos;
+        public DepartmentListResponse(List<DepartmentDto> departmentDtos) {
+            this.departmentDtos = departmentDtos;
+        }
     }
 }

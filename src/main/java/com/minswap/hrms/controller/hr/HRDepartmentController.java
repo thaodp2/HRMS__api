@@ -4,6 +4,7 @@ import com.minswap.hrms.constants.CommonConstant;
 import com.minswap.hrms.exception.annotation.ServiceProcessingValidateAnnotation;
 import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.request.DepartmentRequest;
+import com.minswap.hrms.response.DepartmentResponse;
 import com.minswap.hrms.response.dto.DepartmentDto;
 import com.minswap.hrms.response.dto.ListDepartmentDto;
 import com.minswap.hrms.service.department.DepartmentService;
@@ -56,8 +57,8 @@ public class HRDepartmentController {
     }
 
     @GetMapping("department/{id}")
-    public ResponseEntity<BaseResponse<DepartmentDto, Void>> getRequestDetail(@PathVariable Long id) {
-        return departmentService.getRequestDetail(id);
+    public ResponseEntity<BaseResponse<DepartmentResponse, Void>> getDepartmentDetail(@PathVariable Long id) {
+        return departmentService.getDepartmentDetail(id);
     }
 
 }
