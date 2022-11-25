@@ -20,8 +20,8 @@ import java.time.Year;
 public interface OTBudgetRepository extends JpaRepository<OTBudget, Long> {
     @Query("SELECT new com.minswap.hrms.response.dto.OTBudgetDto(ob.otHoursBudget, " +
             "ob.hoursWorked, " +
-            "ob.otHoursRemainOfMonth, " +
-            "ob.otHoursRemainOfYear) " +
+            "ob.timeRemainingOfMonth, " +
+            "ob.timeRemainingOfYear) " +
             "from OTBudget ob " +
             "where ob.personId =:id and ob.year =:year and ob.month =:month")
     OTBudgetDto getOTBudgetByPersonId(@Param("id") Long id,
@@ -30,7 +30,7 @@ public interface OTBudgetRepository extends JpaRepository<OTBudget, Long> {
     @Modifying
     @Transactional
     @Query("Update OTBudget ob set ob.hoursWorked =:hoursWorked, " +
-            "ob.otHoursRemainOfMonth=:otHoursRemainOfMonth " +
+            "ob.timeRemainingOfMonth=:otHoursRemainOfMonth " +
             "where ob.personId =:personId and ob.year=:year and ob.month =:month")
     Integer updateOTBudgetOfMonth(@Param("personId") Long personId,
                                   @Param("year") Year year,
@@ -38,7 +38,7 @@ public interface OTBudgetRepository extends JpaRepository<OTBudget, Long> {
                                   @Param("hoursWorked") double hoursWorked,
                                   @Param("otHoursRemainOfMonth") double otHoursRemainOfMonth);
 
-    @Query("Update OTBudget ob set ob.otHoursRemainOfYear=:otHoursRemainOfYear " +
+    @Query("Update OTBudget ob set ob.timeRemainingOfYear=:otHoursRemainOfYear " +
             "where ob.personId=:personId and ob.year=:year")
     Integer updateOTBudgetOfYear(@Param("personId") Long personId,
                                  @Param("year") Year year,

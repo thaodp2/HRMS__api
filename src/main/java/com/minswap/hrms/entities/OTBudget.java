@@ -18,7 +18,8 @@ import java.time.Year;
 public class OTBudget {
     public static final String TABLE_NAME = "ot_budget";
 
-    public OTBudget(Long personId, double otHoursBudget, double hoursWorked, double timeRemainingOfMonth, double timeRemainingOfYear, int month, Year year) {
+    public OTBudget(Long personId, double otHoursBudget, double hoursWorked,
+                    double timeRemainingOfMonth, double timeRemainingOfYear, int month, Year year) {
         this.personId = personId;
         this.otHoursBudget = otHoursBudget;
         this.hoursWorked = hoursWorked;
@@ -56,10 +57,4 @@ public class OTBudget {
             converter = YearAttributeConverter.class
     )
     private Year year;
-
-    @Column(name = "time_remaining_of_month")
-    private double otHoursRemainOfMonth;
-
-    @Column(name = "time_remaining_of_year")
-    private double otHoursRemainOfYear;
 }

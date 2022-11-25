@@ -20,19 +20,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
-
 import org.springframework.data.domain.Pageable;
-
 import java.text.DecimalFormat;
 import java.text.ParseException;
-
 import java.text.SimpleDateFormat;
-import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.Year;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -375,6 +369,11 @@ public class RequestServiceImpl implements RequestService {
                 Calendar calendarStart = getCalendarByDate(startTime);
                 Calendar calendarEnd = getCalendarByDate(endTime);
                 Calendar calendarCompare = getCalendarByDate(startTime);
+                // Validate year
+                List<Integer> listYear = new ArrayList<>();
+                listYear.add(calendarStart.get(Calendar.YEAR));
+                listYear.add(calendarEnd.get(Calendar.YEAR));
+                validateYear(listYear);
                 calendarCompare.add(Calendar.DAY_OF_MONTH, 1);
                 Year year = Year.of(calendarStart.get(Calendar.YEAR));
                 int month = calendarStart.get(Calendar.MONTH) + 1;
@@ -438,7 +437,7 @@ public class RequestServiceImpl implements RequestService {
         if (!listRequestTypesId.contains(requestTypeId)) {
             throw new BaseException(ErrorCode.REQUEST_TYPE_INVALID);
         }
-        else if (requestTypeId == BORROW_REQUEST_TYPE_ID) {
+        if (requestTypeId == BORROW_REQUEST_TYPE_ID) {
             validateBorrowDeviceRequest(deviceTypeId);
         }
         else if (createRequest.getStartTime() == null || createRequest.getEndTime() == null) {
@@ -454,6 +453,11 @@ public class RequestServiceImpl implements RequestService {
                     parse(createRequest.getEndTime());
             Calendar calendarStart = getCalendarByDate(startTime);
             Calendar calendarEnd = getCalendarByDate(endTime);
+            // Validate year
+            List<Integer> listYear = new ArrayList<>();
+            listYear.add(calendarStart.get(Calendar.YEAR));
+            listYear.add(calendarEnd.get(Calendar.YEAR));
+            validateYear(listYear);
             Calendar calendarCompare = getCalendarByDate(startTime);
             calendarCompare.add(Calendar.DAY_OF_MONTH, 1);
             Year year = Year.of(calendarStart.get(Calendar.YEAR));
@@ -547,7 +551,7 @@ public class RequestServiceImpl implements RequestService {
         DecimalFormat decimalFormat = new DecimalFormat("#.##");
         // calculate the number of days off
         double numOfDayOff = calculateNumOfDayOff(startTime + "", endTime + "");
-        double otHoursInRequest = getNumOfHoursOT(startTime, endTime);
+        double otHoursInRequest = calculateHoursBetweenTwoDateTime(startTime, endTime);
         if (LEAVE_REQUEST_TYPE.contains(requestTypeId)) {
             updateLeaveBudget(Long.valueOf(requestTypeId),
                     personId,
@@ -642,32 +646,25 @@ public class RequestServiceImpl implements RequestService {
             Date endTimeDate = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
                     parse(endTime);
 
-            LocalDateTime dateTimeStart = LocalDateTime.parse(startTime,
-                    DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-            LocalDateTime dateTimeEnd = LocalDateTime.parse(endTime,
-                    DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-
-            String timStart = DateTimeFormatter.ofPattern("HH:mm:ss").format(dateTimeStart);
-            String timEnd = DateTimeFormatter.ofPattern("HH:mm:ss").format(dateTimeEnd);
-
             startCalendar.setTime(startTimeDate);
             endCalendar.setTime(endTimeDate);
 
             OfficeTimeDto officeTimeDto = officeTimeRepository.getOfficeTime();
-            String startOfficeTime = officeTimeDto.getTimeStart();
-            String finishOfficeTime = officeTimeDto.getTimeEnd();
-            double workingTimeHoursInOneDay = (Duration.between(LocalTime.parse(startOfficeTime),
-                                                LocalTime.parse(finishOfficeTime)).getSeconds())/(60*60);
+            Date startOfficeTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
+                    parse("2022-01-01 " + officeTimeDto.getTimeStart());
+            Date finishOfficeTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
+                    parse("2022-01-01 " + officeTimeDto.getTimeEnd());
+            double workingTimeHoursInOneDay = calculateHoursBetweenTwoDateTime(startOfficeTime, finishOfficeTime);
 
             if (startCalendar.get(Calendar.DAY_OF_MONTH) == endCalendar.get(Calendar.DAY_OF_MONTH)) {
-                numberOfDayOff = (Duration.between(LocalTime.parse(timStart),
-                        LocalTime.parse(timEnd)).getSeconds())/ (60*60*workingTimeHoursInOneDay);
+                numberOfDayOff = calculateHoursBetweenTwoDateTime(startTimeDate, endTimeDate);
             }
             else {
                 int numOfDaysOffBetweenStartAndEnd = -1;
                 do {
                     startCalendar.add(Calendar.DAY_OF_MONTH, 1);
-                    if (startCalendar.get(Calendar.DAY_OF_WEEK) != Calendar.SATURDAY && startCalendar.get(Calendar.DAY_OF_WEEK) != Calendar.SUNDAY) {
+                    if (startCalendar.get(Calendar.DAY_OF_WEEK) != Calendar.SATURDAY
+                            && startCalendar.get(Calendar.DAY_OF_WEEK) != Calendar.SUNDAY) {
                         ++numOfDaysOffBetweenStartAndEnd;
                     }
                 } while (startCalendar.get(Calendar.DAY_OF_MONTH) < endCalendar.get(Calendar.DAY_OF_MONTH));
@@ -675,15 +672,14 @@ public class RequestServiceImpl implements RequestService {
                 double dayOffInEndDay = 0;
                 if (startCalendar.get(Calendar.DAY_OF_WEEK) != Calendar.SATURDAY
                         && startCalendar.get(Calendar.DAY_OF_WEEK) != Calendar.SUNDAY) {
-                    dayOffInStartDay = (Duration.between(LocalTime.parse(timStart),
-                            LocalTime.parse(finishOfficeTime)).getSeconds())/ (60*60);
+                    dayOffInStartDay = calculateHoursBetweenTwoDateTime(startTimeDate, finishOfficeTime);
                 }
                 if (endCalendar.get(Calendar.DAY_OF_WEEK) != Calendar.SATURDAY
                         && endCalendar.get(Calendar.DAY_OF_WEEK) != Calendar.SUNDAY) {
-                    dayOffInEndDay = (Duration.between(LocalTime.parse(startOfficeTime),
-                            LocalTime.parse(timEnd)).getSeconds())/ (60*60);
+                    dayOffInEndDay = calculateHoursBetweenTwoDateTime(startOfficeTime, endTimeDate);
                 }
-                numberOfDayOff = numOfDaysOffBetweenStartAndEnd + (dayOffInStartDay + dayOffInEndDay) / workingTimeHoursInOneDay;
+                numberOfDayOff = numOfDaysOffBetweenStartAndEnd +
+                                (dayOffInStartDay + dayOffInEndDay) / workingTimeHoursInOneDay;
             }
             DecimalFormat decimalFormat = new DecimalFormat("#.##");
             return Double.parseDouble(decimalFormat.format(numberOfDayOff));
@@ -692,7 +688,7 @@ public class RequestServiceImpl implements RequestService {
         }
     }
 
-    public double getNumOfHoursOT(Date startTime, Date endTime) {
+    public double calculateHoursBetweenTwoDateTime(Date startTime, Date endTime) {
         double hoursWorkedInMilisecond = endTime.getTime() - startTime.getTime();
         double hoursWorked = hoursWorkedInMilisecond / (1000 * 60 * 60);
         return hoursWorked;
@@ -788,7 +784,7 @@ public class RequestServiceImpl implements RequestService {
         double otHoursRemainOfMonth = otBudgetDto.getOtHoursRemainOfMonth();
         double otHoursRemainOfYear = otBudgetDto.getOtHoursRemainOfYear();
         if (calendarStart.get(Calendar.DAY_OF_MONTH) == calendarEnd.get(Calendar.DAY_OF_MONTH)) {
-            double otHoursRequest = getNumOfHoursOT(startTime, endTime);
+            double otHoursRequest = calculateHoursBetweenTwoDateTime(startTime, endTime);
             double timeHasBeenOTInThisDay = getAmountOfTimeOTByDate(personId, requestTypeId, startTime);
             validateOTTime(otHoursRequest,
                            otHoursRemainOfMonth,
@@ -799,14 +795,14 @@ public class RequestServiceImpl implements RequestService {
             double timeHasBeenOTInStartDay = getAmountOfTimeOTByDate(personId, requestTypeId, startTime);
             Date endTimeOfDay = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
                     parse(getStringDateFromDateTime(startTime) + " 23:59:59");
-            double otHoursRequest = getNumOfHoursOT(startTime, endTimeOfDay);
+            double otHoursRequest = calculateHoursBetweenTwoDateTime(startTime, endTimeOfDay);
             validateOTTime(otHoursRequest,
                             otHoursRemainOfMonth,
                             otHoursRemainOfYear,
                             otHoursRequest + timeHasBeenOTInStartDay);
             Date startTimeOfDay = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
                     parse(getStringDateFromDateTime(endTime) + " 00:00:00");
-            otHoursRequest = getNumOfHoursOT(startTimeOfDay, endTime);
+            otHoursRequest = calculateHoursBetweenTwoDateTime(startTimeOfDay, endTime);
             double timeHasBeenOTInEndDay = getAmountOfTimeOTByDate(personId, requestTypeId, endTime);
             validateOTTime(otHoursRequest,
                            otHoursRemainOfMonth,
@@ -923,21 +919,21 @@ public class RequestServiceImpl implements RequestService {
                 Calendar calendarEndTime = getCalendarByDate(endTimeOfApprovedRequest);
                 // StartTime và EndTime cùng một ngày
                 if (calendarStartTime.get(Calendar.DAY_OF_MONTH) == calendarEndTime.get(Calendar.DAY_OF_MONTH)) {
-                    otHoursWorked += getNumOfHoursOT(startTimeOfApprovedRequest, endTimeOfApprovedRequest);
+                    otHoursWorked += calculateHoursBetweenTwoDateTime(startTimeOfApprovedRequest, endTimeOfApprovedRequest);
                 } else {
                     // thằng start cùng ngày
                     if (getDayOfDate(startTimeOfApprovedRequest) == getDayOfDate(timeNeedToValidate)) {
                         // Do thằng start cùng ngày và khác ngày với end nên chỉ có thể xảy ra vào buổi tối
                         Date endTimeOfDay = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
                                 parse(getStringDateFromDateTime(startTimeOfApprovedRequest) + " 23:59:59");
-                        otHoursWorked += getNumOfHoursOT(startTimeOfApprovedRequest, endTimeOfDay);
+                        otHoursWorked += calculateHoursBetweenTwoDateTime(startTimeOfApprovedRequest, endTimeOfDay);
                     }
                     // thằng end cùng ngày
                     else {
                         // Do thằng end cùng ngày và khác ngày với start nên chỉ có thể xảy ra vào buổi sáng
                         Date startTimeOfDay = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
                                 parse(getStringDateFromDateTime(endTimeOfApprovedRequest) + " 00:00:00");
-                        otHoursWorked += getNumOfHoursOT(startTimeOfDay, endTimeOfApprovedRequest);
+                        otHoursWorked += calculateHoursBetweenTwoDateTime(startTimeOfDay, endTimeOfApprovedRequest);
                     }
                 }
             }
@@ -951,14 +947,15 @@ public class RequestServiceImpl implements RequestService {
         return otHoursWorked;
     }
 
-    public boolean isThisOTTimeInMorning(Date date) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(date);
-        if (calendar.get(Calendar.HOUR_OF_DAY) >= OT_START_TIME_HOUR) {
-            return false;
-        }
-        else {
-            return true;
+    public void validateYear(List<Integer> listYear) throws ParseException {
+        Date currentDay = getCurrentTime();
+        Calendar calendar = getCalendarByDate(currentDay);
+        for (Integer year : listYear) {
+            if (year.intValue() != calendar.get(Calendar.YEAR)) {
+                throw new BaseException(ErrorCode.newErrorCode(208,
+                        "You can't make this request because there are no plans for the " + year + " regulations yet",
+                        httpStatus.NOT_ACCEPTABLE));
+            }
         }
     }
 
