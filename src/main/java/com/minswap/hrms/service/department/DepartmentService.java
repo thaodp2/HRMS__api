@@ -2,6 +2,7 @@ package com.minswap.hrms.service.department;
 
 import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.request.DepartmentRequest;
+import com.minswap.hrms.response.DepartmentResponse;
 import com.minswap.hrms.response.MasterDataResponse;
 import com.minswap.hrms.response.dto.DepartmentDto;
 import com.minswap.hrms.response.dto.ListDepartmentDto;
@@ -22,5 +23,5 @@ public interface DepartmentService {
 
     ResponseEntity<BaseResponse<MasterDataResponse, Pageable>> getMasterDataDepartment (String search);
 
-    ResponseEntity<BaseResponse<DepartmentDto, Void>> getRequestDetail(Long id);
+    ResponseEntity<BaseResponse<DepartmentResponse, Void>> getDepartmentDetail(Long id);
 }
