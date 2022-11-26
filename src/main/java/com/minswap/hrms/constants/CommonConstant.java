@@ -4,6 +4,8 @@ import java.util.*;
 
 public class CommonConstant {
     public static final String BEARER_TOKEN = "Bearer ";
+    public static final long MILLISECOND_7_HOURS = 7 * 60 * 60 * 1000;
+
     private CommonConstant() {
     }
 

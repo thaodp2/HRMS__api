@@ -2,12 +2,16 @@ package com.minswap.hrms.util;
 
 import static com.minswap.hrms.constants.CommonConstant.YYYY_MM_DD_HH_MM_SS;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 
+import com.minswap.hrms.constants.CommonConstant;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -69,5 +73,14 @@ public class DateTimeUtil {
             log.error("Getting error when convert Local Date Time: {} to String", time);
             return null;
         }
+    }
+
+    public static Date getCurrentTime() throws ParseException {
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime localDateTime = LocalDateTime.now();
+        String currentTimeStr = dateTimeFormatter.format(localDateTime);
+        Date currentTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
+                parse(currentTimeStr);
+        return currentTime;
     }
 }
