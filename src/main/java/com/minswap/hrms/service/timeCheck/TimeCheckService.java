@@ -1,6 +1,7 @@
 package com.minswap.hrms.service.timeCheck;
 
 import com.minswap.hrms.model.BaseResponse;
+import com.minswap.hrms.request.TimeCheckInRequest;
 import com.minswap.hrms.response.TimeCheckResponse;
 import com.minswap.hrms.response.dto.TimeCheckEachSubordinateDto;
 import org.springframework.data.domain.Pageable;
@@ -31,4 +32,5 @@ public interface TimeCheckService {
                                                            String startDate,
                                                            String endDate) throws Exception;
 
+    ResponseEntity<BaseResponse<Void, Void>> logTimeCheck(TimeCheckInRequest timeCheckInRequest);
 }

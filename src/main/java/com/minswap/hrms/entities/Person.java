@@ -87,4 +87,5 @@ public class Person {
 
 	@Column(name = "annual_leave_budget")
 	private Double annualLeaveBudget;
+
 }
