@@ -12,13 +12,13 @@ public class UserService {
     private final PersonRepository personRepository;
 
     public void register(String email) {
-        Person existUser = personRepository.getUserByEmail(email);
+//        Person existUser = personRepository.getUserByEmail(email);
 
-        if (existUser == null) {
-            Person newUser = new Person();
-            newUser.setEmail(email);
-            personRepository.save(newUser);
-        }
+//        if (existUser == null) {
+//            Person newUser = new Person();
+//            newUser.setEmail(email);
+//            personRepository.save(newUser);
+//        }
 
     }
 }

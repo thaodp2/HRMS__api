@@ -1,10 +1,18 @@
 package com.minswap.hrms.service.timeCheck;
 
+import com.minswap.hrms.constants.ErrorCode;
+import com.minswap.hrms.entities.OfficeTime;
 import com.minswap.hrms.entities.Person;
+import com.minswap.hrms.entities.SignatureProfile;
+import com.minswap.hrms.entities.TimeCheck;
+import com.minswap.hrms.exception.model.BaseException;
 import com.minswap.hrms.exception.model.Pagination;
 import com.minswap.hrms.model.BaseResponse;
+import com.minswap.hrms.repsotories.OfficeTimeRepository;
 import com.minswap.hrms.repsotories.PersonRepository;
+import com.minswap.hrms.repsotories.SignatureProfileRepository;
 import com.minswap.hrms.repsotories.TimeCheckRepository;
+import com.minswap.hrms.request.TimeCheckInRequest;
 import com.minswap.hrms.response.TimeCheckResponse;
 
 import com.minswap.hrms.response.dto.DailyTimeCheckDto;
@@ -31,6 +39,10 @@ public class TimeCheckServiceImpl implements TimeCheckService{
 
     @Autowired
     PersonRepository personRepository;
+    @Autowired
+    SignatureProfileRepository signatureProfileRepository;
+    @Autowired
+    OfficeTimeRepository officeTimeRepository;
     @Override
     public ResponseEntity<BaseResponse<TimeCheckResponse.TimeCheckEachPersonResponse, Pageable>> getMyTimeCheck(Long personId,
                                                                                                                 String startDate,
@@ -263,5 +275,50 @@ public class TimeCheckServiceImpl implements TimeCheckService{
             throw new Exception(ex.getMessage());
         }
         return responseEntity;
+    }
+
+    @Override
+    public ResponseEntity<BaseResponse<Void, Void>> logTimeCheck(TimeCheckInRequest timeCheckInRequest) {
+        TimeCheck timeCheck = new TimeCheck();
+        Optional<SignatureProfile> signatureProfileOptional = signatureProfileRepository.findSignatureProfileByPrivateKeySignature(timeCheckInRequest.getIdSignature());
+        if(!signatureProfileOptional.isPresent()){
+            throw new BaseException(ErrorCode.SIGNATURE_NOT_EXIST);
+        }
+        SignatureProfile signatureProfile = signatureProfileOptional.get();
+        //check time in exsit
+        DailyTimeCheckDto dailyTimeCheckDto = timeCheckRepository.getDailyTimeCheck(signatureProfile.getPersonId(), convertDateInput(timeCheckInRequest.getTimeLog()));
+        Optional<OfficeTime> officeTimeDb = officeTimeRepository.findOfficeTimeByOfficeTimeId(1L);
+        if(!officeTimeDb.isPresent()){
+            throw new BaseException(ErrorCode.INVALID_DATE);
+        }
+        OfficeTime officeTime = officeTimeDb.get();
+        if (dailyTimeCheckDto == null) {
+            timeCheck.setPersonId(signatureProfile.getPersonId());
+            timeCheck.setTimeIn(convertDateInput(timeCheckInRequest.getTimeLog()));
+            timeCheck.setInLate(null);
+
+            timeCheckRepository.save(timeCheck);
+        }else{
+            //update time out
+            timeCheck.setPersonId(signatureProfile.getPersonId());
+            timeCheck.setTimeOut(convertDateInput(timeCheckInRequest.getTimeLog().toString()));
+        }
+        timeCheck.setPersonId(signatureProfile.getPersonId());
+        ResponseEntity<BaseResponse<Void, Void>> responseEntity = BaseResponse.ofSucceeded(null);
+        return responseEntity;
+    }
+    private Integer processTimeLate(String time){
+
+        return null;
+    }
+    private Date convertDateInput(String dateStr){
+        try{
+            SimpleDateFormat sm = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            Date date = sm.parse(dateStr);
+            date.setTime(date.getTime() + MILLISECOND_7_HOURS);
+            return date;
+        }catch (Exception e) {
+            throw new BaseException(ErrorCode.DATE_FAIL_FOMART);
+        }
     }
 }

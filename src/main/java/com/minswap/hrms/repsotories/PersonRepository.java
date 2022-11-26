@@ -15,6 +15,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import javax.transaction.Transactional;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -39,8 +40,10 @@ public interface PersonRepository extends JpaRepository<Person, Long>{
             " p.rankId as rankId," +
             " p.onBoardDate as onBoardDate," +
             " p.status as status," +
-            " p.rollNumber as rollNumber, " +
-            "p.managerId as managerId ) " +
+            " p.managerId as managerId, " +
+            "p.avatarImg as avatarImg," +
+            "p.salaryBasic as salaryBasic," +
+            "p.salaryBonus as salaryBonus) " +
             " FROM Person p " +
             " WHERE p.rollNumber = :rollNumber")
     EmployeeDetailDto getDetailEmployee(@Param("rollNumber") String rollNumber);
@@ -58,46 +61,47 @@ public interface PersonRepository extends JpaRepository<Person, Long>{
             " and (:rollNumber IS NULL OR p.rollNumber LIKE %:rollNumber%)" +
             " and (:email IS NULL OR p.email LIKE %:email%) " +
             " and ( :departmentId IS NULL OR p.departmentId = :departmentId) " +
-//            " and  (:status IS NULL OR p.status = :status) " +
             " and (:positionId IS NULL OR p.positionId = :positionId)"+
             " and (:managerRoll IS NULL OR p.managerId = :managerRoll)")
     Page<EmployeeListDto> getSearchListPerson(@Param("fullName")String fullName,
                                               @Param("email")String email,
                                               @Param("departmentId")Long departmentId,
                                               @Param("rollNumber")String rollNumber,
-//                                              @Param("status")String status,
                                               @Param("positionId")Long positionId,
                                               @Param(("managerRoll"))Long managerRoll,
                                               Pageable pageable);
     @Modifying
     @Transactional
     @Query("UPDATE Person p set " +
-            "p.status = :status, " +
             "p.fullName = :fullName," +
 //            "p.dateOfBirth = :dateOfBirth," +
             "p.managerId = :managerId," +
             "p.departmentId = :departmentId," +
             "p.positionId = :positionId," +
             "p.rankId = :rankId," +
-//            "p.onBoardDate = :onBoardDate," +
             "p.citizenIdentification = :citizenIdentification," +
             "p.phoneNumber = :phoneNumber," +
             "p.address = :address," +
-            "p.gender = :gender" +
+            "p.gender = :gender," +
+            "p.salaryBasic = :salaryBasic," +
+            "p.salaryBonus = :salaryBonus," +
+            "p.onBoardDate = :onBoardDate" +
             " where p.rollNumber = :rollNumber")
-    Integer updateEmployee(@Param("status") String status,
+    Integer updateEmployee(
                                  @Param("fullName") String fullName,
 //                                 @Param("dateOfBirth") String dateOfBirth,
                                  @Param("managerId") Long managerId,
                                  @Param("departmentId") Long departmentId,
                                  @Param("positionId") Long positionId,
                                  @Param("rankId") Long rankId,
-//                                 @Param("onBoardDate") String onBoardDate,
                                  @Param("citizenIdentification") String citizenIdentification,
                                  @Param("phoneNumber") String phoneNumber,
                                  @Param("address") String address,
                                  @Param("gender") int gender,
-                                 @Param("rollNumber") String rollNumber
+                                 @Param("rollNumber") String rollNumber,
+                                 @Param("salaryBasic") Double salaryBasic,
+                                 @Param("salaryBonus") Double salaryBonus,
+                                 @Param("onBoardDate") Date onBoardDate
                                  );
 
     @Query(" SELECT p.personId " +
@@ -136,4 +140,12 @@ public interface PersonRepository extends JpaRepository<Person, Long>{
 
     @Query("SELECT p FROM Person p WHERE p.email = :email")
     Person getUserByEmail(@Param("email") String email);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE Person p set " +
+            "p.annualLeaveBudget = :annualLeaveBudget" +
+            " where p.rollNumber = :rollNumber")
+    Integer updateAnnualLeaveBudget(@Param("annualLeaveBudget") Double annualLeaveBudget,
+                                    @Param("rollNumber") String rollNumber);
 }
