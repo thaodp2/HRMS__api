@@ -4,6 +4,7 @@ import com.minswap.hrms.entities.OfficeTime;
 import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.repsotories.OfficeTimeRepository;
 import com.minswap.hrms.request.OfficeTimeRequest;
+import com.minswap.hrms.response.OfficeTimeResponse;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -59,16 +60,17 @@ public class OfficeTimeServiceImpl implements OfficeTimeService{
     }
 
     @Override
-    public ResponseEntity<BaseResponse<OfficeTime, Void>> getOfficeTime() throws Exception{
+    public ResponseEntity<BaseResponse<OfficeTimeResponse, Void>> getOfficeTime() throws Exception{
         Long officeTimeId = officeTimeRepository.getPresentOfficeTimeId();
         Optional<OfficeTime> officeTimeDB = officeTimeRepository.findOfficeTimeByOfficeTimeId(officeTimeId);
 
         if(!officeTimeDB.isPresent()){
             throw new Exception("OfficeTime not exist");
         }
+        OfficeTimeResponse officeTimeResponse = new OfficeTimeResponse(officeTimeDB.get());
 
-        ResponseEntity<BaseResponse<OfficeTime, Void>> responseEntity
-                = BaseResponse.ofSucceededOffset(officeTimeDB.get(), null);
+        ResponseEntity<BaseResponse<OfficeTimeResponse, Void>> responseEntity
+                = BaseResponse.ofSucceededOffset(officeTimeResponse, null);
         return responseEntity;
     }
 }

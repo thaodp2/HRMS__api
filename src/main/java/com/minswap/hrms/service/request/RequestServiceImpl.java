@@ -600,14 +600,18 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
-    public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getBorrowDeviceRequestList(Integer page, Integer limit, String search, String approvalDateFrom, String approvalDateTo, Integer isAssigned, String sort, String dir) throws ParseException {
+    public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getBorrowDeviceRequestList(Integer page, Integer limit, String search, String approvalDateFrom, String approvalDateTo, Long deviceTypeId, Integer isAssigned, String sort, String dir) throws ParseException {
         Pagination pagination = null;
         Sort.Direction dirSort = CommonUtil.getSortDirection(sort,dir);
-        Date startDateFormat = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).parse(approvalDateFrom);
-        startDateFormat.setTime(startDateFormat.getTime() + MILLISECOND_7_HOURS);
-        Date endDateFormat = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).parse(approvalDateTo);
-        endDateFormat.setTime(endDateFormat.getTime() + MILLISECOND_7_HOURS);
-        Page<RequestDto> requestDtoPage = requestRepository.getBorrowDeviceRequestList((search == null || search.trim().isEmpty()) ? null:search.trim(), startDateFormat,endDateFormat,isAssigned, PageRequest.of(page-1,limit,dirSort == null ? Sort.by(Sort.Direction.DESC,"approvalDate") : Sort.by(dirSort, sort)));
+        Date startDateFormat = null;
+        Date endDateFormat = null;
+        if(approvalDateFrom != null && approvalDateTo != null) {
+            startDateFormat = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).parse(approvalDateFrom);
+            startDateFormat.setTime(startDateFormat.getTime() + MILLISECOND_7_HOURS);
+            endDateFormat = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).parse(approvalDateTo);
+            endDateFormat.setTime(endDateFormat.getTime() + MILLISECOND_7_HOURS);
+        }
+        Page<RequestDto> requestDtoPage = requestRepository.getBorrowDeviceRequestList((search == null || search.trim().isEmpty()) ? null:search.trim(), startDateFormat,endDateFormat,deviceTypeId,isAssigned, PageRequest.of(page-1,limit,dirSort == null ? Sort.by(Sort.Direction.DESC,"approvalDate") : Sort.by(dirSort, sort)));
         List<RequestDto> requestDtoList = requestDtoPage.getContent();
         if(page != null & limit != null) {
             pagination = new Pagination(page, limit);

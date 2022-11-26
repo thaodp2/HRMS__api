@@ -82,6 +82,10 @@ public class ErrorCode {
 
     public static final BusinessCode PERSON_NOT_EXIST = new BusinessCode(
             ErrorCodeEnum.PERSON_NOT_EXIST.getValue(), "Person not exist!", HttpStatus.NOT_FOUND);
+
+    public static final BusinessCode DO_NOT_ENOUGH_DEVICE_TO_ASSIGN = new BusinessCode(
+            ErrorCodeEnum.DO_NOT_ENOUGH_DEVICE_TO_ASSIGN.getValue(), "Don't have any device to assign!", HttpStatus.EXPECTATION_FAILED);
+
     public static BusinessCode newErrorCode(String message) {
         return new BusinessCode(ErrorCodeEnum.INTERNAL_SERVER_ERROR.getValue(), message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
