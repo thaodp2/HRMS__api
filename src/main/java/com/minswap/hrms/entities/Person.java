@@ -82,6 +82,9 @@ public class Person {
 	@Column(name = "salary_bonus")
 	private Double salaryBonus;
 
+	@Column(name = "avatar_img")
+	private String avatarImg;
+
 	@Column(name = "annual_leave_budget")
 	private Double annualLeaveBudget;
 }

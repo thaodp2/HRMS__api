@@ -38,6 +38,8 @@ public class PersonServiceImpl implements PersonService{
     @Autowired
     private PersonRepository personRepository;
 
+    private static final long MILLISECOND_PER_DAY = 24 * 60 * 60 * 1000;
+
     @Override
     public ResponseEntity<BaseResponse<HttpStatus, Void>> updateUserInformation(UpdateUserRequest updateUserDto) throws Exception {
         try {
@@ -49,6 +51,9 @@ public class PersonServiceImpl implements PersonService{
             }
             Person person = personFromDB.get();
             modelMapper.map(updateUserDto, person);
+            Date dateOfBirth = new Date();
+            dateOfBirth.setTime(person.getDateOfBirth().getTime() + MILLISECOND_PER_DAY); // go to the next day
+            person.setDateOfBirth(dateOfBirth);
             personRepository.save(person);
         }catch (Exception ex){
             throw new Exception(ex.getMessage());
