@@ -137,4 +137,7 @@ public interface PersonRepository extends JpaRepository<Person, Long>{
 
     @Query("SELECT p FROM Person p WHERE p.email = :email")
     Person getUserByEmail(@Param("email") String email);
+
+    @Query("select p.rollNumber from Person p where p.personId=:personId")
+    String getRollNumberByPersonId(@Param("personId") Long personId);
 }

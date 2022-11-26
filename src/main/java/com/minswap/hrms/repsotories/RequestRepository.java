@@ -1,7 +1,6 @@
 package com.minswap.hrms.repsotories;
 import com.minswap.hrms.entities.Request;
 import com.minswap.hrms.response.dto.DateDto;
-import com.minswap.hrms.response.dto.ListRequestDto;
 import com.minswap.hrms.response.dto.RequestDto;
 import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.domain.Page;
@@ -36,19 +35,24 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
 
     @Modifying
     @Transactional
-    @Query("update Request r set r.status =:status, r.approvalDate =:approvalDate where r.requestId =:id")
+    @Query("update Request r " +
+            "set r.status =:status, " +
+            "r.approvalDate =:approvalDate, " +
+            "r.isAssigned =:isAssigned " +
+            "where r.requestId =:id")
     Integer updateStatusRequest(@Param("status") String status,
                                 @Param("id") Long id,
-                                @Param("approvalDate") Date approvalDate);
+                                @Param("approvalDate") Date approvalDate,
+                                @Param("isAssigned") Integer isAssigned);
 
 
     @Modifying
     @Transactional
     @Query("UPDATE Request r set r.startTime =:startTime, r.endTime =:endTime, r.reason =:reason where r.requestId =:id")
-    Integer updateLeaveOrOTRequest(@Param("id") Long id,
-                                   @Param("startTime") Date startTime,
-                                   @Param("endTime") Date endTime,
-                                   @Param("reason") String reason);
+    Integer updateNormalRequest(@Param("id") Long id,
+                                @Param("startTime") Date startTime,
+                                @Param("endTime") Date endTime,
+                                @Param("reason") String reason);
 
     @Modifying
     @Transactional
@@ -77,11 +81,17 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
 
     @Modifying
     @Transactional
-    @Query("update Request r set r.status =:rejected where (r.startTime between :start and :end) and r.status=:pending")
+    @Query("update Request r " +
+            "set r.status =:rejected, r.approvalDate=:approvalDate " +
+            "where (r.startTime between :start and :end) " +
+            "and r.status=:pending " +
+            "and r.requestTypeId<>:forgotRequestTypeId")
     Integer autoRejectRequestNotProcessed(@Param("start") Date start,
                                           @Param("end") Date end,
                                           @Param("rejected") String rejected,
-                                          @Param("pending") String pending);
+                                          @Param("pending") String pending,
+                                          @Param("approvalDate") Date approvalDate,
+                                          @Param("forgotRequestTypeId") int forgotRequestTypeId);
 
     @Query("select r.startTime, r.endTime " +
            "from Request r " +
@@ -116,4 +126,16 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
                                                 @Param("toDate") Date toDate,
                                                 @Param("isAssigned") Integer isAssigned,
                                                 Pageable pageable);
+
+    @Query("select r.approvalDate from Request r where r.requestId =:id")
+    Date getApprovalDateOfRequest(@Param("id") Long id);
+
+    @Query("select r.maximumTimeToRollback from Request r WHERE r.requestId=:id")
+    Date getMaximumTimeToRollback(@Param("id") Long id);
+
+    @Modifying
+    @Transactional
+    @Query("update Request r set r.maximumTimeToRollback=:time where r.requestId=:id")
+    Integer updateMaximumTimeToRollback(@Param("id") Long id,
+                                        @Param("time") Date time);
 }

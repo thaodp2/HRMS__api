@@ -7,10 +7,13 @@ import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Repository;
 import org.springframework.validation.annotation.Validated;
 
+import javax.transaction.Transactional;
 import java.util.Date;
 
 @Repository
@@ -86,4 +89,42 @@ public interface TimeCheckRepository extends JpaRepository<TimeCheck, Long> {
            " and date(tc.timeIn) = date(:dateTime)")
     DailyTimeCheckDto getDailyTimeCheck(@Param("personId") Long personId,
                                         @Param("dateTime") Date dateTime);
+
+    @Query("select tc.timeIn from TimeCheck tc " +
+            "where tc.personId=:personId " +
+            "and DAY(tc.timeIn) =:timeIn")
+    Date getTimeInOfPersonByDay(@Param("personId") Long personId,
+                                @Param("timeIn") int timeIn);
+
+    @Modifying
+    @Transactional
+    @Query("update TimeCheck tc " +
+            "set tc.inLate=:inLate, " +
+            "tc.outEarly=:outEarly, " +
+            "tc.timeIn=:timeIn, " +
+            "tc.timeOut=:timeOut, " +
+            "tc.ot=:ot, " +
+            "tc.workingTime=:workingTime " +
+            "where tc.personId=:personId and DAY(tc.timeIn) =:dayOfTimeIn")
+    Integer updateTimeCheckOfEmployee(@Param("personId") Long personId,
+                                      @Param("inLate") double inLate,
+                                      @Param("outEarly") double outEarly,
+                                      @Param("timeIn") Date timeIn,
+                                      @Param("timeOut") Date timeOut,
+                                      @Param("ot") double ot,
+                                      @Param("workingTime") double workingTime,
+                                      @Param("dayOfTimeIn") int dayOfTimeIn);
+
+    @Query("select tc.ot from TimeCheck tc " +
+            "where tc.personId=:personId " +
+            "and DAY(tc.timeIn) =:dayIn")
+    Double getOTTimeByDay(@Param("dayIn") int dayIn,
+                          @Param("personId") Long personId);
+
+    @Modifying
+    @Transactional
+    @Query("update TimeCheck tc set tc.ot=:otTime where tc.personId=:personId and DAY(tc.timeIn) =:dayOfTimeIn")
+    Integer updateOTTime(@Param("dayOfTimeIn") int dayOfTimeIn,
+                         @Param("personId") Long personId,
+                         @Param("otTime") double otTime);
 }
