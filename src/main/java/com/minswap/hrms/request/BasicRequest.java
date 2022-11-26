@@ -23,7 +23,7 @@ public class BasicRequest implements Serializable {
 	private static final long serialVersionUID = 1L;
 	
 	@JsonProperty("request_id")
-	private String requestId;
+	private String request_id;
 
 	@JsonProperty("gmail")
 	private String gmail;
