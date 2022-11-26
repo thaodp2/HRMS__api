@@ -76,6 +76,12 @@ public class Person {
 	@Column(name = "position_id")
 	private Long positionId;
 
+	@Column(name = "salary_basic")
+	private Double salaryBasic;
+
+	@Column(name = "salary_bonus")
+	private Double salaryBonus;
+
 	@Column(name = "annual_leave_budget")
 	private Double annualLeaveBudget;
 }
