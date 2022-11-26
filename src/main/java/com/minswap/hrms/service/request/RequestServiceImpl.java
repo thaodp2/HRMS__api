@@ -4,13 +4,13 @@ import com.minswap.hrms.constants.CommonConstant;
 import com.minswap.hrms.constants.ErrorCode;
 import com.minswap.hrms.entities.Evidence;
 import com.minswap.hrms.entities.Request;
+import com.minswap.hrms.entities.TimeCheck;
 import com.minswap.hrms.exception.model.BaseException;
 import com.minswap.hrms.exception.model.Pagination;
 import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.repsotories.*;
 import com.minswap.hrms.request.CreateRequest;
 import com.minswap.hrms.request.EditRequest;
-import com.minswap.hrms.response.BenefitBudgetResponse;
 import com.minswap.hrms.response.RequestResponse;
 import com.minswap.hrms.response.dto.*;
 import com.minswap.hrms.util.CommonUtil;
@@ -67,6 +67,12 @@ public class RequestServiceImpl implements RequestService {
     @Autowired
     OfficeTimeRepository officeTimeRepository;
 
+    @Autowired
+    TimeCheckRepository timeCheckRepository;
+
+    @Autowired
+    PersonRepository personRepository;
+
     private HttpStatus httpStatus;
 
     private static final long MILLISECOND_7_HOURS = 7 * 60 * 60 * 1000;
@@ -85,15 +91,13 @@ public class RequestServiceImpl implements RequestService {
     private static final String LEAVE_TYPE = "leave";
     private static final String OT_TYPE = "ot";
     private static final String DEVICE_TYPE = "device";
-
     private static final String FORGOT_CHECK_IN_CHECK_OUT_TYPE = "forgotCheckInOut";
     private static final String OTHER_TYPE = "other";
     private static final int BORROW_REQUEST_TYPE_ID = 11;
     private static final int MAX_TIME_TO_OT_PER_DAY = 4;
     private static final int FORGOT_CHECK_IN_OUT = 4;
     private static final Integer OT_TYPE_ID = 7;
-
-    private static final Integer ANNUAL_LEAVE_TYPE_ID = 1;
+    private static final int FORGOT_CHECK_IN_OUT_TYPE_ID = 4;
     private static final Integer ALLOW_ROLLBACK = 1;
     private static final Integer NOT_ALLOW_ROLLBACK = 0;
     private static final String OT_START_TIME = "22:00:00";
@@ -102,7 +106,8 @@ public class RequestServiceImpl implements RequestService {
     private static final int TIME_ALLOW_TO_ROLLBACK = 2;
     private static final int OT_START_TIME_HOUR = 22;
     private static final int OT_END_TIME_HOUR = 4;
-    private static final String O_AM = "00:00:00";
+    private static final String TIME_START_OF_DAY = "00:00:00";
+    private static final String TIME_END_OF_DAY = "23:59:00";
     public List<RequestDto> getQueryForRequestList(String type, Long managerId, Long personId, Boolean isLimit, Integer limit, Integer page, String createDateFrom, String createDateTo, Long requestTypeId, String status, String sort, String dir) throws ParseException {
         HashMap<String, Object> params = new HashMap<>();
         StringBuilder queryAllRequest = new StringBuilder("select r.request_id as requestId,p.roll_number as rollNumber, p.full_name as personName, rt.request_type_name as requestTypeName, r.create_date as createDate, r.start_time as startTime, r.end_time as endTime, r.reason as reason, r.status as status, r.is_assigned as isAssigned, r.request_type_id as requestTypeId ");
@@ -286,6 +291,8 @@ public class RequestServiceImpl implements RequestService {
                     requestDto.setIsAllowRollback(ALLOW_ROLLBACK);
                 }
             }
+            Long personId = requestRepository.getPersonIdByRequestId(id);
+            requestDto.setRollNumber(personRepository.getRollNumberByPersonId(personId));
             List<String> listImage = evidenceRepository.getListImageByRequest(id);
             requestDto.setListEvidence(listImage);
             RequestResponse requestResponse = new RequestResponse(requestDto);
@@ -309,47 +316,85 @@ public class RequestServiceImpl implements RequestService {
         ResponseEntity<BaseResponse<Void, Void>> responseEntity = null;
         // Check id valid or not
         boolean isReturnNumOfDayOff = false;
+        Integer isAssigned = null;
         Date currentTime = getCurrentTime();
         if (!isRequestIdValid(id)) {
             throw new BaseException(ErrorCode.RESULT_NOT_FOUND);
         }
+        Long personId = requestRepository.getPersonIdByRequestId(id);
+        int requestTypeId = requestTypeRepository.getRequestTypeByRequestId(id).intValue();
         String currentStatus = requestRepository.getStatusOfRequestById(id);
+        DateDto dateDto = requestRepository.getStartAndEndTimeByRequestId(id);
+        Date maximumTimeToRollback = requestRepository.getMaximumTimeToRollback(id);
         if (currentStatus.equalsIgnoreCase(status)) {
             throw new BaseException(ErrorCode.STATUS_INVALID);
         }
-        else if (status == APPROVED_STATUS && currentStatus == PENDING_STATUS) {
-            Integer isUpdatedSuccess = requestRepository.updateStatusRequest(status, id, currentTime);
+        else if (status.equalsIgnoreCase(APPROVED_STATUS) && currentStatus.equalsIgnoreCase(PENDING_STATUS)) {
+            if (requestTypeId == BORROW_REQUEST_TYPE_ID) {
+                isAssigned = 1;
+            }
+            if (maximumTimeToRollback == null) {
+                requestRepository.updateMaximumTimeToRollback(id, currentTime);
+            }
+            Integer isUpdatedSuccess = requestRepository.updateStatusRequest(status, id, currentTime, isAssigned);
             if (isUpdatedSuccess == CommonConstant.UPDATE_FAIL) {
                 throw new BaseException(ErrorCode.UPDATE_FAIL);
             }
-            updateNumOfDayOff(id, isReturnNumOfDayOff);
+            if (requestTypeId == FORGOT_CHECK_IN_OUT_TYPE_ID) {
+                updateTimeCheck(dateDto.getStartTime(), dateDto.getEndTime(), personId);
+            }
+            else if (LEAVE_REQUEST_TYPE.contains(Integer.valueOf(requestTypeId))
+                                    || Integer.valueOf(requestTypeId) == OT_TYPE_ID) {
+                updateNumOfDayOff(id, isReturnNumOfDayOff);
+            }
         }
-        else if (status == REJECTED_STATUS && currentStatus == PENDING_STATUS) {
-            Integer isUpdatedSuccess = requestRepository.updateStatusRequest(status, id, currentTime);
+        else if (status.equalsIgnoreCase(REJECTED_STATUS) && currentStatus.equalsIgnoreCase(PENDING_STATUS)) {
+            if (maximumTimeToRollback == null) {
+                requestRepository.updateMaximumTimeToRollback(id, currentTime);
+            }
+            if (requestTypeId == BORROW_REQUEST_TYPE_ID) {
+                isAssigned = 0;
+            }
+            Integer isUpdatedSuccess = requestRepository.updateStatusRequest(status, id, currentTime, isAssigned);
             if (isUpdatedSuccess == CommonConstant.UPDATE_FAIL) {
                 throw new BaseException(ErrorCode.UPDATE_FAIL);
             }
         }
-        else if (currentStatus != PENDING_STATUS) {
-            Date createDate = requestRepository.getCreateDateById(id);
-            double timeBetweenCreateAndNow = (currentTime.getTime() - createDate.getTime()) / (1000 * 60 * 60);
-            if (timeBetweenCreateAndNow >= TIME_ALLOW_TO_ROLLBACK) {
+        else if (!currentStatus.equalsIgnoreCase(PENDING_STATUS)) {
+            if (currentTime.after(maximumTimeToRollback)) {
                 throw new BaseException(ErrorCode.newErrorCode(208,
                         "You can only rollback within " +  TIME_ALLOW_TO_ROLLBACK +
-                                " hours from the time the request was made",
+                                " hours from the time the request was accepted or rejected",
+                        httpStatus.NOT_ACCEPTABLE));
+            }
+            else if (requestTypeId == BORROW_REQUEST_TYPE_ID
+                    && requestRepository.getEmployeeRequestDetail(id).getIsAssigned() == Integer.valueOf(ASSIGNED)) {
+                throw new BaseException(ErrorCode.newErrorCode(208,
+                        "You can't rollback because this employee has been assigned a device",
+                        httpStatus.NOT_ACCEPTABLE));
+            }
+            else if (requestTypeId == FORGOT_CHECK_IN_OUT_TYPE_ID) {
+                throw new BaseException(ErrorCode.newErrorCode(208,
+                        "You can't rollback Forgot check in/out request!",
                         httpStatus.NOT_ACCEPTABLE));
             }
             else {
-                Integer isUpdatedSuccess = requestRepository.updateStatusRequest(status, id, currentTime);
+                if (status.equalsIgnoreCase(PENDING_STATUS)) {
+                    currentTime = null;
+                }
+                Integer isUpdatedSuccess = requestRepository.updateStatusRequest(status, id, currentTime, null);
                 if (isUpdatedSuccess == CommonConstant.UPDATE_FAIL) {
                     throw new BaseException(ErrorCode.UPDATE_FAIL);
                 }
-                if (status.equalsIgnoreCase(APPROVED_STATUS)) {
-                    isReturnNumOfDayOff = false;
-                } else {
-                    isReturnNumOfDayOff = true;
+                if (LEAVE_REQUEST_TYPE.contains(Integer.valueOf(requestTypeId))
+                        || Integer.valueOf(requestTypeId) == OT_TYPE_ID) {
+                    if (status.equalsIgnoreCase(APPROVED_STATUS)) {
+                        isReturnNumOfDayOff = false;
+                    } else {
+                        isReturnNumOfDayOff = true;
+                    }
+                    updateNumOfDayOff(id, isReturnNumOfDayOff);
                 }
-                updateNumOfDayOff(id, isReturnNumOfDayOff);
             }
         }
         responseEntity = BaseResponse.ofSucceeded(null);
@@ -364,7 +409,16 @@ public class RequestServiceImpl implements RequestService {
         Calendar calendarCreate = getCalendarByDate(createDate);
         if (!isRequestIdValid(id)) {
             throw new BaseException(ErrorCode.RESULT_NOT_FOUND);
-        } else {
+        }
+        else if (requestRepository.getStatusOfRequestById(id).equalsIgnoreCase(PENDING_STATUS)) {
+            throw new BaseException(ErrorCode.newErrorCode(208,
+                    "You can't edit requests that have been approved or rejected",
+                    httpStatus.NOT_ACCEPTABLE));
+        }else {
+            Date startTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
+                    parse(editRequest.getStartTime());
+            Date endTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
+                    parse(editRequest.getEndTime());
             Integer requestTypeId = requestTypeRepository.getRequestTypeByRequestId(id);
             // Validate borrow request
             if (requestTypeId.intValue() == BORROW_REQUEST_TYPE_ID) {
@@ -376,11 +430,11 @@ public class RequestServiceImpl implements RequestService {
                                                           editRequest.getReason());
                 }
             }
+            else if (requestTypeId.intValue() == FORGOT_CHECK_IN_OUT_TYPE_ID) {
+                validateForgotCheckInOutRequest(startTime, endTime);
+                requestRepository.updateNormalRequest(id, startTime, endTime, editRequest.getReason());
+            }
             else {
-                Date startTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
-                        parse(editRequest.getStartTime());
-                Date endTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
-                        parse(editRequest.getEndTime());
                 Calendar calendarStart = getCalendarByDate(startTime);
                 Calendar calendarEnd = getCalendarByDate(endTime);
                 Calendar calendarCompare = getCalendarByDate(startTime);
@@ -405,18 +459,10 @@ public class RequestServiceImpl implements RequestService {
                             calendarCompare,
                             calendarCreate,
                             year);
-                    requestRepository.updateLeaveOrOTRequest(id,
+                    requestRepository.updateNormalRequest(id,
                                                             startTime,
                                                             endTime,
                                                             editRequest.getReason());
-                    List<String> listImage = editRequest.getListEvidence();
-                    evidenceRepository.deleteImageByRequestId(id);
-                    if (!listImage.isEmpty()) {
-                        for (String image : listImage) {
-                            Evidence evidence = new Evidence(id, image);
-                            evidenceRepository.save(evidence);
-                        }
-                    }
                 }
                 else if (requestTypeId == OT_TYPE_ID) {
                     validateOTRequest(startTime,
@@ -427,10 +473,21 @@ public class RequestServiceImpl implements RequestService {
                                       calendarStart,
                                       calendarEnd,
                                       Long.valueOf(requestTypeId));
-                    requestRepository.updateLeaveOrOTRequest(id,
-                                                            startTime,
-                                                            endTime,
-                                                            editRequest.getReason());
+                    requestRepository.updateNormalRequest(id,
+                                                          startTime,
+                                                          endTime,
+                                                          editRequest.getReason());
+                }
+                else {
+                    requestRepository.updateNormalRequest(id, startTime, endTime, editRequest.getReason());
+                }
+            }
+            List<String> listImage = editRequest.getListEvidence();
+            evidenceRepository.deleteImageByRequestId(id);
+            if (!listImage.isEmpty()) {
+                for (String image : listImage) {
+                    Evidence evidence = new Evidence(id, image);
+                    evidenceRepository.save(evidence);
                 }
             }
             responseEntity = BaseResponse.ofSucceeded(null);
@@ -458,14 +515,14 @@ public class RequestServiceImpl implements RequestService {
         else if (createRequest.getStartTime() == null || createRequest.getEndTime() == null) {
             throw new BaseException(ErrorCode.DATE_INVALID_IN_LEAVE_REQUEST);
         }
-        else if (requestTypeId == FORGOT_CHECK_IN_OUT) {
+        startTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
+                parse(createRequest.getStartTime());
+        endTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
+                parse(createRequest.getEndTime());
+        if (requestTypeId == FORGOT_CHECK_IN_OUT) {
             validateForgotCheckInOutRequest(startTime, endTime);
         }
         else {
-            startTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
-                    parse(createRequest.getStartTime());
-            endTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
-                    parse(createRequest.getEndTime());
             Calendar calendarStart = getCalendarByDate(startTime);
             Calendar calendarEnd = getCalendarByDate(endTime);
             // Validate year
@@ -534,7 +591,9 @@ public class RequestServiceImpl implements RequestService {
                     parse(start);
             Date endTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
                     parse(end);
-            requestRepository.autoRejectRequestNotProcessed(startTime, endTime, REJECTED_STATUS, PENDING_STATUS);
+            Date currentDate = getCurrentTime();
+            requestRepository.autoRejectRequestNotProcessed(startTime, endTime, REJECTED_STATUS,
+                                                            PENDING_STATUS, currentDate, FORGOT_CHECK_IN_OUT_TYPE_ID);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -587,10 +646,8 @@ public class RequestServiceImpl implements RequestService {
         calendar.setTime(startTime);
         Year year = Year.of(calendar.get(Calendar.YEAR));
         int month = calendar.get(Calendar.MONTH) + 1;
-        DecimalFormat decimalFormat = new DecimalFormat("#.##");
         // calculate the number of days off
         double numOfDayOff = calculateNumOfDayOff(startTime + "", endTime + "");
-        double otHoursInRequest = calculateHoursBetweenTwoDateTime(startTime, endTime);
         if (LEAVE_REQUEST_TYPE.contains(requestTypeId)) {
             updateLeaveBudget(Long.valueOf(requestTypeId),
                     personId,
@@ -602,7 +659,8 @@ public class RequestServiceImpl implements RequestService {
             updateOTBudget(personId,
                             month,
                             year,
-                            otHoursInRequest,
+                            startTime,
+                            endTime,
                             isReturnNumOfDayOff);
         }
     }
@@ -638,20 +696,47 @@ public class RequestServiceImpl implements RequestService {
     public void updateOTBudget(Long personId,
                                int month,
                                Year year,
-                               double otHoursInRequest,
+                               Date startTime,
+                               Date endTime,
                                boolean isReturnNumOfDayOff) {
         OTBudgetDto otBudgetDto = otBudgetRepository.getOTBudgetByPersonId(personId, year, month);
+        double otHoursInRequest = calculateHoursBetweenTwoDateTime(startTime, endTime);
+        double otTimeOfStartDay = 0;
+        double otTimeOfEndDay = 0;
+        double sumOTHoursInDay = 0;
         double newHoursWorked = 0;
+        double otHoursRemainOfMonth = otBudgetDto.getOtHoursRemainOfMonth();
+        double otHoursRemainOfYear = otBudgetDto.getOtHoursRemainOfYear();
+        // Đang từ approved -> pending or reject
         if (isReturnNumOfDayOff) {
             newHoursWorked = otBudgetDto.getHoursWorked() - otHoursInRequest;
-        } else {
+        }
+        else {
+            if (getDayOfDate(startTime) == getDayOfDate(endTime)) {
+                double otTimeWorkedInThisDay = timeCheckRepository.getOTTimeByDay(getDayOfDate(startTime), personId);
+                otHoursInRequest = calculateHoursBetweenTwoDateTime(startTime, endTime);
+                sumOTHoursInDay = otTimeWorkedInThisDay + otHoursInRequest;
+                validateOTTime(otHoursInRequest, otHoursRemainOfMonth, otHoursRemainOfYear, sumOTHoursInDay);
+                timeCheckRepository.updateOTTime(getDayOfDate(startTime), personId, sumOTHoursInDay);
+            }
+            else {
+                otTimeOfStartDay = calculateHoursBetweenTwoDateTime(startTime,
+                        formatTimeToKnownDate(startTime, TIME_END_OF_DAY));
+                double otTimeWorkedInStartDay = timeCheckRepository.getOTTimeByDay(getDayOfDate(startTime), personId);
+                validateOTTime(otHoursInRequest, otHoursRemainOfMonth,
+                        otHoursRemainOfYear, otTimeWorkedInStartDay + otTimeOfStartDay);
+                otTimeOfEndDay = calculateHoursBetweenTwoDateTime(formatTimeToKnownDate(endTime, TIME_START_OF_DAY),
+                        endTime);
+                double otTimeWorkedInEndDay = timeCheckRepository.getOTTimeByDay(getDayOfDate(endTime), personId);
+                validateOTTime(otHoursInRequest, otHoursRemainOfMonth,
+                        otHoursRemainOfYear, otTimeWorkedInEndDay + otTimeOfEndDay);
+                timeCheckRepository.updateOTTime(getDayOfDate(startTime), personId, otTimeWorkedInStartDay + otTimeOfStartDay);
+                timeCheckRepository.updateOTTime(getDayOfDate(endTime), personId, otTimeWorkedInEndDay + otTimeOfEndDay);
+            }
             newHoursWorked = otBudgetDto.getHoursWorked() + otHoursInRequest;
         }
         double remainHoursWorkOfMonth = otBudgetDto.getOtHoursBudget() - newHoursWorked;
         double remainHoursWorkOfYear = otBudgetDto.getOtHoursRemainOfYear() - newHoursWorked;
-        if (remainHoursWorkOfMonth < 0 || remainHoursWorkOfYear < 0) {
-            throw new BaseException(ErrorCode.UPDATE_DAY_OFF_FAIL);
-        }
         Integer isUpdateOTBudgetOfMonthSucceeded = otBudgetRepository.updateOTBudgetOfMonth(personId,
                                                                             year,
                                                                             month,
@@ -801,6 +886,11 @@ public class RequestServiceImpl implements RequestService {
         else if (otBudgetDto.getOtHoursRemainOfYear() == 0) {
             throw new BaseException(ErrorCode.newErrorCode(208,
                     "Your OT period for this year is over",
+                    httpStatus.NOT_ACCEPTABLE));
+        }
+        else if (startTime.after(getCurrentTime()) && getDayOfDate(startTime) == getDayOfDate(getCurrentTime())) {
+            throw new BaseException(ErrorCode.newErrorCode(208,
+                    "You must create one day in advance for future OT times",
                     httpStatus.NOT_ACCEPTABLE));
         }
         List<DateDto> listOTRequestInPeriodTime = requestRepository.getListOTRequestApprovedByDate(personId,
@@ -977,12 +1067,12 @@ public class RequestServiceImpl implements RequestService {
                 }
             }
         }
-        if (otHoursWorked == 4) {
-            String time = DateTimeFormatter.ofPattern("yyyy-MM-dd").format(convertDateToLocalDateTime(timeNeedToValidate));
-            throw new BaseException(ErrorCode.newErrorCode(208,
-                    "The time you are allowed to OT on " + time + " is over",
-                    httpStatus.NOT_ACCEPTABLE));
-        }
+//        if (otHoursWorked == 4) {
+//            String time = DateTimeFormatter.ofPattern("yyyy-MM-dd").format(convertDateToLocalDateTime(timeNeedToValidate));
+//            throw new BaseException(ErrorCode.newErrorCode(208,
+//                    "The time you are allowed to OT on " + time + " is over",
+//                    httpStatus.NOT_ACCEPTABLE));
+//        }
         return otHoursWorked;
     }
 
@@ -996,6 +1086,49 @@ public class RequestServiceImpl implements RequestService {
                         httpStatus.NOT_ACCEPTABLE));
             }
         }
+    }
+
+    public void updateTimeCheck(Date startTime, Date endTime, Long personId) {
+        try {
+            OfficeTimeDto officeTimeDto = officeTimeRepository.getOfficeTime();
+            int dayOfStartTime = getDayOfDate(startTime);
+            double otTime = getAmountOfTimeOTByDate(personId, Long.valueOf(OT_TYPE_ID), startTime);
+            double workingTime = calculateHoursBetweenTwoDateTime(startTime, endTime);
+            double inLate = 0;
+            double outEarly = 0;
+            Date startOfficeTime = formatTimeToKnownDate(startTime, officeTimeDto.getTimeStart());
+            Date finishOfficeTime = formatTimeToKnownDate(startTime, officeTimeDto.getTimeEnd());
+            if (startTime.after(startOfficeTime)) {
+                inLate = calculateHoursBetweenTwoDateTime(startOfficeTime, startTime);
+            }
+            if (endTime.before(finishOfficeTime)) {
+                outEarly = calculateHoursBetweenTwoDateTime(endTime, finishOfficeTime);
+            }
+            if (timeCheckRepository.getTimeInOfPersonByDay(personId, dayOfStartTime) == null) {
+                TimeCheck timeCheck = new TimeCheck(personId, inLate, outEarly, startTime,
+                                                    endTime, otTime, workingTime);
+                timeCheckRepository.save(timeCheck);
+            }
+            else {
+                timeCheckRepository.updateTimeCheckOfEmployee(personId, inLate, outEarly,
+                                                              startTime, endTime, otTime,
+                                                              workingTime, getDayOfDate(startTime));
+            }
+        }
+        catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public Date formatTimeToKnownDate(Date knownDate, String time) {
+        try {
+            Date result = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
+                    parse(getStringDateFromDateTime(knownDate) + " " + time);
+            return result;
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
 }

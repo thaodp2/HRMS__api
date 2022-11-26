@@ -5,7 +5,6 @@ import com.minswap.hrms.exception.annotation.ServiceProcessingValidateAnnotation
 import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.request.DepartmentRequest;
 import com.minswap.hrms.response.DepartmentResponse;
-import com.minswap.hrms.response.dto.DepartmentDto;
 import com.minswap.hrms.response.dto.ListDepartmentDto;
 import com.minswap.hrms.service.department.DepartmentService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,5 +59,4 @@ public class HRDepartmentController {
     public ResponseEntity<BaseResponse<DepartmentResponse, Void>> getDepartmentDetail(@PathVariable Long id) {
         return departmentService.getDepartmentDetail(id);
     }
-
 }

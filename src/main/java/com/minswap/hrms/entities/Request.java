@@ -61,4 +61,7 @@ public class Request {
 
     @Column(name = "is_assigned")
     private Integer isAssigned;
+
+    @Column(name = "maximum_time_to_rollback")
+    private Date maximumTimeToRollback;
 }
