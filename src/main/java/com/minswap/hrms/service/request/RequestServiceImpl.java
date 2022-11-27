@@ -160,7 +160,7 @@ public class RequestServiceImpl implements RequestService {
         }
 
         if(type.equals(CommonConstant.ALL) || type.equals(CommonConstant.SUBORDINATE)){
-            whereBuild.append("and r.status != 'Cancel' ");
+            whereBuild.append("and r.status != 'Canceled' ");
         }
 
         queryAllRequest.append(whereBuild);
@@ -179,6 +179,9 @@ public class RequestServiceImpl implements RequestService {
                     break;
                 case CommonConstant.ROLL_NUMBER_FIELD:
                     orderByBuild.append("p.roll_number ");
+                    break;
+                case "fullName":
+                    orderByBuild.append("p.full_name ");
                     break;
             }
             if (dir != null && dir.equalsIgnoreCase("desc")) {

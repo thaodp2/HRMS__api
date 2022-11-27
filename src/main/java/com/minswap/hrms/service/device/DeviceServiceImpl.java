@@ -1,16 +1,20 @@
 package com.minswap.hrms.service.device;
 
+import com.minswap.hrms.constants.CommonConstant;
 import com.minswap.hrms.constants.ErrorCode;
+import com.minswap.hrms.entities.BorrowHistory;
 import com.minswap.hrms.entities.Device;
 import com.minswap.hrms.entities.Request;
 import com.minswap.hrms.exception.model.BaseException;
 import com.minswap.hrms.model.BaseResponse;
+import com.minswap.hrms.repsotories.BorrowHistoryRepository;
 import com.minswap.hrms.repsotories.DeviceRepository;
 import com.minswap.hrms.repsotories.RequestRepository;
 import com.minswap.hrms.request.AssignRequest;
 import com.minswap.hrms.response.MasterDataResponse;
 import com.minswap.hrms.response.dto.MasterDataDto;
 import com.minswap.hrms.service.borrowhistory.BorrowHistoryService;
+import com.minswap.hrms.util.DateTimeUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -20,6 +24,7 @@ import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -31,6 +36,9 @@ public class DeviceServiceImpl implements DeviceService{
 
     @Autowired
     BorrowHistoryService borrowHistoryService;
+
+    @Autowired
+    BorrowHistoryRepository borrowHistoryRepository;
 
     @Autowired
     RequestRepository requestRepository;
@@ -55,7 +63,7 @@ public class DeviceServiceImpl implements DeviceService{
     }
 
     @Override
-    public ResponseEntity<BaseResponse<HttpStatus, Void>> assignDevice(AssignRequest assignRequest) throws ParseException {
+    public ResponseEntity<BaseResponse<HttpStatus, Void>> assignDevice(AssignRequest assignRequest){
         ResponseEntity<BaseResponse<HttpStatus, Void>> responseEntity = null;
         try {
             //create borrow history
@@ -87,6 +95,32 @@ public class DeviceServiceImpl implements DeviceService{
             throw new BaseException(ErrorCode.DO_NOT_ENOUGH_DEVICE_TO_ASSIGN);
         }
         responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.OK, null);
+        return responseEntity;
+    }
+
+    @Override
+    public ResponseEntity<BaseResponse<HttpStatus, Void>> returnDevice(Long borrowHistoryId){
+        ResponseEntity<BaseResponse<HttpStatus, Void>> responseEntity = null;
+        try {
+            BorrowHistory borrowHistory = borrowHistoryRepository.findById(borrowHistoryId).orElse(null);
+            if (borrowHistory != null) {
+                //update return date
+                Date currentDate = DateTimeUtil.getCurrentTime();
+                currentDate.setTime(currentDate.getTime() + CommonConstant.MILLISECOND_7_HOURS);
+                borrowHistory.setReturnDate(currentDate);
+                borrowHistoryRepository.save(borrowHistory);
+
+                //update status of device
+                Device device = deviceRepository.findById(borrowHistory.getDeviceId()).orElse(null);
+                if (device != null) {
+                    device.setStatus(0);
+                    deviceRepository.save(device);
+                }
+            }
+            responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.OK, null);
+        }catch (Exception e){
+            responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.EXPECTATION_FAILED, null);
+        }
         return responseEntity;
     }
 }
