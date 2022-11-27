@@ -88,6 +88,7 @@ public class RequestServiceImpl implements RequestService {
     private static final String APPROVED_STATUS = "Approved";
     private static final String REJECTED_STATUS = "Rejected";
     private static final String PENDING_STATUS = "Pending";
+    private static final String CANCELED_STATUS = "Canceled";
     private static final String LEAVE_TYPE = "leave";
     private static final String OT_TYPE = "ot";
     private static final String DEVICE_TYPE = "device";
@@ -108,6 +109,7 @@ public class RequestServiceImpl implements RequestService {
     private static final int OT_END_TIME_HOUR = 4;
     private static final String TIME_START_OF_DAY = "00:00:00";
     private static final String TIME_END_OF_DAY = "23:59:00";
+    private static final int WFH_REQUEST_TYPE_ID = 9;
     public List<RequestDto> getQueryForRequestList(String type, Long managerId, Long personId, Boolean isLimit, Integer limit, Integer page, String createDateFrom, String createDateTo, Long requestTypeId, String status, String sort, String dir) throws ParseException {
         HashMap<String, Object> params = new HashMap<>();
         StringBuilder queryAllRequest = new StringBuilder("select r.request_id as requestId,p.roll_number as rollNumber, p.full_name as personName, rt.request_type_name as requestTypeName, r.create_date as createDate, r.start_time as startTime, r.end_time as endTime, r.reason as reason, r.status as status, r.is_assigned as isAssigned, r.request_type_id as requestTypeId ");
@@ -436,6 +438,9 @@ public class RequestServiceImpl implements RequestService {
                 requestRepository.updateNormalRequest(id, startTime, endTime, editRequest.getReason());
             }
             else {
+                if (requestTypeId != WFH_REQUEST_TYPE_ID && requestTypeId != BORROW_REQUEST_TYPE_ID) {
+                    validateLeaveRequestTimeAlreadyInAnotherLeaveRequest(personId, startTime, endTime);
+                }
                 Calendar calendarStart = getCalendarByDate(startTime);
                 Calendar calendarEnd = getCalendarByDate(endTime);
                 Calendar calendarCompare = getCalendarByDate(startTime);
@@ -525,6 +530,9 @@ public class RequestServiceImpl implements RequestService {
             validateForgotCheckInOutRequest(startTime, endTime);
         }
         else {
+            if (requestTypeId != WFH_REQUEST_TYPE_ID && requestTypeId != BORROW_REQUEST_TYPE_ID) {
+                validateLeaveRequestTimeAlreadyInAnotherLeaveRequest(personId, startTime, endTime);
+            }
             deviceTypeId = null;
             Calendar calendarStart = getCalendarByDate(startTime);
             Calendar calendarEnd = getCalendarByDate(endTime);
@@ -626,6 +634,27 @@ public class RequestServiceImpl implements RequestService {
         RequestResponse.RequestListResponse response = new RequestResponse.RequestListResponse(requestDtoList);
         ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> responseEntity
                 = BaseResponse.ofSucceededOffset(response, pagination);
+        return responseEntity;
+    }
+
+    @Override
+    public ResponseEntity<BaseResponse<Void, Void>> cancelRequest(Long id) {
+        if (!isRequestIdValid(id)) {
+            throw new BaseException(ErrorCode.RESULT_NOT_FOUND);
+        }
+        else if (!requestRepository.getStatusOfRequestById(id).equalsIgnoreCase(PENDING_STATUS)) {
+            throw new BaseException(ErrorCode.newErrorCode(208,
+                    "You can't cancel an approved or rejected request",
+                    httpStatus.NOT_ACCEPTABLE));
+        }
+        Integer isUpdatedSuccess = requestRepository.updateStatusRequest(CANCELED_STATUS,
+                                                                         id,
+                                                              null,
+                                                                null);
+        if (isUpdatedSuccess == CommonConstant.UPDATE_FAIL) {
+            throw new BaseException(ErrorCode.UPDATE_FAIL);
+        }
+        ResponseEntity<BaseResponse<Void, Void>> responseEntity = BaseResponse.ofSucceeded(null);
         return responseEntity;
     }
 
@@ -864,13 +893,6 @@ public class RequestServiceImpl implements RequestService {
         else if (calendarCreate.get(Calendar.DAY_OF_MONTH) == calendarStart.get(Calendar.DAY_OF_MONTH)) {
             throw new BaseException(ErrorCode.newErrorCode(208,
                     "You must make request 1 day before start date",
-                    httpStatus.NOT_ACCEPTABLE));
-        }
-        List<DateDto> listOTRequestInPeriodTime = requestRepository.getListRequestApprovedByDate(personId,
-                                                        requestTypeId, startTime, endTime, APPROVED_STATUS);
-        if (listOTRequestInPeriodTime.size() > 0) {
-            throw new BaseException(ErrorCode.newErrorCode(208,
-                    "You already have a leave request within this time period!",
                     httpStatus.NOT_ACCEPTABLE));
         }
         LeaveBudgetDto leaveBudgetDto = leaveBudgetRepository.getLeaveBudget(personId, year, requestTypeId);
@@ -1149,6 +1171,16 @@ public class RequestServiceImpl implements RequestService {
             throw new RuntimeException(e);
         }
 
+    }
+
+    public void validateLeaveRequestTimeAlreadyInAnotherLeaveRequest(Long personId, Date start, Date end) {
+        List<Long> listIdOfRequestAlreadyExistTime = requestRepository.
+                getLeaveRequestTimeAlreadyInAnotherLeaveRequest(personId, start, end, APPROVED_STATUS);
+        if (listIdOfRequestAlreadyExistTime.size() > 0) {
+            throw new BaseException(ErrorCode.newErrorCode(208,
+                    "You already have a leave request within this time period!",
+                    httpStatus.NOT_ACCEPTABLE));
+        }
     }
 
 }

@@ -72,4 +72,9 @@ public class RequestController {
                                                                   BindingResult bindingResult) throws ParseException {
         return requestService.createRequest(createRequest);
     }
+
+    @PutMapping("/request/cancel-request/{id}")
+    public  ResponseEntity<BaseResponse<Void, Void>> cancelRequest(@PathVariable Long id) {
+        return requestService.cancelRequest(id);
+    }
 }

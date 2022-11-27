@@ -142,4 +142,17 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
     @Query("update Request r set r.maximumTimeToRollback=:time where r.requestId=:id")
     Integer updateMaximumTimeToRollback(@Param("id") Long id,
                                         @Param("time") Date time);
+
+    @Query("select r.requestId " +
+            "from Request r " +
+            "where r.personId=:personId " +
+            "and r.requestTypeId in (1, 2, 3, 5, 6, 8, 10) " +
+            "and ((r.startTime between :start and :end) or " +
+            "(r.endTime between :start and :end) or " +
+            "(r.startTime < :start and r.endTime > :end)) " +
+            "and r.status=:status")
+    List<Long> getLeaveRequestTimeAlreadyInAnotherLeaveRequest(@Param("personId") Long personId,
+                                                               @Param("start") Date start,
+                                                               @Param("end") Date end,
+                                                               @Param("status") String status);
 }
