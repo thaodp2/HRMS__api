@@ -44,10 +44,10 @@ public interface OTBudgetRepository extends JpaRepository<OTBudget, Long> {
                                  @Param("year") Year year,
                                  @Param("otHoursRemainOfYear") double otHoursRemainOfYear);
 
-    @Query("SELECT new com.minswap.hrms.response.dto.BenefitBudgetDto(ob.otBudgetId as id, p.fullName as fullName, " +
+    @Query("SELECT new com.minswap.hrms.response.dto.BenefitBudgetDto(ob.otBudgetId as id, p.rollNumber as rollNumber, p.fullName as fullName, " +
             "ob.otHoursBudget as budget, ob.hoursWorked as used, ob.timeRemainingOfMonth as remainOfMonth, ob.timeRemainingOfYear as remainOfYear) " +
             "from OTBudget ob inner join Person p on ob.personId = p.personId " +
-            "where ob.month = :month and ob.year = :year and (:search IS NULL OR p.fullName like %:search%) " +
+            "where ob.month = :month and ob.year = :year and (:search IS NULL OR p.rollNumber like %:search% OR p.fullName like %:search%) " +
             "and (:managerId IS NULL OR p.managerId = :managerId) " +
             "and (:personId IS NULL OR p.personId = :personId)")
     Page<BenefitBudgetDto> getBenefitBudgetList(@Param("month") Integer month,
