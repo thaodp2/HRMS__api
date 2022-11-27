@@ -7,9 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 public class DeviceController {
@@ -25,5 +23,10 @@ public class DeviceController {
     @GetMapping("/check-remaining-device")
     public ResponseEntity<BaseResponse<HttpStatus, Void>> isRemainDeviceByDeviceTye(@RequestParam Long deviceTypeId) {
         return deviceService.isRemainDeviceByDeviceTye(deviceTypeId);
+    }
+
+    @PutMapping("/return-device/{id}")
+    public ResponseEntity<BaseResponse<HttpStatus, Void>> returnDevice(@PathVariable Long id) {
+        return deviceService.returnDevice(id);
     }
 }
