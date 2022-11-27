@@ -120,7 +120,7 @@ public class RequestServiceImpl implements RequestService {
                 "r.person_id = p.person_id ");
         StringBuilder whereBuild = new StringBuilder("WHERE 1=1 ");
         //search
-        if (!(createDateFrom == null && createDateTo == null && requestTypeId == null && status == null)) {
+        if (!(createDateFrom == null && createDateTo == null && requestTypeId == null && status == null && search == null)) {
             if (createDateFrom != null && createDateTo == null) {
                 whereBuild.append("and create_date >= :createDateFrom ");
                 params.put("createDateFrom", createDateFrom);
@@ -131,6 +131,10 @@ public class RequestServiceImpl implements RequestService {
                 whereBuild.append("and create_date BETWEEN :createDateFrom AND :createDateTo ");
                 params.put("createDateFrom", createDateFrom);
                 params.put("createDateTo", createDateTo);
+            }
+            if (search != null && !search.trim().isEmpty()) {
+                whereBuild.append("and (p.roll_number like :search or p.full_name like :search) ");
+                params.put("search", "%"+search.trim()+"%");
             }
             if (requestTypeId != null) {
                 whereBuild.append("and rt.request_type_id = :requestTypeId ");
@@ -219,7 +223,7 @@ public class RequestServiceImpl implements RequestService {
                     dtos.get(i).setIsAllowRollback(ALLOW_ROLLBACK);
                 }
             } else {
-                if(dtos.get(i).getIsAssigned() == 0){
+                if(dtos.get(i).getIsAssigned() == null || dtos.get(i).getIsAssigned() == 0){
                     dtos.get(i).setIsAllowRollback(ALLOW_ROLLBACK);
                 }else{
                     dtos.get(i).setIsAllowRollback(NOT_ALLOW_ROLLBACK);
@@ -229,10 +233,10 @@ public class RequestServiceImpl implements RequestService {
         return dtos;
     }
 
-    public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getRequestByPermission(String type, Long managerId, Long personId, Integer page, Integer limit, String createDateFrom, String createDateTo, Long requestTypeId, String status, String sort, String dir) throws ParseException {
+    public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getRequestByPermission(String type, Long managerId, Long personId, Integer page, Integer limit, String search,String createDateFrom, String createDateTo, Long requestTypeId, String status, String sort, String dir) throws ParseException {
         Pagination pagination = new Pagination(page, limit);
-        pagination.setTotalRecords(getQueryForRequestList(type, managerId, personId, false, limit, page, createDateFrom, createDateTo, requestTypeId, status, sort, dir).size());
-        List<RequestDto> requestDtos = getQueryForRequestList(type, managerId, personId, true, limit, page, createDateFrom, createDateTo, requestTypeId, status, sort, dir);
+        pagination.setTotalRecords(getQueryForRequestList(type, managerId, personId, false, limit, page,search, createDateFrom, createDateTo, requestTypeId, status, sort, dir).size());
+        List<RequestDto> requestDtos = getQueryForRequestList(type, managerId, personId, true, limit, page,search, createDateFrom, createDateTo, requestTypeId, status, sort, dir);
         RequestResponse.RequestListResponse response = new RequestResponse.RequestListResponse(requestDtos);
         ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> responseEntity
                 = BaseResponse.ofSucceededOffset(response, pagination);
@@ -240,18 +244,18 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
-    public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getAllRequest(Integer page, Integer limit, String createDateFrom, String createDateTo, Long requestTypeId, String status, String sort, String dir) throws ParseException {
-        return getRequestByPermission(CommonConstant.ALL, null, null, page, limit, createDateFrom, createDateTo, requestTypeId, status, sort, dir);
+    public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getAllRequest(Integer page, Integer limit,String search, String createDateFrom, String createDateTo, Long requestTypeId, String status, String sort, String dir) throws ParseException {
+        return getRequestByPermission(CommonConstant.ALL, null, null, page, limit,search, createDateFrom, createDateTo, requestTypeId, status, sort, dir);
     }
 
     @Override
-    public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getSubordinateRequest(Long managerId, Integer page, Integer limit, String createDateFrom, String createDateTo, Long requestTypeId, String status, String sort, String dir) throws ParseException {
-        return getRequestByPermission(CommonConstant.SUBORDINATE, managerId, null, page, limit, createDateFrom, createDateTo, requestTypeId, status, sort, dir);
+    public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getSubordinateRequest(Long managerId, Integer page, Integer limit,String search, String createDateFrom, String createDateTo, Long requestTypeId, String status, String sort, String dir) throws ParseException {
+        return getRequestByPermission(CommonConstant.SUBORDINATE, managerId, null, page, limit,search, createDateFrom, createDateTo, requestTypeId, status, sort, dir);
     }
 
     @Override
-    public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getMyRequest(Long personId, Integer page, Integer limit, String createDateFrom, String createDateTo, Long requestTypeId, String status, String sort, String dir) throws ParseException {
-        return getRequestByPermission(CommonConstant.MY, null, personId, page, limit, createDateFrom, createDateTo, requestTypeId, status, sort, dir);
+    public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getMyRequest(Long personId, Integer page, Integer limit,String search, String createDateFrom, String createDateTo, Long requestTypeId, String status, String sort, String dir) throws ParseException {
+        return getRequestByPermission(CommonConstant.MY, null, personId, page, limit,search, createDateFrom, createDateTo, requestTypeId, status, sort, dir);
     }
 
     @Override

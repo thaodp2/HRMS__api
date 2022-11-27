@@ -63,7 +63,7 @@ public class RequestController {
             @RequestParam (required = false) String sort,
             @RequestParam (required = false) String dir) throws ParseException {
         Long id = Long.valueOf(2);
-            return requestService.getMyRequest(id,page,limit,createDateFrom,createDateTo,requestTypeId, status, sort, dir);
+            return requestService.getMyRequest(id,page,limit,null,createDateFrom,createDateTo,requestTypeId, status, sort, dir);
     }
 
     @PostMapping("/request")
