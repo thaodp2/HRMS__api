@@ -13,8 +13,9 @@ import lombok.Setter;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class BenefitBudgetDto {
 
-    public BenefitBudgetDto(Long id, String fullName, Double budget, Double used, Double remainOfYear, String requestTypeName) {
+    public BenefitBudgetDto(Long id, String rollNumber, String fullName, Double budget, Double used, Double remainOfYear, String requestTypeName) {
         this.id = id;
+        this.rollNumber = rollNumber;
         this.fullName = fullName;
         this.budget = budget;
         this.used = used;
@@ -22,8 +23,9 @@ public class BenefitBudgetDto {
         this.requestTypeName = requestTypeName;
     }
 
-    public BenefitBudgetDto(Long id, String fullName, Double budget, Double used, Double remainOfMonth, Double remainOfYear) {
+    public BenefitBudgetDto(Long id, String rollNumber, String fullName, Double budget, Double used, Double remainOfMonth, Double remainOfYear) {
         this.id = id;
+        this.rollNumber = rollNumber;
         this.fullName = fullName;
         this.budget = budget;
         this.used = used;
@@ -32,6 +34,8 @@ public class BenefitBudgetDto {
     }
 
     private Long id;
+
+    private String rollNumber;
 
     private String fullName;
 
