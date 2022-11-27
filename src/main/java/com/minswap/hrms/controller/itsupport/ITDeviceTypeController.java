@@ -69,7 +69,7 @@ public class ITDeviceTypeController {
     }
 
 //    @PostMapping("/test-import")
-//    public void importExcel() throws IOException {
+//    public void importExcel(@RequestParam MultipartFile file) throws IOException {
 //        File tempFile = new File("D:\\Downloads\\test.xlsx");
 //        //public void importExcel(@RequestParam("file") MultipartFile file) throws IOException {
 ////        Path tempDir = Files.createTempDirectory("");
@@ -78,7 +78,7 @@ public class ITDeviceTypeController {
 //        Workbook workbook = WorkbookFactory.create(tempFile);
 //        Sheet sheet = workbook.getSheetAt(0);
 //        for(Row row : sheet){
-//            LOGGER.info("ROW: " + row.getCell(0).getStringCellValue());
+//            //LOGGER.info("ROW: " + row.getCell(0).getStringCellValue());
 //        }
 //    }
 }

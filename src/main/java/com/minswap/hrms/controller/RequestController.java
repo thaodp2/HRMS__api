@@ -63,7 +63,7 @@ public class RequestController {
             @RequestParam (required = false) String sort,
             @RequestParam (required = false) String dir) throws ParseException {
         Long id = Long.valueOf(2);
-            return requestService.getMyRequest(id,page,limit,createDateFrom,createDateTo,requestTypeId, status, sort, dir);
+            return requestService.getMyRequest(id,page,limit,null,createDateFrom,createDateTo,requestTypeId, status, sort, dir);
     }
 
     @PostMapping("/request")
@@ -71,5 +71,10 @@ public class RequestController {
     public ResponseEntity<BaseResponse<Void, Void>> createRequest(@RequestBody @Valid CreateRequest createRequest,
                                                                   BindingResult bindingResult) throws ParseException {
         return requestService.createRequest(createRequest);
+    }
+
+    @PutMapping("/request/cancel-request/{id}")
+    public  ResponseEntity<BaseResponse<Void, Void>> cancelRequest(@PathVariable Long id) {
+        return requestService.cancelRequest(id);
     }
 }

@@ -86,7 +86,8 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
             "set r.status =:rejected, r.approvalDate=:approvalDate " +
             "where (r.startTime between :start and :end) " +
             "and r.status=:pending " +
-            "and r.requestTypeId<>:forgotRequestTypeId")
+            "and r.requestTypeId<>:forgotRequestTypeId " +
+            "and r.createDate < r.startTime")
     Integer autoRejectRequestNotProcessed(@Param("start") Date start,
                                           @Param("end") Date end,
                                           @Param("rejected") String rejected,
@@ -94,17 +95,17 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
                                           @Param("approvalDate") Date approvalDate,
                                           @Param("forgotRequestTypeId") int forgotRequestTypeId);
 
-    @Query("select r.startTime, r.endTime " +
+    @Query("select new com.minswap.hrms.response.dto.DateDto(r.startTime, r.endTime) " +
            "from Request r " +
             "where r.personId=:personId " +
             "and r.requestTypeId=:requestTypeId " +
             "and ((r.startTime between :start and :end) or (r.endTime between :start and :end)) " +
             "and r.status=:status")
-    List<DateDto> getListOTRequestApprovedByDate(@Param("personId") Long personId,
-                                              @Param("requestTypeId") Long requestTypeId,
-                                              @Param("start") Date start,
-                                              @Param("end") Date end,
-                                              @Param("status") String status);
+    List<DateDto> getListRequestApprovedByDate(@Param("personId") Long personId,
+                                               @Param("requestTypeId") Long requestTypeId,
+                                               @Param("start") Date start,
+                                               @Param("end") Date end,
+                                               @Param("status") String status);
 
 
 
@@ -119,7 +120,7 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
             "left join Person p2 on " +
             "p2.personId = p.managerId " +
             "WHERE r.requestTypeId = 11 and r.status = 'Approved' " +
-            "and (:search IS NULL OR p.fullName like %:search%) " +
+            "and (:search IS NULL OR p.rollNumber like %:search% OR p.fullName like %:search%) " +
             "and ((:fromDate IS NULL and :toDate IS NULL) OR (r.approvalDate BETWEEN :fromDate and :toDate )) " +
             "and (:isAssigned IS NULL OR r.isAssigned = :isAssigned) " +
             "and (:deviceTypeId IS NULL OR dt.deviceTypeId = :deviceTypeId)")
@@ -141,4 +142,17 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
     @Query("update Request r set r.maximumTimeToRollback=:time where r.requestId=:id")
     Integer updateMaximumTimeToRollback(@Param("id") Long id,
                                         @Param("time") Date time);
+
+    @Query("select r.requestId " +
+            "from Request r " +
+            "where r.personId=:personId " +
+            "and r.requestTypeId in (1, 2, 3, 5, 6, 8, 10) " +
+            "and ((r.startTime between :start and :end) or " +
+            "(r.endTime between :start and :end) or " +
+            "(r.startTime < :start and r.endTime > :end)) " +
+            "and r.status=:status")
+    List<Long> getLeaveRequestTimeAlreadyInAnotherLeaveRequest(@Param("personId") Long personId,
+                                                               @Param("start") Date start,
+                                                               @Param("end") Date end,
+                                                               @Param("status") String status);
 }
