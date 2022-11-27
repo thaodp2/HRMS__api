@@ -4,7 +4,9 @@ import com.minswap.hrms.constants.CommonConstant;
 import com.minswap.hrms.exception.annotation.ServiceProcessingValidateAnnotation;
 import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.request.AssignRequest;
+import com.minswap.hrms.request.DeviceRequest;
 import com.minswap.hrms.request.DeviceTypeRequest;
+import com.minswap.hrms.request.UpdateDeviceRequest;
 import com.minswap.hrms.service.device.DeviceService;
 import com.minswap.hrms.service.devicetype.DeviceTypeService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,5 +32,22 @@ public class ITDeviceController {
                                                                            @Valid AssignRequest assignRequest,
                                                                            BindingResult bindingResult) throws ParseException {
         return deviceService.assignDevice(assignRequest);
+    }
+
+    @PostMapping("/device")
+    @ServiceProcessingValidateAnnotation
+    public ResponseEntity<BaseResponse<HttpStatus, Void>> createDevice(@RequestBody
+                                                                       @Valid DeviceRequest deviceRequest,
+                                                                       BindingResult bindingResult) {
+        return deviceService.createDevice(deviceRequest);
+    }
+
+    @PutMapping("/device")
+    @ServiceProcessingValidateAnnotation
+    public ResponseEntity<BaseResponse<HttpStatus, Void>> updateDevice(@RequestBody
+                                                                       @Valid UpdateDeviceRequest deviceRequest,
+                                                                       BindingResult bindingResult,
+                                                                       Long deviceId) {
+        return deviceService.updateDevice(deviceRequest, deviceId);
     }
 }

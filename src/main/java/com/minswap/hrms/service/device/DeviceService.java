@@ -2,6 +2,8 @@ package com.minswap.hrms.service.device;
 
 import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.request.AssignRequest;
+import com.minswap.hrms.request.DeviceRequest;
+import com.minswap.hrms.request.UpdateDeviceRequest;
 import com.minswap.hrms.response.MasterDataResponse;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -13,6 +15,12 @@ public interface DeviceService {
     ResponseEntity<BaseResponse<MasterDataResponse, Pageable>> getMasterDataDeviceByDeviceType (Long deviceTypeId, Integer status, String deviceName);
 
     ResponseEntity<BaseResponse<HttpStatus, Void>> assignDevice(AssignRequest assignRequest) throws ParseException;
+
+    ResponseEntity<BaseResponse<HttpStatus, Void>> createDevice(DeviceRequest deviceRequest);
+
+    ResponseEntity<BaseResponse<HttpStatus, Void>> updateDevice(UpdateDeviceRequest deviceRequest, Long deviceId);
+
+
 
     ResponseEntity<BaseResponse<HttpStatus, Void>> isRemainDeviceByDeviceTye(Long deviceTypeId);
 }

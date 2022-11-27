@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface DeviceRepository extends JpaRepository<Device, Long> {
@@ -12,4 +13,7 @@ public interface DeviceRepository extends JpaRepository<Device, Long> {
 
     List<Device> findByDeviceTypeIdAndStatus(Long deviceTypeId, Integer status);
 
+    Optional<Device> findByDeviceCode(String deviceCode);
+
+    Optional<Device> findByDeviceId(Long deviceId);
 }

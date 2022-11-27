@@ -8,10 +8,13 @@ import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.repsotories.DeviceRepository;
 import com.minswap.hrms.repsotories.RequestRepository;
 import com.minswap.hrms.request.AssignRequest;
+import com.minswap.hrms.request.DeviceRequest;
+import com.minswap.hrms.request.UpdateDeviceRequest;
 import com.minswap.hrms.response.MasterDataResponse;
 import com.minswap.hrms.response.dto.MasterDataDto;
 import com.minswap.hrms.service.borrowhistory.BorrowHistoryService;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -21,6 +24,7 @@ import org.springframework.stereotype.Service;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -78,6 +82,52 @@ public class DeviceServiceImpl implements DeviceService{
         }
         return responseEntity;
     }
+
+    @Override
+    public ResponseEntity<BaseResponse<HttpStatus, Void>> createDevice(DeviceRequest deviceRequest) {
+        ResponseEntity<BaseResponse<HttpStatus, Void>> responseEntity = null;
+        Optional<Device> deviceFormDB = deviceRepository.findByDeviceCode(deviceRequest.getDeviceCode());
+        if (deviceFormDB.isPresent()){
+            throw new BaseException(ErrorCode.DUPLICATE_DEVICE_CODE);
+        }
+        try {
+            ModelMapper modelMapper = new ModelMapper();
+            Device  device = new Device();
+            modelMapper.map(deviceRequest,device);
+            device.setStatus(0);
+            device.setDeviceId(0L);
+            deviceRepository.save(device);
+            responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.OK, null);
+        }catch (Exception p){
+            responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.EXPECTATION_FAILED, null);
+        }
+        return responseEntity;
+    }
+
+    @Override
+    public ResponseEntity<BaseResponse<HttpStatus, Void>> updateDevice(UpdateDeviceRequest deviceRequest, Long deviceId) {
+        ResponseEntity<BaseResponse<HttpStatus, Void>> responseEntity = null;
+        Optional<Device> deviceByCode = deviceRepository.findByDeviceCode(deviceRequest.getDeviceCode());
+        if (deviceByCode.isPresent()){
+            throw new BaseException(ErrorCode.DUPLICATE_DEVICE_CODE);
+        }
+        Optional<Device> deviceById  = deviceRepository.findByDeviceId(deviceId);
+        if (!deviceById.isPresent()){
+            throw new BaseException(ErrorCode.DUPLICATE_DEVICE_CODE);        }
+        try {
+
+            Device device = deviceById.get();
+            ModelMapper modelMapper = new ModelMapper();
+            modelMapper.map(deviceRequest, device);
+            device.setDeviceId(deviceId);
+            deviceRepository.save(device);
+            responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.OK, null);
+        }catch (Exception p){
+            responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.EXPECTATION_FAILED, null);
+        }
+        return responseEntity;
+    }
+
 
     @Override
     public ResponseEntity<BaseResponse<HttpStatus, Void>> isRemainDeviceByDeviceTye(Long deviceTypeId) {
