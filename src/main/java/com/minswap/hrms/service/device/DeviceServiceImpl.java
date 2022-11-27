@@ -125,7 +125,7 @@ public class DeviceServiceImpl implements DeviceService{
         }
         Optional<Device> deviceById  = deviceRepository.findByDeviceId(deviceId);
         if (!deviceById.isPresent()){
-            throw new BaseException(ErrorCode.DUPLICATE_DEVICE_CODE);
+            throw new BaseException(ErrorCode.DEVICE_NOT_EXIST);
         }
         try {
 
@@ -147,7 +147,7 @@ public class DeviceServiceImpl implements DeviceService{
 
         Optional<Device> deviceById  = deviceRepository.findByDeviceId(deviceId);
         if (!deviceById.isPresent()){
-            throw new BaseException(ErrorCode.DUPLICATE_DEVICE_CODE);
+            throw new BaseException(ErrorCode.DEVICE_NOT_EXIST);
         }
         try {
             deviceRepository.delete(deviceById.get());
