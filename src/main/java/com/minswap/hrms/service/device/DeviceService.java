@@ -4,6 +4,7 @@ import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.request.AssignRequest;
 import com.minswap.hrms.request.DeviceRequest;
 import com.minswap.hrms.request.UpdateDeviceRequest;
+import com.minswap.hrms.response.DeviceResponse;
 import com.minswap.hrms.response.MasterDataResponse;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -20,7 +21,9 @@ public interface DeviceService {
 
     ResponseEntity<BaseResponse<HttpStatus, Void>> updateDevice(UpdateDeviceRequest deviceRequest, Long deviceId);
 
+    ResponseEntity<BaseResponse<HttpStatus, Void>> deleteDevice(Long deviceId);
 
+    ResponseEntity<BaseResponse<DeviceResponse, Pageable>> searchListDevice(String search, Integer isUser, Long deviceTypeId, Integer page, Integer limit);
 
     ResponseEntity<BaseResponse<HttpStatus, Void>> isRemainDeviceByDeviceTye(Long deviceTypeId);
 }

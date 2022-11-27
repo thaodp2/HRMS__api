@@ -7,9 +7,11 @@ import com.minswap.hrms.request.AssignRequest;
 import com.minswap.hrms.request.DeviceRequest;
 import com.minswap.hrms.request.DeviceTypeRequest;
 import com.minswap.hrms.request.UpdateDeviceRequest;
+import com.minswap.hrms.response.DeviceResponse;
 import com.minswap.hrms.service.device.DeviceService;
 import com.minswap.hrms.service.devicetype.DeviceTypeService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -50,4 +52,20 @@ public class ITDeviceController {
                                                                        Long deviceId) {
         return deviceService.updateDevice(deviceRequest, deviceId);
     }
+
+    @DeleteMapping("/device")
+    public ResponseEntity<BaseResponse<HttpStatus, Void>> deleteDevice(Long deviceId) {
+        return deviceService.deleteDevice(deviceId);
+    }
+
+    @GetMapping("/device")
+    public ResponseEntity<BaseResponse<DeviceResponse, Pageable>> searchListDevice(@RequestParam (required = false) String search,
+                                                                                   @RequestParam (required = false) Integer isUsed,
+                                                                                   @RequestParam (required = false) Long deviceTypeId,
+                                                                                   @RequestParam (defaultValue = "1") Integer page,
+                                                                                   @RequestParam (defaultValue = "10") Integer limit) {
+        return deviceService.searchListDevice(search, isUsed, deviceTypeId, page, limit);
+    }
+
+
 }
