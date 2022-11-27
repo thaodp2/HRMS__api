@@ -86,7 +86,8 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
             "set r.status =:rejected, r.approvalDate=:approvalDate " +
             "where (r.startTime between :start and :end) " +
             "and r.status=:pending " +
-            "and r.requestTypeId<>:forgotRequestTypeId")
+            "and r.requestTypeId<>:forgotRequestTypeId " +
+            "and r.createDate < r.startTime")
     Integer autoRejectRequestNotProcessed(@Param("start") Date start,
                                           @Param("end") Date end,
                                           @Param("rejected") String rejected,
@@ -94,17 +95,17 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
                                           @Param("approvalDate") Date approvalDate,
                                           @Param("forgotRequestTypeId") int forgotRequestTypeId);
 
-    @Query("select r.startTime, r.endTime " +
+    @Query("select new com.minswap.hrms.response.dto.DateDto(r.startTime, r.endTime) " +
            "from Request r " +
             "where r.personId=:personId " +
             "and r.requestTypeId=:requestTypeId " +
             "and ((r.startTime between :start and :end) or (r.endTime between :start and :end)) " +
             "and r.status=:status")
-    List<DateDto> getListOTRequestApprovedByDate(@Param("personId") Long personId,
-                                              @Param("requestTypeId") Long requestTypeId,
-                                              @Param("start") Date start,
-                                              @Param("end") Date end,
-                                              @Param("status") String status);
+    List<DateDto> getListRequestApprovedByDate(@Param("personId") Long personId,
+                                               @Param("requestTypeId") Long requestTypeId,
+                                               @Param("start") Date start,
+                                               @Param("end") Date end,
+                                               @Param("status") String status);
 
 
 
