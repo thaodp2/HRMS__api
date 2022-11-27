@@ -119,7 +119,7 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
             "left join Person p2 on " +
             "p2.personId = p.managerId " +
             "WHERE r.requestTypeId = 11 and r.status = 'Approved' " +
-            "and (:search IS NULL OR p.fullName like %:search%) " +
+            "and (:search IS NULL OR p.rollNumber like %:search% OR p.fullName like %:search%) " +
             "and ((:fromDate IS NULL and :toDate IS NULL) OR (r.approvalDate BETWEEN :fromDate and :toDate )) " +
             "and (:isAssigned IS NULL OR r.isAssigned = :isAssigned) " +
             "and (:deviceTypeId IS NULL OR dt.deviceTypeId = :deviceTypeId)")
