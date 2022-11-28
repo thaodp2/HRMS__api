@@ -28,4 +28,6 @@ public interface PersonService {
     ResponseEntity<BaseResponse<Void, Void>> createEmployee(EmployeeRequest employeeRequest);
 
     ResponseEntity<BaseResponse<Void, Void>> updateStatusEmployee(ChangeStatusEmployeeRequest employeeRequest, String rollNumber );
+
+    ResponseEntity<BaseResponse<Boolean, Void>> checkPinCode(String pinCode);
 }

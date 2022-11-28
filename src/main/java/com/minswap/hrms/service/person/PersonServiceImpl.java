@@ -185,6 +185,19 @@ public class PersonServiceImpl implements PersonService{
     }
 
     @Override
+    public ResponseEntity<BaseResponse<Boolean, Void>> checkPinCode(String pinCode) {
+        Long personId = 2L;
+        Optional<Person> person = personRepository.findById(personId);
+        if (!person.isPresent()){
+            throw new BaseException(ErrorCode.NO_DATA);
+        }
+        if(person.get().getPinCode().equalsIgnoreCase(pinCode)){
+            return BaseResponse.ofSucceeded(true);
+        }
+        return BaseResponse.ofSucceeded(false);
+    }
+
+    @Override
     public List<EmployeeListDto> exportEmployee(String fullName,String email,Long departmentId,String rollNumber,Long positionId) {
         Page<EmployeeListDto> pageInfo = personRepository.getSearchListPerson(fullName, email,departmentId,rollNumber,positionId,null,null);
         List<EmployeeListDto> employeeListDtos = pageInfo.getContent();

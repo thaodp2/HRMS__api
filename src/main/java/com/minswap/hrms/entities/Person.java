@@ -87,4 +87,7 @@ public class Person {
 
 	@Column(name = "annual_leave_budget")
 	private Double annualLeaveBudget;
+
+	@Column(name = "pin_code")
+	private String pinCode;
 }
