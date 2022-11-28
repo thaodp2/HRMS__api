@@ -23,6 +23,8 @@ public interface DeviceService {
 
     ResponseEntity<BaseResponse<HttpStatus, Void>> deleteDevice(Long deviceId);
 
+    ResponseEntity<BaseResponse<DeviceResponse.DetailDeviceResponse, Void>> getDetailDevice(Long deviceId);
+
     ResponseEntity<BaseResponse<DeviceResponse, Pageable>> searchListDevice(String search, Integer isUser, Long deviceTypeId, Integer page, Integer limit);
 
     ResponseEntity<BaseResponse<HttpStatus, Void>> isRemainDeviceByDeviceTye(Long deviceTypeId);
