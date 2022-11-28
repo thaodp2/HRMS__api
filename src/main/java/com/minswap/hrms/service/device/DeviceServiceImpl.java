@@ -4,12 +4,14 @@ import com.minswap.hrms.constants.CommonConstant;
 import com.minswap.hrms.constants.ErrorCode;
 import com.minswap.hrms.entities.BorrowHistory;
 import com.minswap.hrms.entities.Device;
+import com.minswap.hrms.entities.Notification;
 import com.minswap.hrms.entities.Request;
 import com.minswap.hrms.exception.model.BaseException;
 import com.minswap.hrms.exception.model.Pagination;
 import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.repsotories.BorrowHistoryRepository;
 import com.minswap.hrms.repsotories.DeviceRepository;
+import com.minswap.hrms.repsotories.NotificationRepository;
 import com.minswap.hrms.repsotories.RequestRepository;
 import com.minswap.hrms.request.AssignRequest;
 import com.minswap.hrms.request.DeviceRequest;
@@ -37,7 +39,7 @@ import java.util.Optional;
 
 @Service
 @Slf4j
-public class DeviceServiceImpl implements DeviceService{
+public class DeviceServiceImpl implements DeviceService {
 
     @Autowired
     DeviceRepository deviceRepository;
@@ -51,13 +53,16 @@ public class DeviceServiceImpl implements DeviceService{
     @Autowired
     RequestRepository requestRepository;
 
+    @Autowired
+    NotificationRepository notificationRepository;
+
     @Override
     public ResponseEntity<BaseResponse<MasterDataResponse, Pageable>> getMasterDataDeviceByDeviceType(Long deviceTypeId, Integer status, String search) {
         List<Device> devices;
         if (search != null) {
-            devices = deviceRepository.findByDeviceTypeIdAndStatusAndDeviceNameContainsIgnoreCase(deviceTypeId,status,search.trim());
+            devices = deviceRepository.findByDeviceTypeIdAndStatusAndDeviceNameContainsIgnoreCase(deviceTypeId, status, search.trim());
         } else {
-            devices = deviceRepository.findByDeviceTypeIdAndStatus(deviceTypeId,status);
+            devices = deviceRepository.findByDeviceTypeIdAndStatus(deviceTypeId, status);
         }
         List<MasterDataDto> masterDataDtos = new ArrayList<>();
         for (int i = 0; i < devices.size(); i++) {
@@ -71,7 +76,7 @@ public class DeviceServiceImpl implements DeviceService{
     }
 
     @Override
-    public ResponseEntity<BaseResponse<HttpStatus, Void>> assignDevice(AssignRequest assignRequest){
+    public ResponseEntity<BaseResponse<HttpStatus, Void>> assignDevice(AssignRequest assignRequest) {
         ResponseEntity<BaseResponse<HttpStatus, Void>> responseEntity = null;
         try {
             //create borrow history
@@ -88,8 +93,15 @@ public class DeviceServiceImpl implements DeviceService{
                 request.setIsAssigned(1);
                 requestRepository.save(request);
             }
+            //send a notification to person is assigned
+            //fake id of it support is 2 (current user)
+            Long currentUser = Long.valueOf(2);
+            Notification notification = new Notification("You have just been assigned a device!",
+                    0,"ASSIGN DEVICE",0,currentUser, request.getPersonId());
+            notificationRepository.save(notification);
+
             responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.OK, null);
-        }catch (ParseException p){
+        } catch (ParseException p) {
             responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.EXPECTATION_FAILED, null);
         }
         return responseEntity;
@@ -178,7 +190,10 @@ public class DeviceServiceImpl implements DeviceService{
     public ResponseEntity<BaseResponse<HttpStatus, Void>> isRemainDeviceByDeviceTye(Long deviceTypeId) {
         ResponseEntity<BaseResponse<HttpStatus, Void>> responseEntity = null;
         List<Device> deviceList = deviceRepository.findByDeviceTypeIdAndStatus(deviceTypeId, 0);
-        if(deviceList.isEmpty()){
+        if (deviceList.isEmpty()) {
+            //send noti to employee
+
+            //
             throw new BaseException(ErrorCode.DO_NOT_ENOUGH_DEVICE_TO_ASSIGN);
         }
         responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.OK, null);
@@ -186,7 +201,7 @@ public class DeviceServiceImpl implements DeviceService{
     }
 
     @Override
-    public ResponseEntity<BaseResponse<HttpStatus, Void>> returnDevice(Long borrowHistoryId){
+    public ResponseEntity<BaseResponse<HttpStatus, Void>> returnDevice(Long borrowHistoryId) {
         ResponseEntity<BaseResponse<HttpStatus, Void>> responseEntity = null;
         try {
             BorrowHistory borrowHistory = borrowHistoryRepository.findById(borrowHistoryId).orElse(null);
@@ -205,7 +220,7 @@ public class DeviceServiceImpl implements DeviceService{
                 }
             }
             responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.OK, null);
-        }catch (Exception e){
+        } catch (Exception e) {
             responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.EXPECTATION_FAILED, null);
         }
         return responseEntity;
