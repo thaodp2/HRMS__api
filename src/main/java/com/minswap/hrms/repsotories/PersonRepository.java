@@ -46,9 +46,17 @@ public interface PersonRepository extends JpaRepository<Person, Long>{
             " p.managerId as managerId, " +
             "p.avatarImg as avatarImg," +
             "p.salaryBasic as salaryBasic," +
-            "p.salaryBonus as salaryBonus) " +
-            " FROM Person p " +
-            " WHERE p.rollNumber = :rollNumber")
+            "p.salaryBonus as salaryBonus," +
+            "p3.fullName as managerName," +
+            "d.departmentName as departmentName," +
+            "p2.positionName as positionName," +
+            "r.rankName as rankingName) " +
+            "FROM Person p " +
+            "left join Department d on p.departmentId = d.departmentId " +
+            "left join Position p2 on p.positionId = p2.positionId " +
+            "left join Rank r on p.rankId = r.rankId " +
+            "left join Person p3 on p.managerId = p3.personId " +
+            "WHERE p.rollNumber = :rollNumber")
     EmployeeDetailDto getDetailEmployee(@Param("rollNumber") String rollNumber);
 
     @Query("select new com.minswap.hrms.response.dto.EmployeeListDto(" +

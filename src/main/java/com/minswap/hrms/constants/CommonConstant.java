@@ -11,6 +11,7 @@ public class CommonConstant {
 
     public static final List<String> ACTUATOR_PATHS = Arrays.asList("/actuator/info", "/actuator/health");
     public static final String YYYY_MM_DD_HH_MM_SS = "yyyy-MM-dd HH:mm:ss";
+    public static final String YYYY_MM_DD = "yyyy-MM-dd";
     public static final String YYYY_MM_DD_HH_MM_SS_SSS = "yyyy-MM-dd HH:mm:ss.[SSS][SS][S]";
     public static final String YYYY_MM_DD_HH_MM = "yyyy-MM-dd HH:mm:ss";
     public static final String HH_MM_SS = "HH:mm:ss";

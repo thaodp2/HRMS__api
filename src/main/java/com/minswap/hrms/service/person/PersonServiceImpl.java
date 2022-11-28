@@ -93,15 +93,9 @@ public class PersonServiceImpl implements PersonService{
 
     @Override
     public ResponseEntity<BaseResponse<EmployeeInfoResponse, Void>> getDetailEmployee(String rollNumber) {
-        EmployeeDetailDto employeeDetailDto = personRepository.getDetailEmployee(rollNumber);
+        EmployeeDetailDto employeeDetailDto = null;
         try {
-            SimpleDateFormat sm = new SimpleDateFormat("dd-MM-yyyy");
-            String dateOfBirthSm = sm.format(employeeDetailDto.getDateOfBirth());
-            Date date = sm.parse(dateOfBirthSm);
-            employeeDetailDto.setDateOfBirth(date);
-            String dateOnBoardSm = sm.format(employeeDetailDto.getOnBoardDate());
-            date = sm.parse(dateOnBoardSm);
-            employeeDetailDto.setOnBoardDate(date);
+             employeeDetailDto = personRepository.getDetailEmployee(rollNumber);
         }catch (Exception e) {
             throw new BaseException(ErrorCode.DATE_FAIL_FOMART);
         }

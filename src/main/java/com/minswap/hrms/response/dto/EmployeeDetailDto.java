@@ -3,7 +3,9 @@ package com.minswap.hrms.response.dto;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.minswap.hrms.constants.CommonConstant;
 import lombok.*;
 
 import javax.persistence.Column;
@@ -22,6 +24,7 @@ public class EmployeeDetailDto {
     @JsonProperty("fullName")
     private String fullName;
 
+    @JsonFormat(pattern = CommonConstant.YYYY_MM_DD, shape = JsonFormat.Shape.STRING)
     @JsonProperty("dateOfBirth")
     private Date dateOfBirth;
 
@@ -46,12 +49,22 @@ public class EmployeeDetailDto {
     @JsonProperty("departmentId")
     private Long departmentId;
 
+    @JsonProperty("departmentName")
+    private String departmentName;
+
     @JsonProperty("positionId")
     private Long positionId;
+
+    @JsonProperty("positionName")
+    private String positionName;
 
     @JsonProperty("rankId")
     private Long rankId;
 
+    @JsonProperty("rankingName")
+    private String rankingName;
+
+    @JsonFormat(pattern = CommonConstant.YYYY_MM_DD, shape = JsonFormat.Shape.STRING)
     @JsonProperty("onBoardDate")
     private Date onBoardDate;
 
@@ -60,6 +73,9 @@ public class EmployeeDetailDto {
 
     @JsonProperty("managerId")
     private Long managerId;
+
+    @JsonProperty("managerName")
+    private String managerName;
 
     @Column(name = "avatarImg")
     private String avatarImg;
@@ -73,7 +89,8 @@ public class EmployeeDetailDto {
     @JsonProperty("isManager")
     private Integer isManager;
 
-    public EmployeeDetailDto(Long personId, String fullName, Date dateOfBirth, int gender, String phoneNumber, String citizenIdentification, String address, String rollNumber, String email, Long departmentId, Long positionId, Long rankId, Date onBoardDate, String status, Long managerId, String avatarImg, Double salaryBasic, Double salaryBonus) {
+    public EmployeeDetailDto(Long personId, String fullName, Date dateOfBirth, int gender, String phoneNumber, String citizenIdentification, String address, String rollNumber, String email, Long departmentId, Long positionId, Long rankId, Date onBoardDate, String status, Long managerId, String avatarImg, Double salaryBasic, Double salaryBonus, String managerName,
+                             String departmentName, String positionName, String rankingName) {
         this.personId = personId;
         this.fullName = fullName;
         this.dateOfBirth = dateOfBirth;
@@ -92,6 +109,10 @@ public class EmployeeDetailDto {
         this.avatarImg = avatarImg;
         this.salaryBasic = salaryBasic;
         this.salaryBonus = salaryBonus;
+        this.managerName = managerName;
+        this.departmentName = departmentName;
+        this.positionName = positionName;
+        this.rankingName = rankingName;
     }
 
     public int getStatus() {
