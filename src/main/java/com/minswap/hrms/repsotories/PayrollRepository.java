@@ -68,11 +68,6 @@ public interface PayrollRepository extends JpaRepository<Salary, Long> {
                              @Param("year") Year year,
                              @Param("personId") Long personId);
 
-    @Query(value = "  SELECT s.salary_id from salary  s " +
-                    " where s.month = :month " +
-                    " and s.year = :year " +
-                    " and s.person_id = :personId LIMIT 1 ", nativeQuery = true)
-    Long getSalaryId(@Param("month") int month,
-                     @Param("year") Year year,
-                     @Param("personId") Long personId);
+
+    Optional<Salary> getFirstByMonthAndYearAndPersonId(int month, Year year, Long personId);
 }

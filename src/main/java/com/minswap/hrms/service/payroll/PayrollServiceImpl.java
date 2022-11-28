@@ -90,9 +90,9 @@ public class PayrollServiceImpl implements PayrollService{
             salary.setMonth(month);
             salary.setYear(Year.of(year));
             salary.setSalaryId(0L);
-            Long salaryId = payrollRepository.getSalaryId(month, Year.of(year), personId);
-            if (salaryId != null){
-                salary.setSalaryId(salaryId);
+            Optional<Salary> salaryOptional = payrollRepository.getFirstByMonthAndYearAndPersonId(month, Year.of(year), personId);
+            if (salaryOptional.isPresent()){
+                salary.setSalaryId(salaryOptional.get().getSalaryId());
             }
             payrollRepository.save(salary);
 
