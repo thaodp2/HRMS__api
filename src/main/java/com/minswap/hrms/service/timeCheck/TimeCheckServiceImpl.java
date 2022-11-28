@@ -1,5 +1,6 @@
 package com.minswap.hrms.service.timeCheck;
 
+import com.minswap.hrms.constants.CommonConstant;
 import com.minswap.hrms.constants.ErrorCode;
 import com.minswap.hrms.entities.OfficeTime;
 import com.minswap.hrms.entities.Person;
@@ -25,7 +26,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
@@ -294,31 +298,60 @@ public class TimeCheckServiceImpl implements TimeCheckService{
         OfficeTime officeTime = officeTimeDb.get();
         if (dailyTimeCheckDto == null) {
             timeCheck.setPersonId(signatureProfile.getPersonId());
-            timeCheck.setTimeIn(convertDateInput(timeCheckInRequest.getTimeLog()));
-            timeCheck.setInLate(null);
-
+            timeCheck.setTimeIn(convertDateInput(timeCheckInRequest.getTimeLog().toString()));
+            timeCheck.setInLate(processTimeCome(officeTime.getTimeStart(), timeCheck.getTimeIn(), 0));
             timeCheckRepository.save(timeCheck);
         }else{
             //update time out
             timeCheck.setPersonId(signatureProfile.getPersonId());
             timeCheck.setTimeOut(convertDateInput(timeCheckInRequest.getTimeLog().toString()));
+            timeCheck.setOutEarly(processTimeCome(officeTime.getTimeFinish(), timeCheck.getTimeOut(), 1));
+            timeCheck.setWorkingTime(processWorkingTime(dailyTimeCheckDto.getTimeIn(), timeCheck.getTimeOut(), dailyTimeCheckDto.getInLate(), timeCheck.getOutEarly()));
+            timeCheckRepository.updateTimeCheck(timeCheck.getTimeOut(), timeCheck.getOutEarly(), timeCheck.getWorkingTime(), timeCheck.getPersonId());
         }
         timeCheck.setPersonId(signatureProfile.getPersonId());
         ResponseEntity<BaseResponse<Void, Void>> responseEntity = BaseResponse.ofSucceeded(null);
         return responseEntity;
     }
-    private Integer processTimeLate(String time){
-
-        return null;
+    private double processTimeCome(String timeOfficeStr, Date timeIn, int isInTime){    	
+        Date dateOfficeStr = formatTimeToKnownDate(timeIn,timeOfficeStr);
+        long timein = timeIn.getTime();
+        long timeOffice = dateOfficeStr.getTime();
+        if(timeIn.getTime() > dateOfficeStr.getTime() && isInTime == 0){
+            return ((timeIn.getTime() - MILLISECOND_7_HOURS - dateOfficeStr.getTime()) / (60*60*1000));
+        }else if(timeIn.getTime() < dateOfficeStr.getTime() && isInTime == 1){
+            return ((dateOfficeStr.getTime() - MILLISECOND_7_HOURS  - timeIn.getTime()) / (60*60*1000));
+        }
+        return 0;
     }
+    private double processWorkingTime(Date timeIn, Date timeOut, double timeLate, double outEarly){
+        double timeWorkingTime = timeOut.getTime() - timeIn.getTime() - timeLate * 60 * 60 - outEarly * 60 *60;
+        return timeWorkingTime /(60*60*1000);
+    }
+
     private Date convertDateInput(String dateStr){
         try{
-            SimpleDateFormat sm = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            SimpleDateFormat sm = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS);
             Date date = sm.parse(dateStr);
             date.setTime(date.getTime() + MILLISECOND_7_HOURS);
             return date;
         }catch (Exception e) {
             throw new BaseException(ErrorCode.DATE_FAIL_FOMART);
         }
+    }
+    public Date formatTimeToKnownDate(Date knownDate, String time) {
+        try {
+            Date result = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
+                    parse(getStringDateFromDateTime(knownDate) + " " + time);
+            return result;
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+    public String getStringDateFromDateTime(Date date) {
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+        String format = formatter.format(date);
+        return format;
     }
 }

@@ -7,10 +7,12 @@ import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.validation.annotation.Validated;
 
+import javax.transaction.Transactional;
 import java.util.Date;
 
 @Repository
@@ -86,4 +88,16 @@ public interface TimeCheckRepository extends JpaRepository<TimeCheck, Long> {
            " and date(tc.timeIn) = date(:dateTime)")
     DailyTimeCheckDto getDailyTimeCheck(@Param("personId") Long personId,
                                         @Param("dateTime") Date dateTime);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE TimeCheck t set " +
+            "t.timeOut = :timeOut," +
+            "t.outEarly = :outEarly," +
+            "t.workingTime = :workingTime "+
+            "where t.personId = :personId")
+    Integer updateTimeCheck(@Param("timeOut")  Date timeOut,
+                            @Param("outEarly")  Double  outEarly,
+                            @Param("workingTime")  Double  workingTime,
+                            @Param("personId") Long personId);
 }
