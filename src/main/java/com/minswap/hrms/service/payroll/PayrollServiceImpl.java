@@ -10,6 +10,7 @@ import com.minswap.hrms.repsotories.PersonRepository;
 import com.minswap.hrms.response.PayrollResponse;
 import com.minswap.hrms.response.dto.PayrollDisplayDto;
 import com.minswap.hrms.response.dto.PayrollDto;
+import com.minswap.hrms.service.email.EmailSenderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +31,9 @@ public class PayrollServiceImpl implements PayrollService{
     HttpStatus httpStatus;
     @Autowired
     PersonRepository personRepository;
+
+    @Autowired
+    EmailSenderService emailSenderService;
 
     @Scheduled(cron = "* 0 1 1 * *")
     public void  cronjobUpdateSalary() {
@@ -196,6 +200,60 @@ public class PayrollServiceImpl implements PayrollService{
 
         PayrollResponse payrollResponse = new PayrollResponse(payrollDisplayDto);
         ResponseEntity<BaseResponse<PayrollResponse, Void>> responseEntity = BaseResponse.ofSucceeded(payrollResponse);
+        return responseEntity;
+    }
+
+    @Override
+    public ResponseEntity<BaseResponse<HttpStatus, Void>> sendPayrollToEmail(int month, int year) {
+        ResponseEntity<BaseResponse<HttpStatus, Void>> responseEntity = null;
+        try {
+            Long personId = 28L;
+            Optional<Salary> salaryFromDB = payrollRepository.findByPersonIdAndMonthAndYear(personId, month, Year.of(year));
+            if(!salaryFromDB.isPresent()){
+                throw new BaseException(ErrorCode.newErrorCode(404,
+                        "Salary not found!",
+                        httpStatus.NOT_FOUND));
+            }
+            Optional<Person> person = personRepository.findById(personId);
+            if(!person.isPresent()){
+                throw new BaseException(ErrorCode.newErrorCode(404,
+                        "Person not found!",
+                        httpStatus.NOT_FOUND));
+            }
+            PayrollDisplayDto payrollDisplayDto = new PayrollDisplayDto();
+            Salary salary = salaryFromDB.get();
+            payrollDisplayDto.setPersonId(personId);
+            payrollDisplayDto.setPersonName(person.get().getFullName());
+            payrollDisplayDto.setRollNumber(person.get().getRollNumber());
+            payrollDisplayDto.setActualWork(salary.getActualWork());
+            payrollDisplayDto.setTotalWork(salary.getTotalWork());
+            payrollDisplayDto.setBasicSalary(String.format("%.0f",Double.valueOf(salary.getBasicSalary())));
+            payrollDisplayDto.setOtSalary(String.format("%.0f",Double.valueOf(salary.getOtSalary())));
+            payrollDisplayDto.setFineAmount(String.format("%.0f",Double.valueOf(salary.getFineAmount())));
+            payrollDisplayDto.setSalaryBonus(String.format("%.0f",Double.valueOf(salary.getBonus())));
+            payrollDisplayDto.setTax(String.format("%.0f",Double.valueOf(salary.getTax())));
+            payrollDisplayDto.setSocialInsurance(String.format("%.0f",Double.valueOf(salary.getSocialInsurance())));
+            payrollDisplayDto.setActuallyReceived(String.format("%.0f",Double.valueOf(salary.getActuallyReceived())));
+
+            String body = "Total work day: " + payrollDisplayDto.getTotalWork() + "\n";
+            body += "Actual work day: " + payrollDisplayDto.getActualWork() + "\n";
+            body += "Earnings" + "\n";
+            body += "\t"+"Basic salary: " + payrollDisplayDto.getBasicSalary() + "\n";
+            body += "\t"+"Bonus salary: " + payrollDisplayDto.getSalaryBonus() + "\n";
+            body += "\t"+"OT salary: " + payrollDisplayDto.getOtSalary() + "\n";
+            body += "Deductions" + "\n";
+            body += "\t"+"Tax: " + payrollDisplayDto.getTax() + "\n";
+            body += "\t"+"Social Insurance (10.5%): " + payrollDisplayDto.getSocialInsurance() + "\n";
+            body += "\t"+"Fine Amount: " + payrollDisplayDto.getFineAmount() + "\n\n";
+            body += "Net Income: " + payrollDisplayDto.getActuallyReceived() + "\n";
+
+            //send mail
+            String toMail = "kimanh3082@gmail.com";
+            emailSenderService.sendEmail(toMail, "Payslip " + month + "/" + year, body);
+            responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.OK, null);
+        }catch (Exception e){
+            responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.EXPECTATION_FAILED, null);
+        }
         return responseEntity;
     }
 }

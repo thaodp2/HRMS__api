@@ -4,12 +4,15 @@ import com.minswap.hrms.constants.CommonConstant;
 import com.minswap.hrms.constants.ErrorCode;
 import com.minswap.hrms.entities.Department;
 import com.minswap.hrms.entities.Person;
+import com.minswap.hrms.entities.PersonRole;
 import com.minswap.hrms.exception.model.BaseException;
 import com.minswap.hrms.exception.model.Pagination;
 import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.repsotories.PersonRepository;
+import com.minswap.hrms.repsotories.PersonRoleRepository;
 import com.minswap.hrms.request.ChangeStatusEmployeeRequest;
 import com.minswap.hrms.request.EmployeeRequest;
+import com.minswap.hrms.request.EmployeeUpdateRequest;
 import com.minswap.hrms.request.UpdateUserRequest;
 import com.minswap.hrms.response.EmployeeInfoResponse;
 import com.minswap.hrms.response.MasterDataResponse;
@@ -25,8 +28,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.text.Normalizer;
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
+import java.time.Year;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -39,6 +46,13 @@ public class PersonServiceImpl implements PersonService{
     private PersonRepository personRepository;
 
     private static final long MILLISECOND_PER_DAY = 24 * 60 * 60 * 1000;
+    @Autowired
+    private PersonRoleRepository personRoleRepository;
+
+    private final Long MANAGER_ROLE = 2L;
+    private final Long EMPLOYEE_ROLE = 3L;
+    private final Long HR_ROLE = 1L;
+    private final Long IT_SUPPORT_ROLE = 5L;
 
     @Override
     public ResponseEntity<BaseResponse<HttpStatus, Void>> updateUserInformation(UpdateUserRequest updateUserDto) throws Exception {
@@ -88,11 +102,9 @@ public class PersonServiceImpl implements PersonService{
             String dateOnBoardSm = sm.format(employeeDetailDto.getOnBoardDate());
             date = sm.parse(dateOnBoardSm);
             employeeDetailDto.setOnBoardDate(date);
-            employeeDetailDto.setRole("1");
         }catch (Exception e) {
             throw new BaseException(ErrorCode.DATE_FAIL_FOMART);
         }
-
         EmployeeInfoResponse employeeListDtos = new EmployeeInfoResponse(null,employeeDetailDto);
         ResponseEntity<BaseResponse<EmployeeInfoResponse, Void>> responseEntity = BaseResponse
                 .ofSucceeded(employeeListDtos);
@@ -106,7 +118,7 @@ public class PersonServiceImpl implements PersonService{
         Pagination pagination = new Pagination(page, limit);
         Long managerId = null;
         if(!StringUtils.isEmpty(managerRoll)) {
-            Optional<Person> personByRollNumber = personRepository.findPersonByRollNumberEquals("NV003");
+            Optional<Person> personByRollNumber = personRepository.findPersonByRollNumberEquals(managerRoll);
             if (!personByRollNumber.isPresent()) {
                 throw new BaseException(ErrorCode.PERSON_NOT_EXIST);
             }
@@ -124,8 +136,58 @@ public class PersonServiceImpl implements PersonService{
     }
 
     @Override
-    public ResponseEntity<BaseResponse<Void, Void>> updateEmployee(EmployeeRequest employeeRequest, String rollNumber) {
-        personRepository.updateEmployee(employeeRequest.getActive(),
+    public ResponseEntity<BaseResponse<Void, Void>> updateEmployee(EmployeeUpdateRequest employeeRequest, String rollNumber) {
+        EmployeeDetailDto employeeDetailDto = personRepository.getDetailEmployee(rollNumber);
+        if(employeeDetailDto ==null){
+            throw new BaseException(ErrorCode.PERSON_NOT_EXIST);
+        }
+        if(StringUtils.isEmpty(employeeRequest.getFullName())){
+            employeeRequest.setFullName(employeeDetailDto.getFullName());
+        }
+        if(StringUtils.isEmpty(employeeRequest.getAddress())){
+            employeeRequest.setAddress(employeeDetailDto.getAddress());
+        }
+        if(StringUtils.isEmpty(employeeRequest.getCitizenIdentification())){
+            employeeRequest.setCitizenIdentification(employeeDetailDto.getCitizenIdentification());
+        }
+        if(StringUtils.isEmpty(employeeRequest.getPhoneNumber())){
+            employeeRequest.setPhoneNumber(employeeDetailDto.getPhoneNumber());
+        }
+        if(employeeRequest.getRankId() == null){
+            employeeRequest.setRankId(employeeDetailDto.getRankId());
+        }else{
+            Double annualLeaveBudget = convertAnnualLeaveBudget(employeeRequest.getRankId());
+            personRepository.updateAnnualLeaveBudget(annualLeaveBudget,rollNumber);
+        }
+        if(employeeRequest.getDepartmentId() == null){
+            employeeRequest.setDepartmentId(employeeDetailDto.getDepartmentId());
+        }
+        if(employeeRequest.getManagerId() == null){
+            employeeRequest.setManagerId(employeeDetailDto.getManagerId());
+        }
+        if(employeeRequest.getGender() == null){
+            employeeRequest.setGender(employeeDetailDto.getGender());
+        }
+        if(employeeRequest.getPositionId() == null){
+            employeeRequest.setPositionId(employeeDetailDto.getPositionId());
+        }
+        if(employeeRequest.getSalaryBasic() ==  null){
+            employeeRequest.setSalaryBasic(Double.parseDouble(employeeDetailDto.getSalaryBasic()));
+        }
+        if(employeeRequest.getSalaryBonus() == null){
+            employeeRequest.setSalaryBonus(Double.parseDouble(employeeDetailDto.getSalaryBonus()));
+        }
+        if(employeeRequest.getIsManager() == null){
+            employeeRequest.setIsManager(employeeDetailDto.getIsManager());
+        }else{
+            updatePersonRole(employeeDetailDto, employeeRequest);
+        }
+
+        if(employeeRequest.getOnBoardDate() == null){
+            employeeRequest.setOnBoardDate(employeeDetailDto.getOnBoardDate().toString());
+        }
+
+        personRepository.updateEmployee(
                 employeeRequest.getFullName(),
                 employeeRequest.getManagerId(),
                 employeeRequest.getDepartmentId(),
@@ -135,7 +197,10 @@ public class PersonServiceImpl implements PersonService{
                 employeeRequest.getPhoneNumber(),
                 employeeRequest.getAddress(),
                 employeeRequest.getGender(),
-                rollNumber);
+                rollNumber,
+                employeeRequest.getSalaryBasic(),
+                employeeRequest.getSalaryBonus(),
+                convertDateInput(employeeRequest.getOnBoardDate()));
 
         ResponseEntity<BaseResponse<Void, Void>> responseEntity = BaseResponse.ofSucceeded(null);
         return responseEntity;
@@ -157,20 +222,23 @@ public class PersonServiceImpl implements PersonService{
         String convertMail = convertMail(employeeRequest.getFullName(), person.getRollNumber());
         person.setEmail(convertMail);
         person.setPositionId(employeeRequest.getPositionId());
-        try {
-            SimpleDateFormat sm = new SimpleDateFormat("dd-MM-yyyy");
-            Date dateOfBirth = sm.parse(employeeRequest.getDateOfBirth());
-            person.setDateOfBirth(dateOfBirth);
-            Date dateOnBoard = sm.parse(employeeRequest.getOnBoardDate());
-            person.setOnBoardDate(dateOnBoard);
-        }catch (Exception e) {
-            throw new BaseException(ErrorCode.DATE_FAIL_FOMART);
-        }
+        person.setAnnualLeaveBudget(convertAnnualLeaveBudget(employeeRequest.getRankId()));
+        person.setSalaryBasic(employeeRequest.getSalaryBasic());
+        person.setSalaryBonus(employeeRequest.getSalaryBonus());
+        person.setDateOfBirth(convertDateInput(employeeRequest.getDateOfBirth()));
+        person.setOnBoardDate(convertDateInput(employeeRequest.getOnBoardDate()));
         try {
             personRepository.save(person);
         }catch (Exception e) {
             throw new BaseException(ErrorCode.newErrorCode(500, e.getMessage()));
         }
+        EmployeeDetailDto personByRollNumber  = personRepository.getDetailEmployee(person.getRollNumber());
+        try{
+            cretatePersonRole(personByRollNumber, employeeRequest);
+        }catch (Exception e){
+            throw new BaseException(ErrorCode.newErrorCode(500, e.getMessage()));
+        }
+
         ResponseEntity<BaseResponse<Void, Void>> responseEntity = BaseResponse.ofSucceeded(null);
         return responseEntity;
     }
@@ -216,9 +284,77 @@ public class PersonServiceImpl implements PersonService{
         String lMailName= split[split.length - 1];
         return lMailName + "."+ fMailName +rollNumber +"@minswap.com";
     }
+
+    private Double convertAnnualLeaveBudget(Long rankId){
+        if(rankId == 1){
+            return 0.0;
+        }else if(rankId == 2){
+            return  15.0;
+        }else if(rankId == 3){
+            return 17.0;
+        }else{
+            return 20.0;
+        }
+    }
     public static String removeAccent(String s) {
         String temp = Normalizer.normalize(s, Normalizer.Form.NFD);
         Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
         return pattern.matcher(temp).replaceAll("");
+    }
+
+    private void cretatePersonRole( EmployeeDetailDto personByRollNumber, EmployeeRequest employeeRequest){
+        PersonRole personRole = new PersonRole();
+        personRole.setRoleId(EMPLOYEE_ROLE);
+        personRole.setPersonId(personByRollNumber.getPersonId());
+        personRoleRepository.save(personRole);
+        if(employeeRequest.getIsManager() == 1){
+            personRole.setRoleId(MANAGER_ROLE);
+            personRoleRepository.save(personRole);
+        }
+        if(employeeRequest.getDepartmentId() == 1){
+            personRole.setRoleId(IT_SUPPORT_ROLE);
+            personRoleRepository.save(personRole);
+        }else if(employeeRequest.getDepartmentId() == 13){
+            personRole.setRoleId(HR_ROLE);
+            personRoleRepository.save(personRole);
+        }
+    }
+
+    private void updatePersonRole( EmployeeDetailDto employeeDetailDto, EmployeeUpdateRequest employeeRequest){
+        PersonRole personRole = new PersonRole();
+        personRole.setPersonId(employeeDetailDto.getPersonId());
+        if(employeeRequest.getIsManager() != null){
+            personRole.setRoleId(MANAGER_ROLE);
+            if(employeeDetailDto.getIsManager() != null){
+                if(employeeRequest.getIsManager() == 0){
+                    personRoleRepository.delete(personRole);
+                }else{
+                    personRoleRepository.save(personRole);
+                }
+            }
+        }
+        if(employeeRequest.getDepartmentId() != null){
+            if(employeeRequest.getDepartmentId() == 1){
+                personRole.setRoleId(IT_SUPPORT_ROLE);
+                personRoleRepository.save(personRole);
+            }else if(employeeRequest.getDepartmentId() == 13){
+                personRole.setRoleId(HR_ROLE);
+                personRoleRepository.save(personRole);
+            }else{
+                personRole.setRoleId(IT_SUPPORT_ROLE);
+                personRoleRepository.delete(personRole);
+                personRole.setRoleId(HR_ROLE);
+                personRoleRepository.delete(personRole);
+            }
+        }
+    }
+    private Date convertDateInput(String dateStr){
+        try{
+            SimpleDateFormat sm = new SimpleDateFormat("dd-MM-yyyy");
+            Date date = sm.parse(dateStr);
+            return date;
+        }catch (Exception e) {
+        throw new BaseException(ErrorCode.DATE_FAIL_FOMART);
+    }
     }
 }

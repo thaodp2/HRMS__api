@@ -101,6 +101,8 @@ public class ErrorCode {
     }
     public static final BusinessCode DATE_FAIL_FOMART = new BusinessCode(
             ErrorCodeEnum.DATE_INVALID.getValue(), "Date fail formart! ", HttpStatus.BAD_REQUEST);
+    public static final BusinessCode SIGNATURE_NOT_EXIST = new BusinessCode(
+            ErrorCodeEnum.SIGNATURE_NOT_EXIST.getValue(), "Signature not exist!", HttpStatus.NOT_FOUND);
     public static BusinessCode newErrorCode(int code,String message) {
       return new BusinessCode(code, message, null);
     }

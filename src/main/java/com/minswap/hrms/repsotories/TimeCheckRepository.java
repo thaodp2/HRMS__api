@@ -127,4 +127,15 @@ public interface TimeCheckRepository extends JpaRepository<TimeCheck, Long> {
     Integer updateOTTime(@Param("dayOfTimeIn") int dayOfTimeIn,
                          @Param("personId") Long personId,
                          @Param("otTime") double otTime);
+    @Modifying
+    @Transactional
+    @Query("UPDATE TimeCheck t set " +
+            "t.timeOut = :timeOut," +
+            "t.outEarly = :outEarly," +
+            "t.workingTime = :workingTime "+
+            "where t.personId = :personId")
+    Integer updateTimeCheck(@Param("timeOut")  Date timeOut,
+                            @Param("outEarly")  Double  outEarly,
+                            @Param("workingTime")  Double  workingTime,
+                            @Param("personId") Long personId);
 }

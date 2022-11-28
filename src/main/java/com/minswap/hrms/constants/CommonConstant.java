@@ -59,6 +59,18 @@ public class CommonConstant {
             "Remain Of Year"
     };
 
+    public static String[] LIST_HEADER_TIME_CHECK = {
+            "Roll Number",
+            "Employee Name",
+            "Mon",
+            "Tus",
+            "Wed",
+            "Thu",
+            "Fri",
+            "Sat",
+            "Sun"
+    };
+
     public static Long[] LIST_REQUEST_TYPE_ID_IN_LEAVE_BUDGET = {
             Long.valueOf(1),
             Long.valueOf(6),
@@ -70,4 +82,6 @@ public class CommonConstant {
 
     public static final Long ROLE_ID_OF_IT_SUPPORT = Long.valueOf(5);
     public static final Long RANK_ID_OF_INTERN = Long.valueOf(1);
+
+    public static final String URL = "https://api.ms-hrms.software/human-resources-management-system/";
 }

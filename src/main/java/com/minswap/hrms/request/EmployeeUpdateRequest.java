@@ -1,60 +1,47 @@
 package com.minswap.hrms.request;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import javax.persistence.Column;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class EmployeeRequest extends BasicRequest{
+public class EmployeeUpdateRequest extends BasicRequest{
 	@JsonProperty("fullName")
-	@NotNull(message ="600")
-	@NotEmpty(message = "600")
 //	@Pattern(regexp = "^[a-zA-Z0-9 ]{3,20}$", message = "600")
 	private String fullName;
 	
 	@JsonProperty("dateOfBirth")
-	@NotNull(message ="601")
-	@NotEmpty(message = "601")
 //	@Pattern(regexp = "((0[1-9]|[12]\\d|3[01])-(0[1-9]|1[0-2])-[12]\\d{3})", message = "601")
 	private String dateOfBirth;
 	
 	@JsonProperty("managerId")
-	@NotNull(message ="602")
 	private Long managerId;
 	
 	@JsonProperty("departmentId")
-	@NotNull(message ="603")
 	private Long departmentId;
 	
 	@JsonProperty("positionId")
-	@NotNull(message ="604")
 	private Long positionId;
 	
 	@JsonProperty("rankId")
-	@NotNull(message ="605")
 	private Long rankId;
 	
 	@JsonProperty("onBoardDate")
-	@NotNull(message ="606")
-	@NotEmpty(message = "606")
 //	@Pattern(regexp = "((0[1-9]|[12]\\d|3[01])-(0[1-9]|1[0-2])-[12]\\d{3})", message = "601")
 	private String onBoardDate;
 	
 	@JsonProperty("citizenIdentification")
-	@NotNull(message ="607")
-	@NotEmpty(message = "607")
 	private String citizenIdentification;
 	
 	@JsonProperty("phoneNumber")
@@ -65,7 +52,6 @@ public class EmployeeRequest extends BasicRequest{
 	private String address;
 	
 	@JsonProperty("gender")
-	@NotNull(message ="610")
 	private Integer gender;
 
 	@JsonProperty("isActive")

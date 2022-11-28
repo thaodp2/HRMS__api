@@ -6,6 +6,7 @@ import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.repsotories.DeviceTypeRepository;
 import com.minswap.hrms.request.ChangeStatusEmployeeRequest;
 import com.minswap.hrms.request.EmployeeRequest;
+import com.minswap.hrms.request.EmployeeUpdateRequest;
 import com.minswap.hrms.response.EmployeeInfoResponse;
 import com.minswap.hrms.response.dto.EmployeeListDto;
 import com.minswap.hrms.service.person.PersonService;
@@ -45,7 +46,7 @@ public class HRPersonController {
             @RequestParam(name = "email", required = false) String email,
             @RequestParam(name = "departmentId", required = false) Long departmentId,
             @RequestParam(name = "rollNumber", required = false) String rollNumber,
-            @RequestParam(name = "active", required = false) String active,
+            @RequestParam(name = "isActive", required = false) String active,
             @RequestParam(name = "positionId", required = false) Long positionId
 
     ) {
@@ -56,7 +57,7 @@ public class HRPersonController {
     @PutMapping("/employee/{rollNumber}")
     @ServiceProcessingValidateAnnotation
     public ResponseEntity<BaseResponse<Void, Void>> updateEmployee(
-            @RequestBody @Valid EmployeeRequest employeeRequest,
+            @RequestBody @Valid EmployeeUpdateRequest employeeRequest,
             BindingResult bindingResult,
             @PathVariable String rollNumber) {
         return personService.updateEmployee(employeeRequest, rollNumber);

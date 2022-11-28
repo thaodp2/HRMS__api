@@ -1,16 +1,15 @@
 package com.minswap.hrms.controller;
 
 import com.minswap.hrms.model.BaseResponse;
+import com.minswap.hrms.request.SignatureProfileRequest;
+import com.minswap.hrms.request.TimeCheckInRequest;
 import com.minswap.hrms.response.TimeCheckResponse;
 import com.minswap.hrms.service.timeCheck.TimeCheckService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.Pattern;
 
@@ -29,5 +28,11 @@ public class TimeCheckController {
                                                                                                                 @RequestParam (defaultValue = "10") Integer limit) throws Exception {
         Long personId = 2L;
         return timeCheckService.getMyTimeCheck(personId, startDate, endDate, page, limit);
+    }
+    @PostMapping("")
+    public ResponseEntity<BaseResponse<Void, Void>> logTimeCheck(
+            @RequestBody TimeCheckInRequest timeCheckInRequest) {
+
+        return timeCheckService.logTimeCheck(timeCheckInRequest);
     }
 }
