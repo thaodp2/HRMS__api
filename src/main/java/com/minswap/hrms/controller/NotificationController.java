@@ -36,7 +36,7 @@ public class NotificationController {
         return BaseResponse.ofSucceededOffset(HttpStatus.OK, null);
     }
 
-    @GetMapping("/{userId}")
+    @GetMapping("employee/notifications/{userID}")
     public ResponseEntity<BaseResponse<NotificationResponse, Pagination>> getNotificationsByUserID(@PathVariable Long userID) {
         return notificationService.getNotificationsByUserID(userID);
     }

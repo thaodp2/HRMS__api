@@ -1,5 +1,7 @@
 package com.minswap.hrms.entities;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.minswap.hrms.constants.CommonConstant;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,13 +17,14 @@ import java.util.Date;
 public class Notification {
     public static final String TABLE_NAME = "notification";
 
-    public Notification(String content,Integer delivered,String notificationType,Integer isRead, Long userFrom,Long userTo) {
+    public Notification(String content,Integer delivered,String notificationType,Integer isRead, Long userFrom,Long userTo, Date createDate) {
         this.userTo = userTo;
         this.userFrom = userFrom;
         this.content = content;
         this.notificationType = notificationType;
         this.delivered = delivered;
         this.isRead = isRead;
+        this.createDate = createDate;
     }
 
     @Id
@@ -46,4 +49,8 @@ public class Notification {
 
     @Column(name = "is_read")
     private Integer isRead;
+
+    @JsonFormat(pattern = CommonConstant.YYYY_MM_DD_HH_MM_SS, shape = JsonFormat.Shape.STRING)
+    @Column(name = "create_date")
+    private Date createDate;
 }
