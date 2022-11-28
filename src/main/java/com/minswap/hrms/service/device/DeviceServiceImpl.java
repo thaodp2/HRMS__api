@@ -2,17 +2,11 @@ package com.minswap.hrms.service.device;
 
 import com.minswap.hrms.constants.CommonConstant;
 import com.minswap.hrms.constants.ErrorCode;
-import com.minswap.hrms.entities.BorrowHistory;
-import com.minswap.hrms.entities.Device;
-import com.minswap.hrms.entities.Notification;
-import com.minswap.hrms.entities.Request;
+import com.minswap.hrms.entities.*;
 import com.minswap.hrms.exception.model.BaseException;
 import com.minswap.hrms.exception.model.Pagination;
 import com.minswap.hrms.model.BaseResponse;
-import com.minswap.hrms.repsotories.BorrowHistoryRepository;
-import com.minswap.hrms.repsotories.DeviceRepository;
-import com.minswap.hrms.repsotories.NotificationRepository;
-import com.minswap.hrms.repsotories.RequestRepository;
+import com.minswap.hrms.repsotories.*;
 import com.minswap.hrms.request.AssignRequest;
 import com.minswap.hrms.request.DeviceRequest;
 import com.minswap.hrms.request.UpdateDeviceRequest;
@@ -52,6 +46,9 @@ public class DeviceServiceImpl implements DeviceService {
 
     @Autowired
     RequestRepository requestRepository;
+
+    @Autowired
+    PersonRepository personRepository;
 
     @Autowired
     NotificationRepository notificationRepository;
@@ -191,9 +188,6 @@ public class DeviceServiceImpl implements DeviceService {
         ResponseEntity<BaseResponse<HttpStatus, Void>> responseEntity = null;
         List<Device> deviceList = deviceRepository.findByDeviceTypeIdAndStatus(deviceTypeId, 0);
         if (deviceList.isEmpty()) {
-            //send noti to employee
-
-            //
             throw new BaseException(ErrorCode.DO_NOT_ENOUGH_DEVICE_TO_ASSIGN);
         }
         responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.OK, null);
@@ -217,6 +211,15 @@ public class DeviceServiceImpl implements DeviceService {
                 if (device != null) {
                     device.setStatus(0);
                     deviceRepository.save(device);
+                }
+
+                //notification to all it-support
+                List<Person> allITSupport = personRepository.getMasterDataPersonByRole(CommonConstant.ROLE_ID_OF_IT_SUPPORT, null);
+                Long currentUser = Long.valueOf(2);
+                for(Person person : allITSupport) {
+                    Notification notification = new Notification("Employee A retunred device " + device.getDeviceName() + " - " + device.getDeviceCode(),
+                            0, "RETURN DEVICE", 0, currentUser, person.getPersonId());
+                    notificationRepository.save(notification);
                 }
             }
             responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.OK, null);
