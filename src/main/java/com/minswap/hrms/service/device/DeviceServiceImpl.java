@@ -93,8 +93,10 @@ public class DeviceServiceImpl implements DeviceService {
             //send a notification to person is assigned
             //fake id of it support is 2 (current user)
             Long currentUser = Long.valueOf(2);
+            Date currentDate = DateTimeUtil.getCurrentTime();
+            currentDate.setTime(currentDate.getTime() + CommonConstant.MILLISECOND_7_HOURS);
             Notification notification = new Notification("You have just been assigned a device!",
-                    0,"ASSIGN DEVICE",0,currentUser, request.getPersonId());
+                    0,"ASSIGN DEVICE",0,currentUser, request.getPersonId(), currentDate);
             notificationRepository.save(notification);
 
             responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.OK, null);
@@ -217,8 +219,10 @@ public class DeviceServiceImpl implements DeviceService {
                 List<Person> allITSupport = personRepository.getMasterDataPersonByRole(CommonConstant.ROLE_ID_OF_IT_SUPPORT, null);
                 Long currentUser = Long.valueOf(2);
                 for(Person person : allITSupport) {
+                    currentDate = DateTimeUtil.getCurrentTime();
+                    currentDate.setTime(currentDate.getTime() + CommonConstant.MILLISECOND_7_HOURS);
                     Notification notification = new Notification("Employee A retunred device " + device.getDeviceName() + " - " + device.getDeviceCode(),
-                            0, "RETURN DEVICE", 0, currentUser, person.getPersonId());
+                            0, "RETURN DEVICE", 0, currentUser, person.getPersonId(),currentDate);
                     notificationRepository.save(notification);
                 }
             }
