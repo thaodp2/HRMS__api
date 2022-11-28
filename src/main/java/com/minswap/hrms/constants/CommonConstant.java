@@ -70,4 +70,6 @@ public class CommonConstant {
 
     public static final Long ROLE_ID_OF_IT_SUPPORT = Long.valueOf(5);
     public static final Long RANK_ID_OF_INTERN = Long.valueOf(1);
+
+    public static final String URL = "https://api.ms-hrms.software/human-resources-management-system/";
 }

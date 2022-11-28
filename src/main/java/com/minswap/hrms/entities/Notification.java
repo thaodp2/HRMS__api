@@ -17,11 +17,11 @@ import java.util.Date;
 public class Notification {
     public static final String TABLE_NAME = "notification";
 
-    public Notification(String content,Integer delivered,String notificationType,Integer isRead, Long userFrom,Long userTo, Date createDate) {
+    public Notification(String content,Integer delivered,String redirectUrl,Integer isRead, Long userFrom,Long userTo, Date createDate) {
         this.userTo = userTo;
         this.userFrom = userFrom;
         this.content = content;
-        this.notificationType = notificationType;
+        this.redirectUrl = redirectUrl;
         this.delivered = delivered;
         this.isRead = isRead;
         this.createDate = createDate;
@@ -41,8 +41,8 @@ public class Notification {
     @Column(name = "content")
     private String content;
 
-    @Column(name = "notification_type")
-    private String notificationType;
+    @Column(name = "redirect_url")
+    private String redirectUrl;
 
     @Column(name = "delivered")
     private Integer delivered;
