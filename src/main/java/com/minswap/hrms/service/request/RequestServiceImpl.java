@@ -616,7 +616,7 @@ public class RequestServiceImpl implements RequestService {
         String personName = personRepository.getPersonNameByPersonId(personId);
         String notiContent = getNotiContentWhenCreateRequest(personName);
         Long managerId = personRepository.getManagerIdByPersonId(personId);
-        createNotification(notiContent, 0, CREATE_REQUEST_NOTIFICATION_TYPE, 0, personId, managerId);
+        createNotification(notiContent, 0, CREATE_REQUEST_NOTIFICATION_TYPE, 0, personId, managerId, createDate);
         ResponseEntity<BaseResponse<Void, Void>> responseEntity = BaseResponse.ofSucceeded(null);
         return responseEntity;
     }
@@ -633,6 +633,9 @@ public class RequestServiceImpl implements RequestService {
             Date endTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
                     parse(end);
             Date currentDate = getCurrentTime();
+            currentDate.setTime(currentDate.getTime() + CommonConstant.MILLISECOND_7_HOURS);
+            startTime.setTime(startTime.getTime() + CommonConstant.MILLISECOND_7_HOURS);
+            endTime.setTime(endTime.getTime() + CommonConstant.MILLISECOND_7_HOURS);
             requestRepository.autoRejectRequestNotProcessed(startTime, endTime, REJECTED_STATUS,
                                                             PENDING_STATUS, currentDate, FORGOT_CHECK_IN_OUT_TYPE_ID);
             String notiContent = getNotiContentWhenUpdateRequestStatus();
@@ -640,7 +643,7 @@ public class RequestServiceImpl implements RequestService {
                     endTime, PENDING_STATUS, FORGOT_CHECK_IN_OUT_TYPE_ID);
             for (Long emplId : listEmployeeIdWasAutoRejected) {
                 createNotification(notiContent, 0, UPDATE_REQUEST_STATUS_NOTIFICATION_TYPE,
-                        0, null, emplId);
+                        0, null, emplId, currentDate);
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -1218,8 +1221,9 @@ public class RequestServiceImpl implements RequestService {
                                            String notificationType,
                                            Integer isRead,
                                            Long userFrom,
-                                           Long userTo) {
-        Notification notification = new Notification(content, delivered, notificationType, isRead, userFrom, userTo);
+                                           Long userTo,
+                                           Date createDate) {
+        Notification notification = new Notification(content, delivered, notificationType, isRead, userFrom, userTo, createDate);
         notificationRepository.save(notification);
     }
 
