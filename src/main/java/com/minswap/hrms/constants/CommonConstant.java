@@ -59,6 +59,18 @@ public class CommonConstant {
             "Remain Of Year"
     };
 
+    public static String[] LIST_HEADER_TIME_CHECK = {
+            "Roll Number",
+            "Employee Name",
+            "Mon",
+            "Tus",
+            "Wed",
+            "Thu",
+            "Fri",
+            "Sat",
+            "Sun"
+    };
+
     public static Long[] LIST_REQUEST_TYPE_ID_IN_LEAVE_BUDGET = {
             Long.valueOf(1),
             Long.valueOf(6),

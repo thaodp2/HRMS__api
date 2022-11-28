@@ -2,6 +2,7 @@ package com.minswap.hrms.service.timeCheck;
 
 import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.response.TimeCheckResponse;
+import com.minswap.hrms.response.dto.TimeCheckEachSubordinateDto;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 
@@ -25,5 +26,9 @@ public interface TimeCheckService {
                                                                                                                     String startDate,
                                                                                                                     String endDate, Integer page,
                                                                                                                     Integer limit) throws Exception;
+
+    List<TimeCheckEachSubordinateDto> listTimeCheckToExport(String search,
+                                                           String startDate,
+                                                           String endDate) throws Exception;
 
 }
