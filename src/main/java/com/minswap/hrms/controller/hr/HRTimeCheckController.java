@@ -62,13 +62,5 @@ public class HRTimeCheckController {
         }
         return null;
     }
-//    @GetMapping("/export")
-//    public List<TimeCheckEachSubordinateDto> exportToExcel(
-//            HttpServletResponse response,
-//            @RequestParam(required = false) String search,
-//            @RequestParam @Pattern(regexp = "[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1]) (2[0-3]|[01][0-9]):[0-5][0-9]:[0-5][0-9]", message = "Invalid createDateFrom") String startDate,
-//            @RequestParam @Pattern(regexp = "[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1]) (2[0-3]|[01][0-9]):[0-5][0-9]:[0-5][0-9]", message = "Invalid createDateTo") String endDate) throws Exception {
-//        List<TimeCheckEachSubordinateDto> timeCheckList = timeCheckService.listTimeCheckToExport(search, startDate, endDate);
-//        return timeCheckList;
-//    }
+
 }
