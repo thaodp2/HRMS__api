@@ -136,6 +136,9 @@ public class DeviceServiceImpl implements DeviceService {
         if (!deviceById.isPresent()){
             throw new BaseException(ErrorCode.DEVICE_NOT_EXIST);
         }
+        if(deviceById.get().getStatus() == 1){
+            throw new BaseException(ErrorCode.DEVICE_HAS_BEEN_BORROWED);
+        }
         try {
 
             Device device = deviceById.get();
@@ -164,6 +167,21 @@ public class DeviceServiceImpl implements DeviceService {
         }catch (Exception p){
             responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.EXPECTATION_FAILED, null);
         }
+        return responseEntity;
+    }
+
+    @Override
+    public ResponseEntity<BaseResponse<DeviceResponse.DetailDeviceResponse, Void>> getDetailDevice(Long deviceId) {
+
+        ResponseEntity<BaseResponse<DeviceResponse.DetailDeviceResponse, Void>> responseEntity = null;
+        DeviceDto deviceDto = deviceRepository.getDetailDeviceById(deviceId);
+
+        if (deviceDto == null){
+            throw new BaseException(ErrorCode.DEVICE_NOT_EXIST);
+        }
+        DeviceResponse.DetailDeviceResponse detailDeviceResponse = new DeviceResponse.DetailDeviceResponse(deviceDto);
+        responseEntity = BaseResponse.ofSucceeded(detailDeviceResponse);
+
         return responseEntity;
     }
 

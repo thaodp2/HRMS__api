@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+import javax.persistence.Column;
+
 @Data
 @AllArgsConstructor
 public class DeviceDto {
@@ -19,6 +21,9 @@ public class DeviceDto {
 
     @JsonProperty("description")
     private String description;
+
+    @JsonProperty("status")
+    private Integer status;
 
     @JsonProperty("deviceTypeName")
     private String deviceTypeName;
