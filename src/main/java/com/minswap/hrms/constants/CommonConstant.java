@@ -67,7 +67,6 @@ public class CommonConstant {
             Long.valueOf(10)
     };
     public static final Long ROLE_ID_OF_MANAGER = Long.valueOf(2);
-
     public static final Long ROLE_ID_OF_IT_SUPPORT = Long.valueOf(5);
     public static final Long RANK_ID_OF_INTERN = Long.valueOf(1);
 

@@ -341,6 +341,10 @@ public class RequestServiceImpl implements RequestService {
         int requestTypeId = requestTypeRepository.getRequestTypeByRequestId(id).intValue();
         String currentStatus = requestRepository.getStatusOfRequestById(id);
         DateDto dateDto = requestRepository.getStartAndEndTimeByRequestId(id);
+        Date startTime = dateDto.getStartTime();
+        Date endTime = dateDto.getEndTime();
+        startTime.setTime(startTime.getTime() - CommonConstant.MILLISECOND_7_HOURS);
+        endTime.setTime(endTime.getTime() - CommonConstant.MILLISECOND_7_HOURS);
         Date maximumTimeToRollback = requestRepository.getMaximumTimeToRollback(id);
         if (currentStatus.equalsIgnoreCase(status)) {
             throw new BaseException(ErrorCode.STATUS_INVALID);
@@ -357,7 +361,7 @@ public class RequestServiceImpl implements RequestService {
                 throw new BaseException(ErrorCode.UPDATE_FAIL);
             }
             if (requestTypeId == FORGOT_CHECK_IN_OUT_TYPE_ID) {
-                updateTimeCheck(dateDto.getStartTime(), dateDto.getEndTime(), personId);
+                updateTimeCheck(startTime, endTime, personId);
             }
             else if (LEAVE_REQUEST_TYPE.contains(Integer.valueOf(requestTypeId))
                                     || Integer.valueOf(requestTypeId) == OT_TYPE_ID) {
@@ -413,6 +417,8 @@ public class RequestServiceImpl implements RequestService {
                 }
             }
         }
+        String notiContent = getNotiContentWhenUpdateRequestStatus();
+        createNotification(notiContent, 0, UPDATE_REQUEST_STATUS_NOTIFICATION_TYPE, 0, null, personId, currentTime);
         responseEntity = BaseResponse.ofSucceeded(null);
         return responseEntity;
     }
@@ -425,7 +431,7 @@ public class RequestServiceImpl implements RequestService {
         if (!isRequestIdValid(id)) {
             throw new BaseException(ErrorCode.RESULT_NOT_FOUND);
         }
-        else if (requestRepository.getStatusOfRequestById(id).equalsIgnoreCase(PENDING_STATUS)) {
+        else if (!requestRepository.getStatusOfRequestById(id).equalsIgnoreCase(PENDING_STATUS)) {
             throw new BaseException(ErrorCode.newErrorCode(208,
                     "You can't edit requests that have been approved or rejected",
                     httpStatus.NOT_ACCEPTABLE));
@@ -434,10 +440,6 @@ public class RequestServiceImpl implements RequestService {
                     parse(editRequest.getStartTime());
             Date endTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
                     parse(editRequest.getEndTime());
-            createDate.setTime(createDate.getTime() + CommonConstant.MILLISECOND_7_HOURS);
-            startTime.setTime(startTime.getTime() + CommonConstant.MILLISECOND_7_HOURS);
-            endTime.setTime(endTime.getTime() + CommonConstant.MILLISECOND_7_HOURS);
-            Calendar calendarCreate = getCalendarByDate(createDate);
             Integer requestTypeId = requestTypeRepository.getRequestTypeByRequestId(id);
             // Validate borrow request
             if (requestTypeId.intValue() == BORROW_REQUEST_TYPE_ID) {
@@ -451,12 +453,19 @@ public class RequestServiceImpl implements RequestService {
             }
             else if (requestTypeId.intValue() == FORGOT_CHECK_IN_OUT_TYPE_ID) {
                 validateForgotCheckInOutRequest(startTime, endTime, createDate);
+                startTime.setTime(startTime.getTime() + CommonConstant.MILLISECOND_7_HOURS);
+                endTime.setTime(endTime.getTime() + CommonConstant.MILLISECOND_7_HOURS);
                 requestRepository.updateNormalRequest(id, startTime, endTime, editRequest.getReason());
             }
             else {
+                Calendar calendarCreate = getCalendarByDate(createDate);
                 if (requestTypeId != WFH_REQUEST_TYPE_ID && requestTypeId != BORROW_REQUEST_TYPE_ID) {
+                    startTime.setTime(startTime.getTime() + CommonConstant.MILLISECOND_7_HOURS);
+                    endTime.setTime(endTime.getTime() + CommonConstant.MILLISECOND_7_HOURS);
                     validateLeaveRequestTimeAlreadyInAnotherLeaveRequest(personId, startTime, endTime);
                 }
+                startTime.setTime(startTime.getTime() - CommonConstant.MILLISECOND_7_HOURS);
+                endTime.setTime(endTime.getTime() - CommonConstant.MILLISECOND_7_HOURS);
                 Calendar calendarStart = getCalendarByDate(startTime);
                 Calendar calendarEnd = getCalendarByDate(endTime);
                 Calendar calendarCompare = getCalendarByDate(startTime);
@@ -543,9 +552,6 @@ public class RequestServiceImpl implements RequestService {
                 parse(createRequest.getStartTime());
         endTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
                 parse(createRequest.getEndTime());
-        createDate.setTime(createDate.getTime() + CommonConstant.MILLISECOND_7_HOURS);
-        startTime.setTime(startTime.getTime() + CommonConstant.MILLISECOND_7_HOURS);
-        endTime.setTime(endTime.getTime() + CommonConstant.MILLISECOND_7_HOURS);
         Calendar calendarCreate = getCalendarByDate(createDate);
         if (requestTypeId == BORROW_REQUEST_TYPE_ID) {
             validateBorrowDeviceRequest(deviceTypeId, startTime, endTime, createDate);
@@ -558,6 +564,8 @@ public class RequestServiceImpl implements RequestService {
             if (requestTypeId != WFH_REQUEST_TYPE_ID && requestTypeId != BORROW_REQUEST_TYPE_ID) {
                 validateLeaveRequestTimeAlreadyInAnotherLeaveRequest(personId, startTime, endTime);
             }
+            startTime.setTime(startTime.getTime() - CommonConstant.MILLISECOND_7_HOURS);
+            endTime.setTime(endTime.getTime() - CommonConstant.MILLISECOND_7_HOURS);
             deviceTypeId = null;
             Calendar calendarStart = getCalendarByDate(startTime);
             Calendar calendarEnd = getCalendarByDate(endTime);
@@ -595,6 +603,9 @@ public class RequestServiceImpl implements RequestService {
                                     requestTypeId);
             }
         }
+        createDate.setTime(createDate.getTime() + CommonConstant.MILLISECOND_7_HOURS);
+        startTime.setTime(startTime.getTime() + CommonConstant.MILLISECOND_7_HOURS);
+        endTime.setTime(endTime.getTime() + CommonConstant.MILLISECOND_7_HOURS);
         Request request = new Request(requestTypeId,
                 personId,
                 deviceTypeId,
@@ -942,7 +953,7 @@ public class RequestServiceImpl implements RequestService {
         }
     }
 
-    public void validateOTRequest(Date startTime,
+    public void     validateOTRequest(Date startTime,
                                   Date endTime,
                                   Long personId,
                                   Year year,
@@ -952,6 +963,7 @@ public class RequestServiceImpl implements RequestService {
                                   Long requestTypeId) throws ParseException {
 
         OTBudgetDto otBudgetDto = otBudgetRepository.getOTBudgetByPersonId(personId, year, month);
+        Calendar calendarCurrent = getCalendarByDate(getCurrentTime());
         if (otBudgetDto.getOtHoursRemainOfMonth() == 0) {
             throw new BaseException(ErrorCode.newErrorCode(208,
                     "Your OT period for this month is over",
@@ -967,6 +979,17 @@ public class RequestServiceImpl implements RequestService {
                     "You must create one day in advance for future OT times",
                     httpStatus.NOT_ACCEPTABLE));
         }
+        else if (startTime.compareTo(endTime) == 0 || startTime.compareTo(endTime) > 0) {
+            throw new BaseException(ErrorCode.newErrorCode(208,
+                    "The end time must be after the start time",
+                    httpStatus.NOT_ACCEPTABLE));
+        }
+        else if (calendarStart.get(Calendar.MONTH) != calendarCurrent.get(Calendar.MONTH)
+                || calendarEnd.get(Calendar.MONTH) != calendarCurrent.get(Calendar.MONTH)) {
+            throw new BaseException(ErrorCode.newErrorCode(208,
+                    "You can only make OT requests in the current month",
+                    httpStatus.NOT_ACCEPTABLE));
+        }
         List<DateDto> listOTRequestInPeriodTime = requestRepository.getListRequestApprovedByDate(personId,
                                                             requestTypeId, startTime, endTime, APPROVED_STATUS);
         if (listOTRequestInPeriodTime.size() > 0) {
@@ -978,15 +1001,23 @@ public class RequestServiceImpl implements RequestService {
         String otEndTimeStr = getStringDateFromDateTime(endTime) + " " + OT_END_TIME;
         Date otStartTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).parse(otStartTimeStr);
         Date otEndTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).parse(otEndTimeStr);
-        if ((startTime.before(otStartTime) && startTime.after(otEndTime))
-                || (endTime.after(otEndTime) && endTime.before(otStartTime))) {
-            throw new BaseException(ErrorCode.newErrorCode(208,
-                    "You can only OT between 10pm and 4am the next day",
-                    httpStatus.NOT_ACCEPTABLE));
-        }
+//        if (startTime.before(otStartTime)
+//                || startTime.after(otEndTime)
+//                || endTime.after(otEndTime)
+//                || endTime.before(otStartTime)) {
+//            throw new BaseException(ErrorCode.newErrorCode(208,
+//                    "You can only OT between 10pm and 4am the next day",
+//                    httpStatus.NOT_ACCEPTABLE));
+//        }
         double otHoursRemainOfMonth = otBudgetDto.getOtHoursRemainOfMonth();
         double otHoursRemainOfYear = otBudgetDto.getOtHoursRemainOfYear();
         if (calendarStart.get(Calendar.DAY_OF_MONTH) == calendarEnd.get(Calendar.DAY_OF_MONTH)) {
+            if ((startTime.before(otStartTime) && startTime.after(otEndTime))
+                    || (endTime.before(otStartTime) && endTime.after(otEndTime))) {
+                throw new BaseException(ErrorCode.newErrorCode(208,
+                    "You can only OT between 10pm and 4am the next day",
+                            httpStatus.NOT_ACCEPTABLE));
+            }
             double otHoursRequest = calculateHoursBetweenTwoDateTime(startTime, endTime);
             double timeHasBeenOTInThisDay = getAmountOfTimeOTByDate(personId, requestTypeId, startTime);
             validateOTTime(otHoursRequest,
@@ -995,6 +1026,11 @@ public class RequestServiceImpl implements RequestService {
                            otHoursRequest + timeHasBeenOTInThisDay);
         }
         else {
+            if (startTime.before(otStartTime) || endTime.after(otEndTime)) {
+                throw new BaseException(ErrorCode.newErrorCode(208,
+                        "You can only OT between 10pm and 4am the next day",
+                        httpStatus.NOT_ACCEPTABLE));
+            }
             double timeHasBeenOTInStartDay = getAmountOfTimeOTByDate(personId, requestTypeId, startTime);
             Date endTimeOfDay = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
                     parse(getStringDateFromDateTime(startTime) + " 23:59:59");
@@ -1070,11 +1106,22 @@ public class RequestServiceImpl implements RequestService {
                                double otHoursRemainOfYear,
                                double sumOTHoursInDay) {
         if (sumOTHoursInDay > MAX_TIME_TO_OT_PER_DAY) {
-            throw new BaseException(ErrorCode.newErrorCode(208,
-                    "you only have "
-                            + otHoursRemainOfMonth
-                            + " hours left to OT today",
-                    httpStatus.NOT_ACCEPTABLE));
+            if (sumOTHoursInDay == otHoursRequest) {
+                throw new BaseException(ErrorCode.newErrorCode(208,
+                        "You can only OT up to 4 hours a day",
+                        httpStatus.NOT_ACCEPTABLE));
+            }
+            else {
+                DecimalFormat decimalFormat = new DecimalFormat("#.##");
+
+                throw new BaseException(ErrorCode.newErrorCode(208,
+                        "You worked " +
+                                Double.parseDouble(decimalFormat.format(sumOTHoursInDay - otHoursRequest)) +
+                                " hours overtime today, you can only OT up to " +
+                                Double.parseDouble(decimalFormat.format(4 - (sumOTHoursInDay - otHoursRequest))) +
+                                " more hours",
+                        httpStatus.NOT_ACCEPTABLE));
+            }
         }
         else if (otHoursRemainOfYear >= otHoursRemainOfMonth){
             if (otHoursRequest > otHoursRemainOfMonth) {
@@ -1105,11 +1152,13 @@ public class RequestServiceImpl implements RequestService {
                 parse(getStringDateFromDateTime(timeNeedToValidate) + " 00:00:00");
         Date timeBasedOnEndDay = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
                 parse(getStringDateFromDateTime(timeNeedToValidate) + " 23:59:59");
+        timeBasedOnStartDay.setTime(timeBasedOnStartDay.getTime() + CommonConstant.MILLISECOND_7_HOURS);
+        timeBasedOnEndDay.setTime(timeBasedOnEndDay.getTime() + CommonConstant.MILLISECOND_7_HOURS);
         List<DateDto> listOTRequestByDate = requestRepository.getListRequestApprovedByDate(personId,
-                                                                                             requestTypeId,
-                                                                                             timeBasedOnStartDay,
-                                                                                             timeBasedOnEndDay,
-                                                                                             APPROVED_STATUS);
+                                                                                           requestTypeId,
+                                                                                           timeBasedOnStartDay,
+                                                                                           timeBasedOnEndDay,
+                                                                                           APPROVED_STATUS);
         // Thời gian OT người dùng đã làm trong ngày hôm đó
         double otHoursWorked = 0;
         if (!listOTRequestByDate.isEmpty() && listOTRequestByDate != null) {
@@ -1166,7 +1215,7 @@ public class RequestServiceImpl implements RequestService {
             OfficeTimeDto officeTimeDto = officeTimeRepository.getOfficeTime();
             int dayOfStartTime = getDayOfDate(startTime);
             double otTime = getAmountOfTimeOTByDate(personId, Long.valueOf(OT_TYPE_ID), startTime);
-            double workingTime = calculateHoursBetweenTwoDateTime(startTime, endTime);
+            double workingTime = 0;
             double inLate = 0;
             double outEarly = 0;
             Date startOfficeTime = formatTimeToKnownDate(startTime, officeTimeDto.getTimeStart());
@@ -1176,6 +1225,18 @@ public class RequestServiceImpl implements RequestService {
             }
             if (endTime.before(finishOfficeTime)) {
                 outEarly = calculateHoursBetweenTwoDateTime(endTime, finishOfficeTime);
+            }
+            if (inLate == 0 && outEarly == 0) {
+                workingTime = calculateHoursBetweenTwoDateTime(startOfficeTime, finishOfficeTime);
+            }
+            else if (inLate != 0 && outEarly == 0) {
+                workingTime = calculateHoursBetweenTwoDateTime(startTime, finishOfficeTime);
+            }
+            else if (inLate == 0 && outEarly != 0) {
+                workingTime = calculateHoursBetweenTwoDateTime(startOfficeTime, endTime);
+            }
+            else {
+                workingTime = calculateHoursBetweenTwoDateTime(startTime, endTime);
             }
             startTime.setTime(startTime.getTime() + CommonConstant.MILLISECOND_7_HOURS);
             endTime.setTime(endTime.getTime() + CommonConstant.MILLISECOND_7_HOURS);
@@ -1207,6 +1268,8 @@ public class RequestServiceImpl implements RequestService {
     }
 
     public void validateLeaveRequestTimeAlreadyInAnotherLeaveRequest(Long personId, Date start, Date end) {
+        start.setTime(start.getTime() + CommonConstant.MILLISECOND_7_HOURS);
+        end.setTime(end.getTime() + CommonConstant.MILLISECOND_7_HOURS);
         List<Long> listIdOfRequestAlreadyExistTime = requestRepository.
                 getLeaveRequestTimeAlreadyInAnotherLeaveRequest(personId, start, end, APPROVED_STATUS);
         if (listIdOfRequestAlreadyExistTime.size() > 0) {
