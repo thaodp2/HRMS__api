@@ -68,6 +68,13 @@ public class ErrorCode {
     		ErrorCodeEnum.UNAUTHORIZED.getValue(), "Unauthorized", HttpStatus.UNAUTHORIZED);
     public static final BusinessCode DUPLICATE_DEVICE_TYPE = new BusinessCode(
             ErrorCodeEnum.DUPLICATE_DEVICE_TYPE.getValue(), "Duplicate device type", HttpStatus.BAD_REQUEST);
+
+    public static final BusinessCode DUPLICATE_DEVICE_CODE = new BusinessCode(
+            ErrorCodeEnum.DUPLICATE_DEVICE_CODE.getValue(), "Duplicate device code", HttpStatus.BAD_REQUEST);
+
+    public static final BusinessCode DEVICE_NOT_EXIST = new BusinessCode(
+            ErrorCodeEnum.DEVICE_NOT_EXIST.getValue(), "Device not exist", HttpStatus.BAD_REQUEST);
+
     public static final BusinessCode DEVICE_TYPE_NULL_OR_EMPTY = new BusinessCode(
             ErrorCodeEnum.DEVICE_TYPE_NULL_OR_EMPTY.getValue(), "Device type can't null or empty", HttpStatus.BAD_REQUEST);
 
