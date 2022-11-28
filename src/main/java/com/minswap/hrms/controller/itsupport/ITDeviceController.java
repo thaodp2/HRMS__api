@@ -44,17 +44,17 @@ public class ITDeviceController {
         return deviceService.createDevice(deviceRequest);
     }
 
-    @PutMapping("/device")
+    @PutMapping("/device/{deviceId}")
     @ServiceProcessingValidateAnnotation
     public ResponseEntity<BaseResponse<HttpStatus, Void>> updateDevice(@RequestBody
                                                                        @Valid UpdateDeviceRequest deviceRequest,
                                                                        BindingResult bindingResult,
-                                                                       Long deviceId) {
+                                                                       @PathVariable Long deviceId) {
         return deviceService.updateDevice(deviceRequest, deviceId);
     }
 
-    @DeleteMapping("/device")
-    public ResponseEntity<BaseResponse<HttpStatus, Void>> deleteDevice(Long deviceId) {
+    @DeleteMapping("/device/{deviceId}")
+    public ResponseEntity<BaseResponse<HttpStatus, Void>> deleteDevice(@PathVariable Long deviceId) {
         return deviceService.deleteDevice(deviceId);
     }
 
@@ -67,5 +67,9 @@ public class ITDeviceController {
         return deviceService.searchListDevice(search, isUsed, deviceTypeId, page, limit);
     }
 
+    @GetMapping("/device/{deviceId}")
+    public ResponseEntity<BaseResponse<DeviceResponse.DetailDeviceResponse, Void>> getDetailDevice(@PathVariable Long deviceId) {
+        return deviceService.getDetailDevice(deviceId);
+    }
 
 }

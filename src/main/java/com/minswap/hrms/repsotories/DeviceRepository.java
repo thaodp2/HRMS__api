@@ -26,6 +26,7 @@ public interface DeviceRepository extends JpaRepository<Device, Long> {
             " d.deviceName," +
             " d.deviceCode," +
             " d.description," +
+            " d.status," +
             " dt.deviceTypeName) " +
             " from Device d " +
             " join DeviceType dt on d.deviceTypeId = dt.deviceTypeId " +
@@ -34,4 +35,16 @@ public interface DeviceRepository extends JpaRepository<Device, Long> {
             " and (:status is null or d.status = :status)" +
             " and (:search is null or d.deviceName like %:search% or d.deviceCode like %:search%  )")
     Page<DeviceDto> searchDeviceBy(String search, Integer status, Long deviceTypeId, Pageable pageable);
+
+    @Query("SELECT new com.minswap.hrms.response.dto.DeviceDto(" +
+            " d.deviceId," +
+            " d.deviceName," +
+            " d.deviceCode," +
+            " d.description," +
+            " d.status," +
+            " dt.deviceTypeName) " +
+            " from Device d " +
+            " join DeviceType dt on d.deviceTypeId = dt.deviceTypeId " +
+            " WHERE d.deviceId = :deviceId ")
+    DeviceDto getDetailDeviceById(Long deviceId);
 }

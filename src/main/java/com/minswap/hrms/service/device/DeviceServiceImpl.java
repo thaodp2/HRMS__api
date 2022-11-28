@@ -2,17 +2,11 @@ package com.minswap.hrms.service.device;
 
 import com.minswap.hrms.constants.CommonConstant;
 import com.minswap.hrms.constants.ErrorCode;
-import com.minswap.hrms.entities.BorrowHistory;
-import com.minswap.hrms.entities.Device;
-import com.minswap.hrms.entities.Notification;
-import com.minswap.hrms.entities.Request;
+import com.minswap.hrms.entities.*;
 import com.minswap.hrms.exception.model.BaseException;
 import com.minswap.hrms.exception.model.Pagination;
 import com.minswap.hrms.model.BaseResponse;
-import com.minswap.hrms.repsotories.BorrowHistoryRepository;
-import com.minswap.hrms.repsotories.DeviceRepository;
-import com.minswap.hrms.repsotories.NotificationRepository;
-import com.minswap.hrms.repsotories.RequestRepository;
+import com.minswap.hrms.repsotories.*;
 import com.minswap.hrms.request.AssignRequest;
 import com.minswap.hrms.request.DeviceRequest;
 import com.minswap.hrms.request.UpdateDeviceRequest;
@@ -52,6 +46,9 @@ public class DeviceServiceImpl implements DeviceService {
 
     @Autowired
     RequestRepository requestRepository;
+
+    @Autowired
+    PersonRepository personRepository;
 
     @Autowired
     NotificationRepository notificationRepository;
@@ -96,8 +93,10 @@ public class DeviceServiceImpl implements DeviceService {
             //send a notification to person is assigned
             //fake id of it support is 2 (current user)
             Long currentUser = Long.valueOf(2);
+            Date currentDate = DateTimeUtil.getCurrentTime();
+            currentDate.setTime(currentDate.getTime() + CommonConstant.MILLISECOND_7_HOURS);
             Notification notification = new Notification("You have just been assigned a device!",
-                    0,"ASSIGN DEVICE",0,currentUser, request.getPersonId());
+                    0,"ASSIGN DEVICE",0,currentUser, request.getPersonId(), currentDate);
             notificationRepository.save(notification);
 
             responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.OK, null);
@@ -139,6 +138,9 @@ public class DeviceServiceImpl implements DeviceService {
         if (!deviceById.isPresent()){
             throw new BaseException(ErrorCode.DEVICE_NOT_EXIST);
         }
+        if(deviceById.get().getStatus() == 1){
+            throw new BaseException(ErrorCode.DEVICE_HAS_BEEN_BORROWED);
+        }
         try {
 
             Device device = deviceById.get();
@@ -171,6 +173,21 @@ public class DeviceServiceImpl implements DeviceService {
     }
 
     @Override
+    public ResponseEntity<BaseResponse<DeviceResponse.DetailDeviceResponse, Void>> getDetailDevice(Long deviceId) {
+
+        ResponseEntity<BaseResponse<DeviceResponse.DetailDeviceResponse, Void>> responseEntity = null;
+        DeviceDto deviceDto = deviceRepository.getDetailDeviceById(deviceId);
+
+        if (deviceDto == null){
+            throw new BaseException(ErrorCode.DEVICE_NOT_EXIST);
+        }
+        DeviceResponse.DetailDeviceResponse detailDeviceResponse = new DeviceResponse.DetailDeviceResponse(deviceDto);
+        responseEntity = BaseResponse.ofSucceeded(detailDeviceResponse);
+
+        return responseEntity;
+    }
+
+    @Override
     public ResponseEntity<BaseResponse<DeviceResponse, Pageable>> searchListDevice(String search, Integer isUser, Long deviceTypeId, Integer page, Integer limit) {
 
         ResponseEntity<BaseResponse<DeviceResponse, Pageable>> responseEntity = null;
@@ -191,9 +208,6 @@ public class DeviceServiceImpl implements DeviceService {
         ResponseEntity<BaseResponse<HttpStatus, Void>> responseEntity = null;
         List<Device> deviceList = deviceRepository.findByDeviceTypeIdAndStatus(deviceTypeId, 0);
         if (deviceList.isEmpty()) {
-            //send noti to employee
-
-            //
             throw new BaseException(ErrorCode.DO_NOT_ENOUGH_DEVICE_TO_ASSIGN);
         }
         responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.OK, null);
@@ -217,6 +231,17 @@ public class DeviceServiceImpl implements DeviceService {
                 if (device != null) {
                     device.setStatus(0);
                     deviceRepository.save(device);
+                }
+
+                //notification to all it-support
+                List<Person> allITSupport = personRepository.getMasterDataPersonByRole(CommonConstant.ROLE_ID_OF_IT_SUPPORT, null);
+                Long currentUser = Long.valueOf(2);
+                for(Person person : allITSupport) {
+                    currentDate = DateTimeUtil.getCurrentTime();
+                    currentDate.setTime(currentDate.getTime() + CommonConstant.MILLISECOND_7_HOURS);
+                    Notification notification = new Notification("Employee A retunred device " + device.getDeviceName() + " - " + device.getDeviceCode(),
+                            0, "RETURN DEVICE", 0, currentUser, person.getPersonId(),currentDate);
+                    notificationRepository.save(notification);
                 }
             }
             responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.OK, null);
