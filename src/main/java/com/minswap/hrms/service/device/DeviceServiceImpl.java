@@ -77,7 +77,7 @@ public class DeviceServiceImpl implements DeviceService {
         ResponseEntity<BaseResponse<HttpStatus, Void>> responseEntity = null;
         try {
             //create borrow history
-            borrowHistoryService.createBorrowHistory(assignRequest);
+            BorrowHistory borrowHistory = borrowHistoryService.createBorrowHistory(assignRequest);
             //update status device
             Device device = deviceRepository.findById(assignRequest.getDeviceId()).orElse(null);
             if (device != null) {
@@ -96,7 +96,7 @@ public class DeviceServiceImpl implements DeviceService {
             Date currentDate = DateTimeUtil.getCurrentTime();
             currentDate.setTime(currentDate.getTime() + CommonConstant.MILLISECOND_7_HOURS);
             Notification notification = new Notification("You have just been assigned a device!",
-                    0,CommonConstant.URL+"/borrow-history",0,currentUser, request.getPersonId(), currentDate);
+                    0,"/human-resource/borrow-device-history/detail/" + borrowHistory.getBorrowHistoryId(),0,currentUser, request.getPersonId(), currentDate);
             notificationRepository.save(notification);
 
             responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.OK, null);
@@ -240,7 +240,7 @@ public class DeviceServiceImpl implements DeviceService {
                     currentDate = DateTimeUtil.getCurrentTime();
                     currentDate.setTime(currentDate.getTime() + CommonConstant.MILLISECOND_7_HOURS);
                     Notification notification = new Notification("Employee A retunred device " + device.getDeviceName() + " - " + device.getDeviceCode(),
-                            0, CommonConstant.URL+"/it-support/borrow-history", 0, currentUser, person.getPersonId(),currentDate);
+                            0, "/human-resource/borrow-device-history/detail/" + borrowHistoryId, 0, currentUser, person.getPersonId(),currentDate);
                     notificationRepository.save(notification);
                 }
             }
