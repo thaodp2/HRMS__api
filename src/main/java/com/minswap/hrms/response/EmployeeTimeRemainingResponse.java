@@ -10,6 +10,7 @@ import lombok.*;
 @Setter
 @Builder
 @NoArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class EmployeeTimeRemainingResponse {
 
     @JsonProperty(value = "item")

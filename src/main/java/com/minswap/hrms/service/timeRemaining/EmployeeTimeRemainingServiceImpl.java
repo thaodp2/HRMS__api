@@ -71,8 +71,8 @@ public class EmployeeTimeRemainingServiceImpl implements EmployeeTimeRemainingSe
             if (otBudgetDto == null) {
                 throw new BaseException(ErrorCode.RESULT_NOT_FOUND);
             } else {
-                double otTimeRemainingOfMonth = otBudgetDto.getOtHoursRemainOfMonth();
-                double otTimeRemainingOfYear = otBudgetDto.getOtHoursRemainOfYear();
+                Double otTimeRemainingOfMonth = Double.valueOf(otBudgetDto.getOtHoursRemainOfMonth());
+                Double otTimeRemainingOfYear = Double.valueOf(otBudgetDto.getOtHoursRemainOfYear());
                 EmployeeTimeRemainingDto employeeTimeRemainingDto = new EmployeeTimeRemainingDto(otTimeRemainingOfMonth,
                                                                                                  otTimeRemainingOfYear);
                 employeeTimeRemainingResponse = new EmployeeTimeRemainingResponse(employeeTimeRemainingDto);
