@@ -27,7 +27,6 @@ public class EmployeeRequest extends BasicRequest{
 	@JsonProperty("dateOfBirth")
 	@NotNull(message ="601")
 	@NotEmpty(message = "601")
-//	@Pattern(regexp = "((0[1-9]|[12]\\d|3[01])-(0[1-9]|1[0-2])-[12]\\d{3})", message = "601")
 	private String dateOfBirth;
 	
 	@JsonProperty("managerId")

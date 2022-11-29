@@ -26,9 +26,11 @@ public class ManagerPersonController {
           @RequestParam (name = "rollNumber", required = false) String rollNumber,
           @RequestParam (name = "active", required = false) String active,
           @RequestParam (name = "positionId", required = false)Long positionId,
-          @RequestParam (name = "managerRoll", required = false)String managerRoll
+          @RequestParam (name = "managerRoll", required = false)String managerRoll,
+          @RequestParam(required = false) String sort,
+          @RequestParam(required = false) String dir
 
   ) {
-    return personService.getSearchListEmployee(page,limit,fullName,email,departmentId,rollNumber,active,positionId,managerRoll);
+    return personService.getSearchListEmployee(page,limit,fullName,email,departmentId,rollNumber,active,positionId,managerRoll, sort, dir);
   }
 }

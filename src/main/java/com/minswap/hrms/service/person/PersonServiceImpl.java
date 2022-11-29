@@ -16,12 +16,15 @@ import com.minswap.hrms.response.dto.EmployeeDetailDto;
 import com.minswap.hrms.response.dto.EmployeeListDto;
 import com.minswap.hrms.response.dto.MasterDataDto;
 import com.minswap.hrms.service.email.EmailSenderService;
+import com.minswap.hrms.util.CommonUtil;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -104,8 +107,8 @@ public class PersonServiceImpl implements PersonService {
     }
 
     @Override
-    public ResponseEntity<BaseResponse<EmployeeInfoResponse, Pageable>> getSearchListEmployee(int page, int limit, String fullName, String email, Long departmentId, String rollNumber, String status, Long positionId, String managerRoll) {
-        page = page - 1;
+    public ResponseEntity<BaseResponse<EmployeeInfoResponse, Pageable>> getSearchListEmployee(int page, int limit, String fullName, String email, Long departmentId, String rollNumber, String status, Long positionId, String managerRoll, String sort, String dir) {
+        Sort.Direction dirSort = CommonUtil.getSortDirection(sort, dir);
         Pagination pagination = new Pagination(page, limit);
         Long managerId = null;
         if (!StringUtils.isEmpty(managerRoll)) {
@@ -117,7 +120,7 @@ public class PersonServiceImpl implements PersonService {
             managerRoll = person.getPersonId().toString();
             managerId = Long.parseLong(managerRoll);
         }
-        Page<EmployeeListDto> pageInfo = personRepository.getSearchListPerson(fullName, email, departmentId, rollNumber, positionId, managerId, pagination);
+        Page<EmployeeListDto> pageInfo = personRepository.getSearchListPerson(fullName, email, departmentId, rollNumber, positionId, managerId, PageRequest.of(page - 1, limit, dirSort == null ? Sort.unsorted() : Sort.by(dirSort, sort)));
         List<EmployeeListDto> employeeListDtos = pageInfo.getContent();
         pagination.setTotalRecords(pageInfo);
         pagination.setPage(page + 1);
@@ -140,6 +143,13 @@ public class PersonServiceImpl implements PersonService {
         }
         if (StringUtils.isEmpty(employeeRequest.getCitizenIdentification())) {
             employeeRequest.setCitizenIdentification(employeeDetailDto.getCitizenIdentification());
+        }else{
+            Integer personCheckCitizen = personRepository.getUserByCitizenIdentification(employeeRequest.getCitizenIdentification());
+            if (personCheckCitizen != null && personCheckCitizen > 0) {
+                throw new BaseException(ErrorCode.CITIZEN_INDENTIFICATION_EXSIT);
+            }else{
+                employeeRequest.setCitizenIdentification(employeeRequest.getCitizenIdentification());
+            }
         }
         if (StringUtils.isEmpty(employeeRequest.getPhoneNumber())) {
             employeeRequest.setPhoneNumber(employeeDetailDto.getPhoneNumber());
@@ -177,7 +187,9 @@ public class PersonServiceImpl implements PersonService {
         if (employeeRequest.getOnBoardDate() == null) {
             employeeRequest.setOnBoardDate(employeeDetailDto.getOnBoardDate().toString());
         }
-
+        if (employeeRequest.getActive() == null) {
+            employeeRequest.setActive(employeeDetailDto.getStatus()+"");
+        }
         personRepository.updateEmployee(
                 employeeRequest.getFullName(),
                 employeeRequest.getManagerId(),
@@ -191,7 +203,8 @@ public class PersonServiceImpl implements PersonService {
                 rollNumber,
                 employeeRequest.getSalaryBasic(),
                 employeeRequest.getSalaryBonus(),
-                convertDateInput(employeeRequest.getOnBoardDate()));
+                convertDateInput(employeeRequest.getOnBoardDate()),
+                employeeRequest.getActive());
 
         ResponseEntity<BaseResponse<Void, Void>> responseEntity = BaseResponse.ofSucceeded(null);
         return responseEntity;
@@ -202,7 +215,12 @@ public class PersonServiceImpl implements PersonService {
         Person person = new Person();
         person.setFullName(employeeRequest.getFullName());
         person.setAddress(employeeRequest.getAddress());
-        person.setCitizenIdentification(employeeRequest.getCitizenIdentification());
+        Integer personCheckCitizen = personRepository.getUserByCitizenIdentification(employeeRequest.getCitizenIdentification());
+        if (personCheckCitizen != null && personCheckCitizen > 0) {
+            throw new BaseException(ErrorCode.CITIZEN_INDENTIFICATION_EXSIT);
+        }else{
+            person.setCitizenIdentification(employeeRequest.getCitizenIdentification());
+        }
         person.setPhoneNumber(employeeRequest.getPhoneNumber());
         person.setRollNumber(convertRollNumber());
         person.setRankId(employeeRequest.getRankId());
@@ -218,6 +236,7 @@ public class PersonServiceImpl implements PersonService {
         person.setSalaryBonus(employeeRequest.getSalaryBonus());
         person.setDateOfBirth(convertDateInput(employeeRequest.getDateOfBirth()));
         person.setOnBoardDate(convertDateInput(employeeRequest.getOnBoardDate()));
+
         try {
             personRepository.save(person);
         } catch (Exception e) {
@@ -441,8 +460,9 @@ public class PersonServiceImpl implements PersonService {
 
     private Date convertDateInput(String dateStr) {
         try {
-            SimpleDateFormat sm = new SimpleDateFormat("dd-MM-yyyy");
+            SimpleDateFormat sm = new SimpleDateFormat("yyyy-MM-dd");
             Date date = sm.parse(dateStr);
+            date.setTime(date.getTime() + MILLISECOND_PER_DAY);
             return date;
         } catch (Exception e) {
             throw new BaseException(ErrorCode.DATE_FAIL_FOMART);
