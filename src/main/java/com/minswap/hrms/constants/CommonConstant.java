@@ -5,7 +5,7 @@ import java.util.*;
 public class CommonConstant {
     public static final String BEARER_TOKEN = "Bearer ";
     public static final long MILLISECOND_7_HOURS = 7 * 60 * 60 * 1000;
-
+    public static final long MILLISECOND_2_HOURS = 2 * 60 * 60 * 1000;
     private CommonConstant() {
     }
 
@@ -82,6 +82,5 @@ public class CommonConstant {
     public static final Long ROLE_ID_OF_MANAGER = Long.valueOf(2);
     public static final Long ROLE_ID_OF_IT_SUPPORT = Long.valueOf(5);
     public static final Long RANK_ID_OF_INTERN = Long.valueOf(1);
-
     public static final String URL = "https://api.ms-hrms.software/human-resources-management-system/";
 }
