@@ -27,10 +27,12 @@ public interface BorrowHistoryRepository extends JpaRepository<BorrowHistory, Lo
             "where (:search IS NULL OR p.rollNumber like %:search% OR p.fullName like %:search%) " +
             "and (:deviceTypeId IS NULL OR dt.deviceTypeId = :deviceTypeId) " +
             "and (:managerId IS NULL OR p.managerId = :managerId) " +
-            "and (:personId IS NULL OR p.personId = :personId)")
+            "and (:personId IS NULL OR p.personId = :personId) " +
+            "and ((:isReturned IS NULL) or (:isReturned = 0 and bh.returnDate is null) OR (:isReturned != 0 and bh.returnDate is not null))")
     Page<BorrowHistoryDto> getBorrowHistoryList(@Param("search") String search,
                                                 @Param("deviceTypeId") Long deviceTypeId,
                                                 @Param("managerId") Long managerId,
                                                 @Param("personId") Long personId,
+                                                @Param("isReturned") Integer isReturned,
                                                 Pageable pageable);
 }
