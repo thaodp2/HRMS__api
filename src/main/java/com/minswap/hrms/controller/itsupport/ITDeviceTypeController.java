@@ -68,17 +68,17 @@ public class ITDeviceTypeController {
         return deviceTypeService.deleteDeviceType(id);
     }
 
-//    @PostMapping("/test-import")
-//    public void importExcel(@RequestParam MultipartFile file) throws IOException {
-//        File tempFile = new File("D:\\Downloads\\test.xlsx");
-//        //public void importExcel(@RequestParam("file") MultipartFile file) throws IOException {
-////        Path tempDir = Files.createTempDirectory("");
-////        File tempFile = tempDir.resolve(file.getOriginalFilename()).toFile();
-////        file.transferTo(tempFile);
-//        Workbook workbook = WorkbookFactory.create(tempFile);
-//        Sheet sheet = workbook.getSheetAt(0);
-//        for(Row row : sheet){
-//            //LOGGER.info("ROW: " + row.getCell(0).getStringCellValue());
-//        }
-//    }
+    @PostMapping("/import")
+    public void importExcel(@RequestParam MultipartFile file) throws IOException {
+        File tempFile = new File("D:\\Downloads\\test.xlsx");
+        //public void importExcel(@RequestParam("file") MultipartFile file) throws IOException {
+//        Path tempDir = Files.createTempDirectory("");
+//        File tempFile = tempDir.resolve(file.getOriginalFilename()).toFile();
+//        file.transferTo(tempFile);
+        Workbook workbook = WorkbookFactory.create(tempFile);
+        Sheet sheet = workbook.getSheetAt(0);
+        for(Row row : sheet){
+            //LOGGER.info("ROW: " + row.getCell(0).getStringCellValue());
+        }
+    }
 }
