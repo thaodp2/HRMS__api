@@ -1,10 +1,7 @@
 package com.minswap.hrms.service.person;
 
 import com.minswap.hrms.model.BaseResponse;
-import com.minswap.hrms.request.ChangeStatusEmployeeRequest;
-import com.minswap.hrms.request.EmployeeRequest;
-import com.minswap.hrms.request.EmployeeUpdateRequest;
-import com.minswap.hrms.request.UpdateUserRequest;
+import com.minswap.hrms.request.*;
 import com.minswap.hrms.response.EmployeeInfoResponse;
 import com.minswap.hrms.response.MasterDataResponse;
 import com.minswap.hrms.response.dto.EmployeeListDto;
@@ -30,5 +27,14 @@ public interface PersonService {
 
     ResponseEntity<BaseResponse<Void, Void>> updateStatusEmployee(ChangeStatusEmployeeRequest employeeRequest, String rollNumber );
 
-    ResponseEntity<BaseResponse<Boolean, Void>> checkPinCode(String pinCode);
+    ResponseEntity<BaseResponse<Boolean, Void>> checkSecureCodeIsCorrect(UpdateSecureCodeRequest checkSecureCodeRequest);
+
+    ResponseEntity<BaseResponse<Boolean, Void>> checkSecureCodeIsExist();
+
+    ResponseEntity<BaseResponse<Boolean, Void>> forgotPinCode();
+
+    ResponseEntity<BaseResponse<Boolean, Void>> updatePinCode(UpdateSecureCodeRequest secureCodeRequest);
+
+    ResponseEntity<BaseResponse<Boolean, Void>> createPinCode(UpdateSecureCodeRequest secureCodeRequest);
+
 }

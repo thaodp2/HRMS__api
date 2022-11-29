@@ -15,7 +15,7 @@ public class AssignRequest extends BasicRequest {
     @NotNull(message = "407")
     private Long requestId;
 
-    @NotNull(message = "611")
+    @NotNull(message = "616")
     private Long deviceId;
 
 }
