@@ -23,7 +23,7 @@ public class ManagerBorrowHistoryController {
     private BorrowHistoryService borrowHistoryService;
 
     @GetMapping("/borrow-history")
-    public ResponseEntity<BaseResponse<BorrowHistoryResponse, Pageable>> getBorrowHistoryOfSubordinate(
+    public ResponseEntity<BaseResponse<BorrowHistoryResponse.BorrowHistoryListResponse, Pageable>> getBorrowHistoryOfSubordinate(
             @RequestParam @Min(1) Integer page,
             @RequestParam @Min(0) Integer limit,
             @RequestParam(required = false) Long deviceTypeId,

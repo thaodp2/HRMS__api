@@ -1,8 +1,10 @@
 package com.minswap.hrms.service.borrowhistory;
 
 import com.minswap.hrms.constants.CommonConstant;
+import com.minswap.hrms.constants.ErrorCode;
 import com.minswap.hrms.entities.BorrowHistory;
 import com.minswap.hrms.entities.Request;
+import com.minswap.hrms.exception.model.BaseException;
 import com.minswap.hrms.exception.model.Pagination;
 import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.repsotories.BorrowHistoryRepository;
@@ -54,16 +56,29 @@ public class BorrowHistoryServiceImpl implements BorrowHistoryService {
     }
 
     @Override
-    public ResponseEntity<BaseResponse<BorrowHistoryResponse, Pageable>> getBorrowHistoryList(Long managerId, Long personId, Integer page, Integer limit, Long deviceTypeId, String search, String sort, String dir,Integer isReturned) {
+    public ResponseEntity<BaseResponse<BorrowHistoryResponse.BorrowHistoryListResponse, Pageable>> getBorrowHistoryList(Long managerId, Long personId, Integer page, Integer limit, Long deviceTypeId, String search, String sort, String dir, Integer isReturned) {
         Sort.Direction dirSort = CommonUtil.getSortDirection(sort, dir);
-        Page<BorrowHistoryDto> pageInfor = borrowHistoryRepository.getBorrowHistoryList(search != null ? search.trim() : null, deviceTypeId, managerId, personId,isReturned, PageRequest.of(page - 1, limit, dirSort == null ? Sort.unsorted() : Sort.by(dirSort, sort)));
+        Page<BorrowHistoryDto> pageInfor = borrowHistoryRepository.getBorrowHistoryList(search != null ? search.trim() : null, deviceTypeId, managerId, personId, isReturned, PageRequest.of(page - 1, limit, dirSort == null ? Sort.unsorted() : Sort.by(dirSort, sort)));
         List<BorrowHistoryDto> borrowHistoryDtos = pageInfor.getContent();
         Pagination pagination = new Pagination(page, limit);
         pagination.setTotalRecords(pageInfor);
-        BorrowHistoryResponse response = new BorrowHistoryResponse(borrowHistoryDtos);
-        ResponseEntity<BaseResponse<BorrowHistoryResponse, Pageable>> responseEntity
+        BorrowHistoryResponse.BorrowHistoryListResponse response = new BorrowHistoryResponse.BorrowHistoryListResponse(borrowHistoryDtos);
+        ResponseEntity<BaseResponse<BorrowHistoryResponse.BorrowHistoryListResponse, Pageable>> responseEntity
                 = BaseResponse.ofSucceededOffset(response, pagination);
         return responseEntity;
+    }
+
+    @Override
+    public ResponseEntity<BaseResponse<BorrowHistoryResponse, Pageable>> getBorrowHistoryDetail(Long borrowHistoryId) {
+        BorrowHistoryDto borrowHistory = borrowHistoryRepository.getBorrowHistoryDetail(borrowHistoryId);
+        if (borrowHistory != null) {
+            BorrowHistoryResponse response = new BorrowHistoryResponse(borrowHistory);
+            ResponseEntity<BaseResponse<BorrowHistoryResponse, Pageable>> responseEntity
+                    = BaseResponse.ofSucceededOffset(response, null);
+            return responseEntity;
+        } else {
+            throw new BaseException(ErrorCode.RESULT_NOT_FOUND);
+        }
     }
 
 }

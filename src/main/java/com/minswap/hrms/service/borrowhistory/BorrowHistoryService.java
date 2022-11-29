@@ -13,6 +13,7 @@ import java.time.Year;
 public interface BorrowHistoryService {
     void createBorrowHistory (AssignRequest assignRequest) throws ParseException;
 
-    ResponseEntity<BaseResponse<BorrowHistoryResponse, Pageable>> getBorrowHistoryList(Long managerId, Long personId, Integer page, Integer limit, Long deviceTypeId, String search, String sort, String dir,Integer isReturned);
+    ResponseEntity<BaseResponse<BorrowHistoryResponse.BorrowHistoryListResponse, Pageable>> getBorrowHistoryList(Long managerId, Long personId, Integer page, Integer limit, Long deviceTypeId, String search, String sort, String dir,Integer isReturned);
+    ResponseEntity<BaseResponse<BorrowHistoryResponse, Pageable>> getBorrowHistoryDetail(Long borrowHistoryId);
 
 }

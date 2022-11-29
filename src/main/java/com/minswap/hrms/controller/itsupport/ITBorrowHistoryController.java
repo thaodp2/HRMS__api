@@ -27,7 +27,7 @@ public class ITBorrowHistoryController {
     private BorrowHistoryService borrowHistoryService;
 
     @GetMapping("/borrow-history")
-    public ResponseEntity<BaseResponse<BorrowHistoryResponse, Pageable>> getAllBorrowHistory(
+    public ResponseEntity<BaseResponse<BorrowHistoryResponse.BorrowHistoryListResponse, Pageable>> getAllBorrowHistory(
             @RequestParam @Min(1) Integer page,
             @RequestParam @Min(0) Integer limit,
             @RequestParam(required = false) Long deviceTypeId,
