@@ -28,9 +28,10 @@ public class ManagerBorrowHistoryController {
             @RequestParam @Min(0) Integer limit,
             @RequestParam(required = false) Long deviceTypeId,
             @RequestParam(required = false) String search,
+            @RequestParam(required = false) Integer isReturned,
             @RequestParam(required = false) String sort,
             @RequestParam(required = false) String dir) {
         Long managerId = Long.valueOf(5);
-        return borrowHistoryService.getBorrowHistoryList(managerId,null,page,limit,deviceTypeId,search,sort, dir);
+        return borrowHistoryService.getBorrowHistoryList(managerId,null,page,limit,deviceTypeId,search,sort, dir, isReturned);
     }
 }

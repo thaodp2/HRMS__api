@@ -24,10 +24,10 @@ public class BorrowHistoryController {
             @RequestParam @Min(1) Integer page,
             @RequestParam @Min(0) Integer limit,
             @RequestParam(required = false) Long deviceTypeId,
-            @RequestParam(required = false) String search,
+            @RequestParam(required = false) Integer isReturned,
             @RequestParam(required = false) String sort,
             @RequestParam(required = false) String dir) {
         Long personId = Long.valueOf(2);
-        return borrowHistoryService.getBorrowHistoryList(null,personId,page,limit,deviceTypeId,search,sort, dir);
+        return borrowHistoryService.getBorrowHistoryList(null,personId,page,limit,deviceTypeId,null,sort, dir,isReturned);
     }
 }

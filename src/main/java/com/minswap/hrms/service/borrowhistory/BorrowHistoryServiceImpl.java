@@ -54,9 +54,9 @@ public class BorrowHistoryServiceImpl implements BorrowHistoryService {
     }
 
     @Override
-    public ResponseEntity<BaseResponse<BorrowHistoryResponse, Pageable>> getBorrowHistoryList(Long managerId, Long personId, Integer page, Integer limit, Long deviceTypeId, String search, String sort, String dir) {
+    public ResponseEntity<BaseResponse<BorrowHistoryResponse, Pageable>> getBorrowHistoryList(Long managerId, Long personId, Integer page, Integer limit, Long deviceTypeId, String search, String sort, String dir,Integer isReturned) {
         Sort.Direction dirSort = CommonUtil.getSortDirection(sort, dir);
-        Page<BorrowHistoryDto> pageInfor = borrowHistoryRepository.getBorrowHistoryList(search != null ? search.trim() : null, deviceTypeId, managerId, personId, PageRequest.of(page - 1, limit, dirSort == null ? Sort.unsorted() : Sort.by(dirSort, sort)));
+        Page<BorrowHistoryDto> pageInfor = borrowHistoryRepository.getBorrowHistoryList(search != null ? search.trim() : null, deviceTypeId, managerId, personId,isReturned, PageRequest.of(page - 1, limit, dirSort == null ? Sort.unsorted() : Sort.by(dirSort, sort)));
         List<BorrowHistoryDto> borrowHistoryDtos = pageInfor.getContent();
         Pagination pagination = new Pagination(page, limit);
         pagination.setTotalRecords(pageInfor);
