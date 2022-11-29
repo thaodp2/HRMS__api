@@ -44,14 +44,16 @@ public class BorrowHistoryServiceImpl implements BorrowHistoryService {
     BorrowHistoryRepository borrowHistoryRepository;
 
     @Override
-    public void createBorrowHistory(AssignRequest assignRequest) throws ParseException {
+    public BorrowHistory createBorrowHistory(AssignRequest assignRequest) throws ParseException {
         Request request = requestRepository.findById(assignRequest.getRequestId()).orElse(null);
         Date currentDate = DateTimeUtil.getCurrentTime();
         currentDate.setTime(currentDate.getTime() + CommonConstant.MILLISECOND_7_HOURS);
         if (request != null) {
             Long personId = request.getPersonId();
             BorrowHistory borrowHistory = new BorrowHistory(assignRequest.getDeviceId(), personId, currentDate, null);
-            borrowHistoryRepository.save(borrowHistory);
+            return borrowHistoryRepository.save(borrowHistory);
+        }else {
+            throw new BaseException(ErrorCode.CREATE_FAIL);
         }
     }
 
