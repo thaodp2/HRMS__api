@@ -15,17 +15,24 @@ public class PayrollDto {
 
    private String rollNumber;
 
-   private Long basicSalary;
+   private Double totalWork;
 
-   private Long otSalary;
+   private Double actualWork;
 
-   private Long bonus;
+   private Double basicSalary;
 
-   private Long fineAmount;
+   private Double otSalary;
 
-   private Long totalSalary;
+   private Double fineAmount;
 
-   private Integer month;
+   private Double salaryBonus;
 
-   private Integer year;
+   private Double tax;
+
+   private Double socialInsurance;
+
+   private Double actuallyReceived;
+
+   public PayrollDto() {
+   }
 }

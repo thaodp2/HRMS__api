@@ -11,8 +11,8 @@ public class OTBudgetJob {
     @Autowired
     OTBudgetService otBudgetService;
 
-//    @Scheduled(cron = "0 0 1 1 * *")
-//    public void createOTBudgetEachMonth(){
-//        otBudgetService.createOTBudgetEachMonth();
-//    }
+    @Scheduled(cron = "0 0 0 1 * *")
+    public void createOTBudgetEachMonth(){
+        otBudgetService.createOTBudgetEachMonth();
+    }
 }

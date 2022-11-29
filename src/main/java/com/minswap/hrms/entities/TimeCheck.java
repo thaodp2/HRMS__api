@@ -9,7 +9,23 @@ import java.util.Date;
 @Data
 @Table(name = TimeCheck.TABLE_NAME)
 public class TimeCheck {
+
     public static final String TABLE_NAME = "time_check";
+
+    public TimeCheck() {
+
+    }
+
+    public TimeCheck(Long personId, Double inLate, Double outEarly,
+                     Date timeIn, Date timeOut, Double ot, Double workingTime) {
+        this.personId = personId;
+        this.inLate = inLate;
+        this.outEarly = outEarly;
+        this.timeIn = timeIn;
+        this.timeOut = timeOut;
+        this.ot = ot;
+        this.workingTime = workingTime;
+    }
 
     @Id
     @Column(name = "time_check_id")
@@ -36,5 +52,6 @@ public class TimeCheck {
 
     @Column(name = "working_time")
     private Double workingTime;
+
 
 }

@@ -76,15 +76,18 @@ public class Person {
 	@Column(name = "position_id")
 	private Long positionId;
 
-	@Column(name = "annual_leave_budget")
-	private Double annualLeaveBudget;
-
-	@Column(name = "avatar_img")
-	private String avatarImg;
-
 	@Column(name = "salary_basic")
 	private Double salaryBasic;
 
 	@Column(name = "salary_bonus")
 	private Double salaryBonus;
+
+	@Column(name = "avatar_img")
+	private String avatarImg;
+
+	@Column(name = "annual_leave_budget")
+	private Double annualLeaveBudget;
+
+	@Column(name = "pin_code")
+	private String pinCode;
 }

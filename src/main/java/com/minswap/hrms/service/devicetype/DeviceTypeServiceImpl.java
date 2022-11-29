@@ -29,14 +29,14 @@ public class DeviceTypeServiceImpl implements DeviceTypeService {
 
     @Override
     public ResponseEntity<BaseResponse<DeviceTypeResponse, Pageable>> getAllDeviceType(Integer page, Integer limit, String deviceTypeName) {
-        Pagination pagination = new Pagination(page - 1, limit);
+        Pagination pagination = new Pagination(page, limit);
         List<DeviceType> deviceTypes = null;
         if (deviceTypeName != null) {
             pagination.setTotalRecords(deviceTypeRepository.findByDeviceTypeNameContainsIgnoreCase(deviceTypeName).size());
-            deviceTypes = deviceTypeRepository.findByDeviceTypeNameContainsIgnoreCase(deviceTypeName, pagination);
+            deviceTypes = deviceTypeRepository.findByDeviceTypeNameContainsIgnoreCase(deviceTypeName, new Pagination(page - 1, limit));
         } else {
             pagination.setTotalRecords(deviceTypeRepository.findAll().size());
-            deviceTypes = deviceTypeRepository.findAll(pagination).getContent();
+            deviceTypes = deviceTypeRepository.findAll(new Pagination(page - 1, limit)).getContent();
         }
         DeviceTypeResponse response = new DeviceTypeResponse(deviceTypes);
         ResponseEntity<BaseResponse<DeviceTypeResponse, Pageable>> responseEntity

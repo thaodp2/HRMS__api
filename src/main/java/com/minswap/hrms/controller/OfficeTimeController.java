@@ -3,6 +3,7 @@ package com.minswap.hrms.controller;
 
 import com.minswap.hrms.entities.OfficeTime;
 import com.minswap.hrms.model.BaseResponse;
+import com.minswap.hrms.response.OfficeTimeResponse;
 import com.minswap.hrms.service.officeTime.OfficeTimeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +20,7 @@ public class OfficeTimeController {
     private OfficeTimeService officeTimeService;
 
     @GetMapping("")
-    public ResponseEntity<BaseResponse<OfficeTime, Void>> getOfficeTime() throws Exception {
+    public ResponseEntity<BaseResponse<OfficeTimeResponse, Void>> getOfficeTime() throws Exception {
         return officeTimeService.getOfficeTime();
     }
 

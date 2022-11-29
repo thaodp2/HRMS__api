@@ -11,8 +11,8 @@ import com.minswap.hrms.repsotories.DepartmentRepository;
 import com.minswap.hrms.repsotories.PersonRepository;
 import com.minswap.hrms.repsotories.PositionRepository;
 import com.minswap.hrms.request.DepartmentRequest;
+import com.minswap.hrms.response.DepartmentResponse;
 import com.minswap.hrms.response.MasterDataResponse;
-import com.minswap.hrms.response.RequestResponse;
 import com.minswap.hrms.response.dto.DepartmentDto;
 import com.minswap.hrms.response.dto.ListDepartmentDto;
 import com.minswap.hrms.response.dto.MasterDataDto;
@@ -208,7 +208,7 @@ public class DepartmentServiceImpl implements DepartmentService{
     }
 
     @Override
-    public ResponseEntity<BaseResponse<DepartmentDto, Void>> getRequestDetail(Long id) {
+    public ResponseEntity<BaseResponse<DepartmentResponse, Void>> getDepartmentDetail(Long id) {
         if (!isIdValid(id)) {
             throw new BaseException(ErrorCode.newErrorCode(404,
                     "Department ID not found!",
@@ -220,8 +220,9 @@ public class DepartmentServiceImpl implements DepartmentService{
         DepartmentDto departmentDto = new DepartmentDto(department.getDepartmentId(), department.getDepartmentName());
         departmentDto.setTotalEmployee(numberOfEmployeeInDepartment);
         departmentDto.setListPosition(listPosition);
-        ResponseEntity<BaseResponse<DepartmentDto, Void>> responseEntity
-                = BaseResponse.ofSucceededOffset(departmentDto, null);
+        DepartmentResponse departmentResponse = new DepartmentResponse(departmentDto);
+        ResponseEntity<BaseResponse<DepartmentResponse, Void>> responseEntity
+                = BaseResponse.ofSucceededOffset(departmentResponse, null);
         return responseEntity;
     }
 

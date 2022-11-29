@@ -26,13 +26,12 @@ public class BenefitBudgetController {
     @GetMapping("/benefit-budget")
     public ResponseEntity<BaseResponse<BenefitBudgetResponse.BenefitBudgetListResponse, Pageable>> getMyBenefitBudget(
             @RequestParam Long requestTypeId,
-            @RequestParam(required = false) String search,
             @RequestParam(required = false) @Min(1) @Max(12) Integer month,
             @RequestParam(required = false) Year year,
             @RequestParam(required = false) String sort,
             @RequestParam(required = false) String dir
     ) throws ParseException {
         Long personId = Long.valueOf(24);
-        return benefitBudgetService.getBenefitBudget(null, personId, null, null, requestTypeId != CommonConstant.REQUEST_TYPE_ID_OF_OT ? null:CommonConstant.REQUEST_TYPE_ID_OF_OT, search, month, year, sort, dir);
+        return benefitBudgetService.getBenefitBudget(null, personId, null, null, requestTypeId != CommonConstant.REQUEST_TYPE_ID_OF_OT ? null:CommonConstant.REQUEST_TYPE_ID_OF_OT, null, month, year, sort, dir);
     }
 }

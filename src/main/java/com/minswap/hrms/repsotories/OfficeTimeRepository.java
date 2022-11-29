@@ -1,6 +1,7 @@
 package com.minswap.hrms.repsotories;
 
 import com.minswap.hrms.entities.OfficeTime;
+import com.minswap.hrms.response.dto.OfficeTimeDto;
 import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -15,4 +16,7 @@ public interface OfficeTimeRepository extends JpaRepository<OfficeTime, Long> {
     Long getPresentOfficeTimeId();
 
     Optional<OfficeTime> findOfficeTimeByOfficeTimeId(@Param("officeTimeId") Long officeTimeId);
+
+    @Query("select new com.minswap.hrms.response.dto.OfficeTimeDto(ot.timeStart, ot.timeFinish) from OfficeTime ot")
+    OfficeTimeDto getOfficeTime();
 }

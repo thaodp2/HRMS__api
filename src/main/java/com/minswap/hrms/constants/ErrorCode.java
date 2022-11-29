@@ -9,7 +9,8 @@ public class ErrorCode {
     		ErrorCodeEnum.INTERNAL_SERVER_ERROR.getValue(), "Internal server error", HttpStatus.INTERNAL_SERVER_ERROR);
 
     public static final BusinessCode DATE_INVALID = new BusinessCode(
-            ErrorCodeEnum.DATE_INVALID.getValue(), "CreateDate must be before StartTime and StartTime must be before EndTime", HttpStatus.BAD_REQUEST);
+            ErrorCodeEnum.DATE_INVALID.getValue(), "Create date must be before start time " +
+            "and start time must be before end time", HttpStatus.BAD_REQUEST);
 
     public static final BusinessCode INVALID_DATE = new BusinessCode(
             ErrorCodeEnum.INVALID_DATE.getValue(), "StartTime must be before EndTime", HttpStatus.BAD_REQUEST);
@@ -22,7 +23,7 @@ public class ErrorCode {
             "Start Time and End Time can't be null in leave request", HttpStatus.BAD_REQUEST);
 
     public static final BusinessCode INVALID_DEVICE_TYPE_ID = new BusinessCode(
-            ErrorCodeEnum.INVALID_DEVICE_TYPE_ID.getValue(), "DeviceTypeId is not exist", HttpStatus.NOT_FOUND);
+            ErrorCodeEnum.INVALID_DEVICE_TYPE_ID.getValue(), "Device type is not exist", HttpStatus.NOT_FOUND);
 
     public static final BusinessCode UPDATE_FAIL = new BusinessCode(
             ErrorCodeEnum.UPDATE_FAIL.getValue(), "Update failed", HttpStatus.NOT_FOUND);
@@ -67,6 +68,16 @@ public class ErrorCode {
     		ErrorCodeEnum.UNAUTHORIZED.getValue(), "Unauthorized", HttpStatus.UNAUTHORIZED);
     public static final BusinessCode DUPLICATE_DEVICE_TYPE = new BusinessCode(
             ErrorCodeEnum.DUPLICATE_DEVICE_TYPE.getValue(), "Duplicate device type", HttpStatus.BAD_REQUEST);
+
+    public static final BusinessCode DUPLICATE_DEVICE_CODE = new BusinessCode(
+            ErrorCodeEnum.DUPLICATE_DEVICE_CODE.getValue(), "Duplicate device code", HttpStatus.BAD_REQUEST);
+
+    public static final BusinessCode DEVICE_NOT_EXIST = new BusinessCode(
+            ErrorCodeEnum.DEVICE_NOT_EXIST.getValue(), "Device not exist", HttpStatus.BAD_REQUEST);
+
+    public static final BusinessCode DEVICE_HAS_BEEN_BORROWED = new BusinessCode(
+            ErrorCodeEnum.DEVICE_HAS_BEEN_BORROWED.getValue(), "Device has been borrowed", HttpStatus.BAD_REQUEST);
+
     public static final BusinessCode DEVICE_TYPE_NULL_OR_EMPTY = new BusinessCode(
             ErrorCodeEnum.DEVICE_TYPE_NULL_OR_EMPTY.getValue(), "Device type can't null or empty", HttpStatus.BAD_REQUEST);
 
@@ -81,6 +92,22 @@ public class ErrorCode {
 
     public static final BusinessCode PERSON_NOT_EXIST = new BusinessCode(
             ErrorCodeEnum.PERSON_NOT_EXIST.getValue(), "Person not exist!", HttpStatus.NOT_FOUND);
+
+    public static final BusinessCode CURRENT_SECURE_CODE_INCORRECT = new BusinessCode(
+            ErrorCodeEnum.CURRENT_SECURE_CODE_INCORRECT.getValue(), "Current Secure Code Incorrect", HttpStatus.BAD_REQUEST);
+
+    public static final BusinessCode SECURE_CODE_AND_CONFIRM_CODE_DO_NOT_MATCH = new BusinessCode(
+            ErrorCodeEnum.SECURE_CODE_AND_CONFIRM_CODE_DO_NOT_MATCH.getValue(), "Secure code and confirm code do not match", HttpStatus.BAD_REQUEST);
+
+    public static final BusinessCode NEW_CODE_AND_CURRENT_CODE_MUST_DIFFERENT = new BusinessCode(
+            ErrorCodeEnum.SECURE_CODE_AND_CONFIRM_CODE_DO_NOT_MATCH.getValue(), "New secure code and current code should be different", HttpStatus.BAD_REQUEST);
+
+    public static final BusinessCode CREATE_FAIL = new BusinessCode(
+            ErrorCodeEnum.CREATE_FAIL.getValue(), "Create fail!", HttpStatus.EXPECTATION_FAILED);
+
+    public static final BusinessCode DO_NOT_ENOUGH_DEVICE_TO_ASSIGN = new BusinessCode(
+            ErrorCodeEnum.DO_NOT_ENOUGH_DEVICE_TO_ASSIGN.getValue(), "Don't have any device to assign!", HttpStatus.EXPECTATION_FAILED);
+
     public static BusinessCode newErrorCode(String message) {
         return new BusinessCode(ErrorCodeEnum.INTERNAL_SERVER_ERROR.getValue(), message, HttpStatus.INTERNAL_SERVER_ERROR);
     }

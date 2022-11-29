@@ -2,6 +2,7 @@ package com.minswap.hrms.controller;
 
 import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.request.UpdateUserRequest;
+import com.minswap.hrms.response.EmployeeInfoResponse;
 import com.minswap.hrms.response.MasterDataResponse;
 import com.minswap.hrms.service.person.PersonService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,13 +17,20 @@ public class PersonController {
     @Autowired
     PersonService personService;
 
-    @PutMapping("/user/information")
+    @PutMapping("/user-info")
     public ResponseEntity<BaseResponse<HttpStatus, Void>> updateUserInformation(@RequestBody UpdateUserRequest updateUserDto) throws Exception {
         return personService.updateUserInformation(updateUserDto);
+    }
+
+    @GetMapping("/user-info")
+    public ResponseEntity<BaseResponse<EmployeeInfoResponse, Void>> getDetailEmployee() {
+        String rollNumber = "MS0018";
+        return personService.getDetailEmployee(rollNumber);
     }
 
     @GetMapping("/all-manager-master-data")
     public ResponseEntity<BaseResponse<MasterDataResponse, Pageable>> getMasterDataAllManager(@RequestParam (required = false) String search) {
         return personService.getMasterDataAllManager(search);
     }
+
 }

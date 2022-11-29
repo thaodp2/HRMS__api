@@ -5,15 +5,11 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.minswap.hrms.constants.CommonConstant;
-import com.minswap.hrms.entities.Evidence;
-import com.minswap.hrms.entities.Person;
-import com.minswap.hrms.entities.Request;
-import com.minswap.hrms.repsotories.RequestTypeRepository;
-import lombok.*;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import javax.persistence.*;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
@@ -24,9 +20,11 @@ import java.util.List;
 @JsonPropertyOrder("id")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class RequestDto {
-    public RequestDto(Long requestId, String personName, Long requestTypeId, String requestTypeName, Date createDate, Date startTime,
-                      Date endTime, String reason, String status, String receiver, Long deviceTypeId, Date approvalDate) {
+    public RequestDto(Long requestId, String rollNumber, String personName, Long requestTypeId, String requestTypeName, Date createDate, Date startTime,
+                      Date endTime, String reason, String status, String receiver, Long deviceTypeId, String deviceTypeName, Date approvalDate,
+                      Integer isAssigned) {
         this.requestId = requestId;
+        this.rollNumber = rollNumber;
         this.personName = personName;
         this.requestTypeId = requestTypeId;
         this.requestTypeName = requestTypeName;
@@ -37,7 +35,21 @@ public class RequestDto {
         this.status = status;
         this.receiver = receiver;
         this.deviceTypeId = deviceTypeId;
+        this.deviceTypeName = deviceTypeName;
         this.approvalDate = approvalDate;
+        this.isAssigned = isAssigned;
+    }
+
+    public RequestDto(Long requestId, String rollNumber, String personName, Date createDate, String reason, String receiver, String deviceTypeName, Date approvalDate, Integer isAssigned) {
+        this.requestId = requestId;
+        this.rollNumber = rollNumber;
+        this.personName = personName;
+        this.createDate = createDate;
+        this.reason = reason;
+        this.receiver = receiver;
+        this.deviceTypeName = deviceTypeName;
+        this.approvalDate = approvalDate;
+        this.isAssigned = isAssigned;
     }
 
     @JsonProperty("id")
@@ -59,11 +71,15 @@ public class RequestDto {
     private String status;
     private String receiver;
     private Long deviceTypeId;
+
+    private String deviceTypeName;
     @JsonFormat(pattern = CommonConstant.YYYY_MM_DD_HH_MM_SS, shape = JsonFormat.Shape.STRING)
     private Date approvalDate;
 
     private double timeRemaining;
 
     private int isAllowRollback;
+
+    private Integer isAssigned;
 
 }

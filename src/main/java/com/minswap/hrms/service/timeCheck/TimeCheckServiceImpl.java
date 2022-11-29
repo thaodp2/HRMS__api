@@ -282,6 +282,58 @@ public class TimeCheckServiceImpl implements TimeCheckService{
     }
 
     @Override
+    public List<TimeCheckEachSubordinateDto> listTimeCheckToExport(String search, String startDate, String endDate) throws Exception {
+        Date startDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(startDate);
+        Date endDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(endDate);
+
+        List<TimeCheckEachSubordinateDto> timeCheckSubordinateList = new ArrayList<>();
+        Page<Long> listPersonIdPage = personRepository.getListPersonIdByFullName(search, null);
+        List<Long> listPersonId = listPersonIdPage.getContent();
+
+        List<Date> listDate = getDatesInRange(startDateFormat, endDateFormat);
+        for (Long personId : listPersonId ) {
+            Optional<Person> personFromDB = personRepository.findPersonByPersonId(personId);
+            if(!personFromDB.isPresent()){
+                throw new Exception("Person not exist");
+            }
+            TimeCheckEachSubordinateDto eachSubordinateDto = new TimeCheckEachSubordinateDto();
+            eachSubordinateDto.setId(personId);
+            eachSubordinateDto.setPersonName(personFromDB.get().getFullName());
+            eachSubordinateDto.setRollNumber(personFromDB.get().getRollNumber());
+            int dateCount = 2;
+            for (Date item : listDate){
+                Date dateAdd = item;
+                dateAdd.setTime(dateAdd.getTime() + MILLISECOND_7_HOURS);
+                DailyTimeCheckDto timeCheckDto = timeCheckRepository.getDailyTimeCheck(personId,dateAdd);
+
+                if(dateCount == 2){
+                    eachSubordinateDto.setMon(timeCheckDto);
+                }
+                if(dateCount == 3){
+                    eachSubordinateDto.setTue(timeCheckDto);
+                }
+                if(dateCount == 4){
+                    eachSubordinateDto.setWed(timeCheckDto);
+                }
+                if(dateCount == 5){
+                    eachSubordinateDto.setThu(timeCheckDto);
+                }
+                if(dateCount == 6){
+                    eachSubordinateDto.setFri(timeCheckDto);
+                }
+                if(dateCount == 7){
+                    eachSubordinateDto.setSat(timeCheckDto);
+                }
+                if(dateCount == 8){
+                    eachSubordinateDto.setSun(timeCheckDto);
+                }
+                dateCount++;
+            }
+
+            timeCheckSubordinateList.add(eachSubordinateDto);
+        }
+        return timeCheckSubordinateList;
+    }
     public ResponseEntity<BaseResponse<Void, Void>> logTimeCheck(TimeCheckInRequest timeCheckInRequest) {
         TimeCheck timeCheck = new TimeCheck();
         Optional<SignatureProfile> signatureProfileOptional = signatureProfileRepository.findSignatureProfileByPrivateKeySignature(timeCheckInRequest.getIdSignature());

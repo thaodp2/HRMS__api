@@ -9,9 +9,16 @@ import lombok.Setter;
 @NoArgsConstructor
 public class EmployeeTimeRemainingDto {
 
-    public EmployeeTimeRemainingDto(double timeRemaining) {
-        this.timeRemaining = timeRemaining;
+    public EmployeeTimeRemainingDto(double otTimeRemainingOfMonth,
+                                    double otTimeRemainingOfYear) {
+        this.otTimeRemainingOfMonth = otTimeRemainingOfMonth;
+        this.otTimeRemainingOfYear = otTimeRemainingOfYear;
     }
 
-    private double timeRemaining;
+    public EmployeeTimeRemainingDto(double otTimeRemainingOfYear) {
+        this.otTimeRemainingOfYear = otTimeRemainingOfYear;
+    }
+
+    private double otTimeRemainingOfMonth;
+    private double otTimeRemainingOfYear;
 }

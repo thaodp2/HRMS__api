@@ -8,6 +8,7 @@ import com.minswap.hrms.repsotories.OTBudgetRepository;
 import com.minswap.hrms.repsotories.PersonRepository;
 import com.minswap.hrms.response.BenefitBudgetResponse;
 import com.minswap.hrms.response.dto.BenefitBudgetDto;
+import com.minswap.hrms.util.CommonUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -55,14 +56,15 @@ public class BenefitBudgetServiceImpl implements BenefitBudgetService {
 
     @Override
     public Page<BenefitBudgetDto> getBenefitBudgetList(Long managerId, Long personId, Integer page, Integer limit, Long requestTypeId, String search, Integer month, Year year, String sort, String dir) {
-        Sort.Direction dirSort = null;
-        if (sort != null && !sort.trim().isEmpty()) {
-            if (dir == null || dir.trim().equalsIgnoreCase("asc")) {
-                dirSort = Sort.Direction.ASC;
-            } else if (dir.trim().equalsIgnoreCase("desc")) {
-                dirSort = Sort.Direction.DESC;
-            }
-        }
+//        Sort.Direction dirSort = null;
+//        if (sort != null && !sort.trim().isEmpty()) {
+//            if (dir == null || dir.trim().equalsIgnoreCase("asc")) {
+//                dirSort = Sort.Direction.ASC;
+//            } else if (dir.trim().equalsIgnoreCase("desc")) {
+//                dirSort = Sort.Direction.DESC;
+//            }
+//        }
+        Sort.Direction dirSort = CommonUtil.getSortDirection(sort,dir);
         Page<BenefitBudgetDto> pageInfor = null;
         if (requestTypeId != CommonConstant.REQUEST_TYPE_ID_OF_OT) {
             pageInfor = leaveBudgetRepository.getBenefitBudgetList(year == null ? Year.now() : year, (search == null || search.trim().isEmpty()) ? null:search.trim(), managerId, requestTypeId, personId,(page == null && limit == null)?null: PageRequest.of(page - 1, limit, dirSort == null ? Sort.unsorted() : Sort.by(dirSort, sort)));

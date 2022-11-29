@@ -24,7 +24,7 @@ public class LeaveBudgetServiceImpl implements LeaveBudgetService {
 
     @Override
     public void createLeaveBudget() {
-        List<Person> personList = personRepository.findAll();
+        List<Person> personList = personRepository.findByRankIdIsNot(CommonConstant.RANK_ID_OF_INTERN);
         List<LeaveBudget> leaveBudgetList = new ArrayList<>();
         if(!personList.isEmpty()) {
             for (Person person : personList) {
@@ -41,7 +41,7 @@ public class LeaveBudgetServiceImpl implements LeaveBudgetService {
     @Override
     public void updateLeaveBudgetEachMonth() {
         DecimalFormat df = new DecimalFormat("#.##");
-        List<Person> personList = personRepository.findAll();
+        List<Person> personList = personRepository.findByRankIdIsNot(CommonConstant.RANK_ID_OF_INTERN);
         if(!personList.isEmpty()) {
             for (Person person : personList) {
                 Double increaseLeaveBudget = Double.valueOf(df.format(person.getAnnualLeaveBudget() / 12));

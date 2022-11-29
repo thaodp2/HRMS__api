@@ -18,8 +18,8 @@ public class OfficeTimeRequest extends BasicRequest{
 
     private Long officeTimeId;
 
-    @Pattern(regexp = "(2[0-3]|[01][0-9]):[0-5][0-9]:[0-5][0-9]", message = "415")
-    @NotNull(message = "haha")
+    @Pattern(regexp = "(2[0-3]|[01][0-9]):[0-5][0-9]:[0-5][0-9]", message = "timeStart wrong")
+    @NotNull(message = "timeStart null")
     private String timeStart;
 
     @Pattern(regexp = "(2[0-3]|[01][0-9]):[0-5][0-9]:[0-5][0-9]", message = "Invalid timeFinish")
