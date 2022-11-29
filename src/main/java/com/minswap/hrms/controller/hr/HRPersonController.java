@@ -47,10 +47,12 @@ public class HRPersonController {
             @RequestParam(name = "departmentId", required = false) Long departmentId,
             @RequestParam(name = "rollNumber", required = false) String rollNumber,
             @RequestParam(name = "isActive", required = false) String active,
-            @RequestParam(name = "positionId", required = false) Long positionId
+            @RequestParam(name = "positionId", required = false) Long positionId,
+            @RequestParam(required = false) String sort,
+            @RequestParam(required = false) String dir
 
     ) {
-        return personService.getSearchListEmployee(page, limit, fullName, email, departmentId, rollNumber, active, positionId, "");
+        return personService.getSearchListEmployee(page, limit, fullName, email, departmentId, rollNumber, active, positionId, "", sort, dir);
     }
 
 

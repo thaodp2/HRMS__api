@@ -96,7 +96,8 @@ public interface PersonRepository extends JpaRepository<Person, Long>{
             "p.gender = :gender," +
             "p.salaryBasic = :salaryBasic," +
             "p.salaryBonus = :salaryBonus," +
-            "p.onBoardDate = :onBoardDate" +
+            "p.onBoardDate = :onBoardDate," +
+            "p.status = :status" +
             " where p.rollNumber = :rollNumber")
     Integer updateEmployee(
                                  @Param("fullName") String fullName,
@@ -112,7 +113,8 @@ public interface PersonRepository extends JpaRepository<Person, Long>{
                                  @Param("rollNumber") String rollNumber,
                                  @Param("salaryBasic") Double salaryBasic,
                                  @Param("salaryBonus") Double salaryBonus,
-                                 @Param("onBoardDate") Date onBoardDate
+                                 @Param("onBoardDate") Date onBoardDate,
+                                 @Param("status") String status
                                  );
 
     @Query(" SELECT p.personId " +
@@ -167,4 +169,6 @@ public interface PersonRepository extends JpaRepository<Person, Long>{
             " where p.rollNumber = :rollNumber")
     Integer updateAnnualLeaveBudget(@Param("annualLeaveBudget") Double annualLeaveBudget,
                                     @Param("rollNumber") String rollNumber);
+    @Query("SELECT count(p.citizenIdentification) FROM Person p WHERE p.citizenIdentification = :citizenIdentification")
+    Integer getUserByCitizenIdentification(@Param("citizenIdentification") String citizenIdentification);
 }

@@ -124,4 +124,6 @@ public class ErrorCode {
     }
     private ErrorCode() {
     }
+    public static final BusinessCode CITIZEN_INDENTIFICATION_EXSIT = new BusinessCode(
+            ErrorCodeEnum.CITIZEN_INDENTIFICATION_EXSIT.getValue(), "Citizen Identification exist!", HttpStatus.NOT_FOUND);
 }
