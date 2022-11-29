@@ -16,4 +16,11 @@ public interface RequestTypeRepository extends JpaRepository<RequestType,Long> {
 
     @Query("select r.requestTypeId from Request r where r.requestId =:id")
     Integer getRequestTypeByRequestId(@Param("id") Long id);
+
+    @Query("select rt.requestTypeName " +
+            "from RequestType rt " +
+            "left join Request r " +
+            "on r.requestTypeId = rt.requestTypeId " +
+            "where r.requestId=:id")
+    String getRequestTypeNameByRequestId(@Param("id") Long id);
 }

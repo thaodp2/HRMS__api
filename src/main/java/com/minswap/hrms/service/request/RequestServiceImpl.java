@@ -116,6 +116,8 @@ public class RequestServiceImpl implements RequestService {
     private static final int WFH_REQUEST_TYPE_ID = 9;
     private static final String CREATE_REQUEST_NOTIFICATION_TYPE = "CREATE REQUEST";
     private static final String UPDATE_REQUEST_STATUS_NOTIFICATION_TYPE = "UPDATE REQUEST STATUS";
+    private static final String URL_REQUEST_TO_MANAGER = "subordinate";
+    private static final String URL_REQUEST_TO_EMPLOYEE = "my-request";
     public List<RequestDto> getQueryForRequestList(String type, Long managerId, Long personId, Boolean isLimit, Integer limit, Integer page, String search, String createDateFrom, String createDateTo, Long requestTypeId, String status, String sort, String dir) throws ParseException {
         HashMap<String, Object> params = new HashMap<>();
         StringBuilder queryAllRequest = new StringBuilder("select r.request_id as requestId,p.roll_number as rollNumber, p.full_name as personName, rt.request_type_name as requestTypeName, r.create_date as createDate, r.start_time as startTime, r.end_time as endTime, r.reason as reason, r.status as status, r.is_assigned as isAssigned, r.request_type_id as requestTypeId ");
@@ -333,7 +335,7 @@ public class RequestServiceImpl implements RequestService {
         boolean isReturnNumOfDayOff = false;
         Integer isAssigned = null;
         Date currentTime = getCurrentTime();
-        currentTime.setTime(currentTime.getTime() + CommonConstant.MILLISECOND_7_HOURS);
+//        currentTime.setTime(currentTime.getTime() + CommonConstant.MILLISECOND_7_HOURS);
         if (!isRequestIdValid(id)) {
             throw new BaseException(ErrorCode.RESULT_NOT_FOUND);
         }
@@ -353,9 +355,33 @@ public class RequestServiceImpl implements RequestService {
             if (requestTypeId == BORROW_REQUEST_TYPE_ID) {
                 isAssigned = 0;
             }
+            Calendar calendarCompare = getCalendarByDate(startTime);
+            Year year = Year.of(calendarCompare.get(Calendar.YEAR));
+            calendarCompare.add(Calendar.DAY_OF_MONTH, 1);
+            int month = calendarCompare.get(Calendar.MONTH) + 1;
+            if (LEAVE_REQUEST_TYPE.contains(Integer.valueOf(requestTypeId))) {
+                validateLeaveRequestTimeAlreadyInAnotherLeaveRequest(personId, startTime, endTime);
+                startTime.setTime(startTime.getTime() - CommonConstant.MILLISECOND_7_HOURS);
+                endTime.setTime(endTime.getTime() - CommonConstant.MILLISECOND_7_HOURS);
+                LeaveBudgetDto leaveBudgetDto = leaveBudgetRepository.getLeaveBudget(personId, year, Long.valueOf(requestTypeId));
+                double numberOfDayOff = calculateNumOfDayOff(startTime +"", endTime +"");
+                if (numberOfDayOff > leaveBudgetDto.getRemainDayOff()) {
+                    throw new BaseException(ErrorCode.newErrorCode(208,
+                            "Not enough remaining day off! " +
+                                    "You only have " + leaveBudgetDto.getRemainDayOff() + " days left this year",
+                            httpStatus.NOT_ACCEPTABLE));
+                }
+            }
+            else if (Integer.valueOf(requestTypeId) == OT_TYPE_ID) {
+                validateOTRequest(startTime, endTime, personId, year, month, getCalendarByDate(startTime), getCalendarByDate(endTime),
+                        Long.valueOf(requestTypeId));
+            }
             if (maximumTimeToRollback == null) {
+                currentTime.setTime(currentTime.getTime() + CommonConstant.MILLISECOND_7_HOURS);
+                currentTime.setTime(currentTime.getTime() + CommonConstant.MILLISECOND_2_HOURS);
                 requestRepository.updateMaximumTimeToRollback(id, currentTime);
             }
+            currentTime.setTime(currentTime.getTime() - CommonConstant.MILLISECOND_2_HOURS);
             Integer isUpdatedSuccess = requestRepository.updateStatusRequest(status, id, currentTime, isAssigned);
             if (isUpdatedSuccess == CommonConstant.UPDATE_FAIL) {
                 throw new BaseException(ErrorCode.UPDATE_FAIL);
@@ -365,7 +391,7 @@ public class RequestServiceImpl implements RequestService {
             }
             else if (LEAVE_REQUEST_TYPE.contains(Integer.valueOf(requestTypeId))
                                     || Integer.valueOf(requestTypeId) == OT_TYPE_ID) {
-                updateNumOfDayOff(id, isReturnNumOfDayOff);
+                updateNumOfDayOff(id, isReturnNumOfDayOff, startTime, endTime);
             }
         }
         else if (status.equalsIgnoreCase(REJECTED_STATUS) && currentStatus.equalsIgnoreCase(PENDING_STATUS)) {
@@ -413,12 +439,14 @@ public class RequestServiceImpl implements RequestService {
                     } else {
                         isReturnNumOfDayOff = true;
                     }
-                    updateNumOfDayOff(id, isReturnNumOfDayOff);
+                    updateNumOfDayOff(id, isReturnNumOfDayOff, startTime, endTime);
                 }
             }
         }
-        String notiContent = getNotiContentWhenUpdateRequestStatus();
-        createNotification(notiContent, 0, UPDATE_REQUEST_STATUS_NOTIFICATION_TYPE, 0, null, personId, currentTime);
+        String notiContent = getNotiContentWhenUpdateRequestStatus(requestTypeRepository.getRequestTypeNameByRequestId(id));
+        String url = getNotiRequestUrl(URL_REQUEST_TO_EMPLOYEE, id);
+        Long managerId = personRepository.getManagerIdByPersonId(personId);
+        createNotification(notiContent, 0, url, 0, managerId, personId, currentTime);
         responseEntity = BaseResponse.ofSucceeded(null);
         return responseEntity;
     }
@@ -626,8 +654,9 @@ public class RequestServiceImpl implements RequestService {
         // Tạo noti cho người gửi và manager
         String personName = personRepository.getPersonNameByPersonId(personId);
         String notiContent = getNotiContentWhenCreateRequest(personName);
+        String url = getNotiRequestUrl(URL_REQUEST_TO_MANAGER, requestIdJustAdded);
         Long managerId = personRepository.getManagerIdByPersonId(personId);
-        createNotification(notiContent, 0, CREATE_REQUEST_NOTIFICATION_TYPE, 0, personId, managerId, createDate);
+        createNotification(notiContent, 0, url, 0, personId, managerId, createDate);
         ResponseEntity<BaseResponse<Void, Void>> responseEntity = BaseResponse.ofSucceeded(null);
         return responseEntity;
     }
@@ -649,12 +678,15 @@ public class RequestServiceImpl implements RequestService {
             endTime.setTime(endTime.getTime() + CommonConstant.MILLISECOND_7_HOURS);
             requestRepository.autoRejectRequestNotProcessed(startTime, endTime, REJECTED_STATUS,
                                                             PENDING_STATUS, currentDate, FORGOT_CHECK_IN_OUT_TYPE_ID);
-            String notiContent = getNotiContentWhenUpdateRequestStatus();
-            List<Long> listEmployeeIdWasAutoRejected = requestRepository.getListEmployeeIdWasAutoRejected(startTime,
+
+            List<PersonAndRequestDto> listEmployeeIdWasAutoRejected = requestRepository.getListEmployeeIdWasAutoRejected(startTime,
                     endTime, PENDING_STATUS, FORGOT_CHECK_IN_OUT_TYPE_ID);
-            for (Long emplId : listEmployeeIdWasAutoRejected) {
-                createNotification(notiContent, 0, UPDATE_REQUEST_STATUS_NOTIFICATION_TYPE,
-                        0, null, emplId, currentDate);
+            for (PersonAndRequestDto personAndRequestDto : listEmployeeIdWasAutoRejected) {
+                Long requestId = personAndRequestDto.getRequestId();
+                Long personId = personAndRequestDto.getPersonId();
+                String url = getNotiRequestUrl(URL_REQUEST_TO_EMPLOYEE, requestId);
+                String notiContent = getNotiContentWhenUpdateRequestStatus(requestTypeRepository.getRequestTypeNameByRequestId(requestId));
+                createNotification(notiContent, 0, url,0, null, personId, currentDate);
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -692,7 +724,7 @@ public class RequestServiceImpl implements RequestService {
         }
         else if (!requestRepository.getStatusOfRequestById(id).equalsIgnoreCase(PENDING_STATUS)) {
             throw new BaseException(ErrorCode.newErrorCode(208,
-                    "You can't cancel an approved or rejected request",
+                    "You can't cancel an request that has already been processed",
                     httpStatus.NOT_ACCEPTABLE));
         }
         Integer isUpdatedSuccess = requestRepository.updateStatusRequest(CANCELED_STATUS,
@@ -715,15 +747,15 @@ public class RequestServiceImpl implements RequestService {
         }
     }
 
-    public void updateNumOfDayOff(Long id, boolean isReturnNumOfDayOff) {
+    public void updateNumOfDayOff(Long id, boolean isReturnNumOfDayOff, Date startTime, Date endTime) {
         // Get request type id
         Integer requestTypeId = requestTypeRepository.getRequestTypeByRequestId(id);
         // Get person id
         Long personId = requestRepository.getPersonIdByRequestId(id);
         // Get start time and end time
-        DateDto dateDto = requestRepository.getStartAndEndTimeByRequestId(id);
-        Date startTime = dateDto.getStartTime();
-        Date endTime = dateDto.getEndTime();
+//        DateDto dateDto = requestRepository.getStartAndEndTimeByRequestId(id);
+//        Date startTime = dateDto.getStartTime();
+//        Date endTime = dateDto.getEndTime();
         // get month and year of start time
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(startTime);
@@ -864,7 +896,20 @@ public class RequestServiceImpl implements RequestService {
             double workingTimeHoursInOneDay = calculateHoursBetweenTwoDateTime(startOfficeTime, finishOfficeTime);
 
             if (startCalendar.get(Calendar.DAY_OF_MONTH) == endCalendar.get(Calendar.DAY_OF_MONTH)) {
-                numberOfDayOff = calculateHoursBetweenTwoDateTime(startTimeDate, endTimeDate);
+                startOfficeTime = formatTimeToKnownDate(startTimeDate, officeTimeDto.getTimeStart());
+                finishOfficeTime = formatTimeToKnownDate(startTimeDate, officeTimeDto.getTimeEnd());
+                if (startTimeDate.before(startOfficeTime) && endTimeDate.after(finishOfficeTime)) {
+                    numberOfDayOff = calculateHoursBetweenTwoDateTime(startOfficeTime, finishOfficeTime) / workingTimeHoursInOneDay;
+                }
+                else if (startTimeDate.before(startOfficeTime) && endTimeDate.before(finishOfficeTime)) {
+                    numberOfDayOff = calculateHoursBetweenTwoDateTime(startOfficeTime, endTimeDate) / workingTimeHoursInOneDay;
+                }
+                else if (startTimeDate.after(startOfficeTime) && endTimeDate.after(finishOfficeTime)) {
+                    numberOfDayOff = calculateHoursBetweenTwoDateTime(startTimeDate, finishOfficeTime) / workingTimeHoursInOneDay;
+                }
+                else {
+                    numberOfDayOff = calculateHoursBetweenTwoDateTime(startTimeDate, endTimeDate) / workingTimeHoursInOneDay;
+                }
             }
             else {
                 int numOfDaysOffBetweenStartAndEnd = -1;
@@ -943,6 +988,26 @@ public class RequestServiceImpl implements RequestService {
                     "You must make request 1 day before start date",
                     httpStatus.NOT_ACCEPTABLE));
         }
+        OfficeTimeDto officeTimeDto = officeTimeRepository.getOfficeTime();
+        if (calendarStart.get(Calendar.DAY_OF_MONTH) == calendarEnd.get(Calendar.DAY_OF_MONTH)) {
+            Date startOfficeTime = formatTimeToKnownDate(startTime, officeTimeDto.getTimeStart());
+            Date endOfficeTime = formatTimeToKnownDate(startTime, officeTimeDto.getTimeEnd());
+            if ((startTime.before(startOfficeTime) && endTime.before(startOfficeTime))
+                    || (endTime.after(endOfficeTime) && startTime.after(endOfficeTime))) {
+                throw new BaseException(ErrorCode.newErrorCode(208,
+                        "You can't make a leave request outside of office hours",
+                        httpStatus.NOT_ACCEPTABLE));
+            }
+        }
+        else {
+            Date endOfficeTimeByStartTime = formatTimeToKnownDate(startTime, officeTimeDto.getTimeEnd());
+            Date startOfficeTimeByEndTime = formatTimeToKnownDate(endTime, officeTimeDto.getTimeStart());
+            if (startTime.after(endOfficeTimeByStartTime) && endTime.before(startOfficeTimeByEndTime)) {
+                throw new BaseException(ErrorCode.newErrorCode(208,
+                        "You can't make a leave request outside of office hours",
+                        httpStatus.NOT_ACCEPTABLE));
+            }
+        }
         LeaveBudgetDto leaveBudgetDto = leaveBudgetRepository.getLeaveBudget(personId, year, requestTypeId);
         double numberOfDayOff = calculateNumOfDayOff(startTimeStr, endTimeStr);
         if (numberOfDayOff > leaveBudgetDto.getRemainDayOff()) {
@@ -953,7 +1018,7 @@ public class RequestServiceImpl implements RequestService {
         }
     }
 
-    public void     validateOTRequest(Date startTime,
+    public void validateOTRequest(Date startTime,
                                   Date endTime,
                                   Long personId,
                                   Year year,
@@ -1001,14 +1066,6 @@ public class RequestServiceImpl implements RequestService {
         String otEndTimeStr = getStringDateFromDateTime(endTime) + " " + OT_END_TIME;
         Date otStartTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).parse(otStartTimeStr);
         Date otEndTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).parse(otEndTimeStr);
-//        if (startTime.before(otStartTime)
-//                || startTime.after(otEndTime)
-//                || endTime.after(otEndTime)
-//                || endTime.before(otStartTime)) {
-//            throw new BaseException(ErrorCode.newErrorCode(208,
-//                    "You can only OT between 10pm and 4am the next day",
-//                    httpStatus.NOT_ACCEPTABLE));
-//        }
         double otHoursRemainOfMonth = otBudgetDto.getOtHoursRemainOfMonth();
         double otHoursRemainOfYear = otBudgetDto.getOtHoursRemainOfYear();
         if (calendarStart.get(Calendar.DAY_OF_MONTH) == calendarEnd.get(Calendar.DAY_OF_MONTH)) {
@@ -1189,12 +1246,6 @@ public class RequestServiceImpl implements RequestService {
                 }
             }
         }
-//        if (otHoursWorked == 4) {
-//            String time = DateTimeFormatter.ofPattern("yyyy-MM-dd").format(convertDateToLocalDateTime(timeNeedToValidate));
-//            throw new BaseException(ErrorCode.newErrorCode(208,
-//                    "The time you are allowed to OT on " + time + " is over",
-//                    httpStatus.NOT_ACCEPTABLE));
-//        }
         return otHoursWorked;
     }
 
@@ -1281,12 +1332,12 @@ public class RequestServiceImpl implements RequestService {
 
     public void createNotification(String content,
                                            Integer delivered,
-                                           String notificationType,
+                                           String redirectUrl,
                                            Integer isRead,
                                            Long userFrom,
                                            Long userTo,
                                            Date createDate) {
-        Notification notification = new Notification(content, delivered, notificationType, isRead, userFrom, userTo, createDate);
+        Notification notification = new Notification(content, delivered, redirectUrl, isRead, userFrom, userTo, createDate);
         notificationRepository.save(notification);
     }
 
@@ -1294,8 +1345,13 @@ public class RequestServiceImpl implements RequestService {
         return "You have received a request from " + sender;
     }
 
-    public String getNotiContentWhenUpdateRequestStatus() {
-        return "Your request has been processed";
+    public String getNotiContentWhenUpdateRequestStatus(String requestTypeName) {
+        return "Your " + requestTypeName + " request has been processed";
+    }
+
+    public String getNotiRequestUrl(String type, Long requestId) {
+        String url = "request-center/" + type + "/detail/" + requestId;
+        return url;
     }
 
 }

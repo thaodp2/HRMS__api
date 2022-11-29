@@ -2,6 +2,7 @@ package com.minswap.hrms.repsotories;
 
 import com.minswap.hrms.entities.Request;
 import com.minswap.hrms.response.dto.DateDto;
+import com.minswap.hrms.response.dto.PersonAndRequestDto;
 import com.minswap.hrms.response.dto.RequestDto;
 import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.domain.Page;
@@ -95,15 +96,15 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
                                           @Param("approvalDate") Date approvalDate,
                                           @Param("forgotRequestTypeId") int forgotRequestTypeId);
 
-    @Query("select r.personId from Request r " +
+    @Query("select new com.minswap.hrms.response.dto.PersonAndRequestDto(r.personId, r.requestId) from Request r " +
             "where (r.startTime between :start and :end) " +
             "and r.status=:pending " +
             "and r.requestTypeId<>:forgotRequestTypeId " +
             "and r.createDate < r.startTime")
-    List<Long> getListEmployeeIdWasAutoRejected(@Param("start") Date start,
-                                                @Param("end") Date end,
-                                                @Param("pending") String pending,
-                                                @Param("forgotRequestTypeId") int forgotRequestTypeId);
+    List<PersonAndRequestDto> getListEmployeeIdWasAutoRejected(@Param("start") Date start,
+                                                               @Param("end") Date end,
+                                                               @Param("pending") String pending,
+                                                               @Param("forgotRequestTypeId") int forgotRequestTypeId);
 
     @Query("select new com.minswap.hrms.response.dto.DateDto(r.startTime, r.endTime) " +
            "from Request r " +
