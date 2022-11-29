@@ -27,12 +27,14 @@ public class ITBorrowHistoryController {
     private BorrowHistoryService borrowHistoryService;
 
     @GetMapping("/borrow-history")
-    public ResponseEntity<BaseResponse<BorrowHistoryResponse, Pageable>> getAllBorrowHistory(
+    public ResponseEntity<BaseResponse<BorrowHistoryResponse.BorrowHistoryListResponse, Pageable>> getAllBorrowHistory(
             @RequestParam @Min(1) Integer page,
             @RequestParam @Min(0) Integer limit,
             @RequestParam(required = false) Long deviceTypeId,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) Integer isReturned,
             @RequestParam(required = false) String sort,
             @RequestParam(required = false) String dir) {
-        return borrowHistoryService.getBorrowHistoryList(null,null,page,limit,deviceTypeId,null,sort, dir);
+        return borrowHistoryService.getBorrowHistoryList(null,null,page,limit,deviceTypeId,search,sort, dir,isReturned);
     }
 }

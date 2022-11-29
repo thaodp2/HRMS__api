@@ -77,29 +77,32 @@ public class DeviceServiceImpl implements DeviceService {
         ResponseEntity<BaseResponse<HttpStatus, Void>> responseEntity = null;
         try {
             //create borrow history
-            borrowHistoryService.createBorrowHistory(assignRequest);
-            //update status device
+            BorrowHistory borrowHistory = borrowHistoryService.createBorrowHistory(assignRequest);
+
             Device device = deviceRepository.findById(assignRequest.getDeviceId()).orElse(null);
-            if (device != null) {
+            Request request = requestRepository.findById(assignRequest.getRequestId()).orElse(null);
+            if (device != null && request != null) {
+                //update status device
                 device.setStatus(1);
                 deviceRepository.save(device);
-            }
-            //update is assigned in request
-            Request request = requestRepository.findById(assignRequest.getRequestId()).orElse(null);
-            if (request != null) {
+
+                //update is assigned in request
                 request.setIsAssigned(1);
                 requestRepository.save(request);
-            }
-            //send a notification to person is assigned
-            //fake id of it support is 2 (current user)
-            Long currentUser = Long.valueOf(2);
-            Date currentDate = DateTimeUtil.getCurrentTime();
-            currentDate.setTime(currentDate.getTime() + CommonConstant.MILLISECOND_7_HOURS);
-            Notification notification = new Notification("You have just been assigned a device!",
-                    0,CommonConstant.URL+"/borrow-history",0,currentUser, request.getPersonId(), currentDate);
-            notificationRepository.save(notification);
 
-            responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.OK, null);
+                //send a notification to person is assigned
+                //fake id of it support is 2 (current user)
+                Long currentUser = Long.valueOf(2);
+                Date currentDate = DateTimeUtil.getCurrentTime();
+                currentDate.setTime(currentDate.getTime() + CommonConstant.MILLISECOND_7_HOURS);
+                Notification notification = new Notification("You have just been assigned a device " + device.getDeviceName() + " - " + device.getDeviceCode() + "!",
+                        0, "emp-self-service/device-history/detail/" + borrowHistory.getBorrowHistoryId(), 0, currentUser, request.getPersonId(), currentDate);
+                notificationRepository.save(notification);
+
+                responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.OK, null);
+            } else {
+                responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.EXPECTATION_FAILED, null);
+            }
         } catch (ParseException p) {
             responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.EXPECTATION_FAILED, null);
         }
@@ -110,18 +113,18 @@ public class DeviceServiceImpl implements DeviceService {
     public ResponseEntity<BaseResponse<HttpStatus, Void>> createDevice(DeviceRequest deviceRequest) {
         ResponseEntity<BaseResponse<HttpStatus, Void>> responseEntity = null;
         Optional<Device> deviceFormDB = deviceRepository.findByDeviceCode(deviceRequest.getDeviceCode());
-        if (deviceFormDB.isPresent()){
+        if (deviceFormDB.isPresent()) {
             throw new BaseException(ErrorCode.DUPLICATE_DEVICE_CODE);
         }
         try {
             ModelMapper modelMapper = new ModelMapper();
-            Device  device = new Device();
-            modelMapper.map(deviceRequest,device);
+            Device device = new Device();
+            modelMapper.map(deviceRequest, device);
             device.setStatus(0);
             device.setDeviceId(0L);
             deviceRepository.save(device);
             responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.OK, null);
-        }catch (Exception p){
+        } catch (Exception p) {
             responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.EXPECTATION_FAILED, null);
         }
         return responseEntity;
@@ -131,14 +134,14 @@ public class DeviceServiceImpl implements DeviceService {
     public ResponseEntity<BaseResponse<HttpStatus, Void>> updateDevice(UpdateDeviceRequest deviceRequest, Long deviceId) {
         ResponseEntity<BaseResponse<HttpStatus, Void>> responseEntity = null;
         Optional<Device> deviceByCode = deviceRepository.findByDeviceCode(deviceRequest.getDeviceCode());
-        if (deviceByCode.isPresent()){
+        if (deviceByCode.isPresent()) {
             throw new BaseException(ErrorCode.DUPLICATE_DEVICE_CODE);
         }
-        Optional<Device> deviceById  = deviceRepository.findByDeviceId(deviceId);
-        if (!deviceById.isPresent()){
+        Optional<Device> deviceById = deviceRepository.findByDeviceId(deviceId);
+        if (!deviceById.isPresent()) {
             throw new BaseException(ErrorCode.DEVICE_NOT_EXIST);
         }
-        if(deviceById.get().getStatus() == 1){
+        if (deviceById.get().getStatus() == 1) {
             throw new BaseException(ErrorCode.DEVICE_HAS_BEEN_BORROWED);
         }
         try {
@@ -149,7 +152,7 @@ public class DeviceServiceImpl implements DeviceService {
             device.setDeviceId(deviceId);
             deviceRepository.save(device);
             responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.OK, null);
-        }catch (Exception p){
+        } catch (Exception p) {
             responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.EXPECTATION_FAILED, null);
         }
         return responseEntity;
@@ -159,14 +162,14 @@ public class DeviceServiceImpl implements DeviceService {
     public ResponseEntity<BaseResponse<HttpStatus, Void>> deleteDevice(Long deviceId) {
         ResponseEntity<BaseResponse<HttpStatus, Void>> responseEntity = null;
 
-        Optional<Device> deviceById  = deviceRepository.findByDeviceId(deviceId);
-        if (!deviceById.isPresent()){
+        Optional<Device> deviceById = deviceRepository.findByDeviceId(deviceId);
+        if (!deviceById.isPresent()) {
             throw new BaseException(ErrorCode.DEVICE_NOT_EXIST);
         }
         try {
             deviceRepository.delete(deviceById.get());
             responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.OK, null);
-        }catch (Exception p){
+        } catch (Exception p) {
             responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.EXPECTATION_FAILED, null);
         }
         return responseEntity;
@@ -178,7 +181,7 @@ public class DeviceServiceImpl implements DeviceService {
         ResponseEntity<BaseResponse<DeviceResponse.DetailDeviceResponse, Void>> responseEntity = null;
         DeviceDto deviceDto = deviceRepository.getDetailDeviceById(deviceId);
 
-        if (deviceDto == null){
+        if (deviceDto == null) {
             throw new BaseException(ErrorCode.DEVICE_NOT_EXIST);
         }
         DeviceResponse.DetailDeviceResponse detailDeviceResponse = new DeviceResponse.DetailDeviceResponse(deviceDto);
@@ -220,31 +223,35 @@ public class DeviceServiceImpl implements DeviceService {
         try {
             BorrowHistory borrowHistory = borrowHistoryRepository.findById(borrowHistoryId).orElse(null);
             if (borrowHistory != null) {
-                //update return date
-                Date currentDate = DateTimeUtil.getCurrentTime();
-                currentDate.setTime(currentDate.getTime() + CommonConstant.MILLISECOND_7_HOURS);
-                borrowHistory.setReturnDate(currentDate);
-                borrowHistoryRepository.save(borrowHistory);
-
-                //update status of device
                 Device device = deviceRepository.findById(borrowHistory.getDeviceId()).orElse(null);
                 if (device != null) {
+                    //update return date
+                    Date currentDate = DateTimeUtil.getCurrentTime();
+                    currentDate.setTime(currentDate.getTime() + CommonConstant.MILLISECOND_7_HOURS);
+                    borrowHistory.setReturnDate(currentDate);
+                    borrowHistoryRepository.save(borrowHistory);
+
+                    //update status of device
                     device.setStatus(0);
                     deviceRepository.save(device);
-                }
 
-                //notification to all it-support
-                List<Person> allITSupport = personRepository.getMasterDataPersonByRole(CommonConstant.ROLE_ID_OF_IT_SUPPORT, null);
-                Long currentUser = Long.valueOf(2);
-                for(Person person : allITSupport) {
-                    currentDate = DateTimeUtil.getCurrentTime();
-                    currentDate.setTime(currentDate.getTime() + CommonConstant.MILLISECOND_7_HOURS);
-                    Notification notification = new Notification("Employee A retunred device " + device.getDeviceName() + " - " + device.getDeviceCode(),
-                            0, CommonConstant.URL+"/it-support/borrow-history", 0, currentUser, person.getPersonId(),currentDate);
-                    notificationRepository.save(notification);
+                    //notification to all it-support
+                    List<Person> allITSupport = personRepository.getMasterDataPersonByRole(CommonConstant.ROLE_ID_OF_IT_SUPPORT, null);
+                    Long currentUser = Long.valueOf(2);
+                    for (Person person : allITSupport) {
+                        currentDate = DateTimeUtil.getCurrentTime();
+                        currentDate.setTime(currentDate.getTime() + CommonConstant.MILLISECOND_7_HOURS);
+                        Notification notification = new Notification("Employee A retunred device " + device.getDeviceName() + " - " + device.getDeviceCode(),
+                                0, "human-resource/borrow-device-history/detail/" + borrowHistoryId, 0, currentUser, person.getPersonId(), currentDate);
+                        notificationRepository.save(notification);
+                    }
+                    responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.OK, null);
+                }else {
+                    responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.EXPECTATION_FAILED, null);
                 }
+            } else {
+                responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.EXPECTATION_FAILED, null);
             }
-            responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.OK, null);
         } catch (Exception e) {
             responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.EXPECTATION_FAILED, null);
         }

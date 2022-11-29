@@ -1,5 +1,6 @@
 package com.minswap.hrms.service.borrowhistory;
 
+import com.minswap.hrms.entities.BorrowHistory;
 import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.request.AssignRequest;
 import com.minswap.hrms.response.BenefitBudgetResponse;
@@ -11,8 +12,9 @@ import java.text.ParseException;
 import java.time.Year;
 
 public interface BorrowHistoryService {
-    void createBorrowHistory (AssignRequest assignRequest) throws ParseException;
+    BorrowHistory createBorrowHistory (AssignRequest assignRequest) throws ParseException;
 
-    ResponseEntity<BaseResponse<BorrowHistoryResponse, Pageable>> getBorrowHistoryList(Long managerId, Long personId, Integer page, Integer limit, Long deviceTypeId, String search, String sort, String dir);
+    ResponseEntity<BaseResponse<BorrowHistoryResponse.BorrowHistoryListResponse, Pageable>> getBorrowHistoryList(Long managerId, Long personId, Integer page, Integer limit, Long deviceTypeId, String search, String sort, String dir,Integer isReturned);
+    ResponseEntity<BaseResponse<BorrowHistoryResponse, Pageable>> getBorrowHistoryDetail(Long borrowHistoryId);
 
 }
