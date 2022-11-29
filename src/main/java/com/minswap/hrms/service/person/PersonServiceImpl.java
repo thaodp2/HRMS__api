@@ -2,7 +2,6 @@ package com.minswap.hrms.service.person;
 
 import com.minswap.hrms.constants.CommonConstant;
 import com.minswap.hrms.constants.ErrorCode;
-import com.minswap.hrms.entities.Department;
 import com.minswap.hrms.entities.Person;
 import com.minswap.hrms.entities.PersonRole;
 import com.minswap.hrms.exception.model.BaseException;
@@ -10,15 +9,14 @@ import com.minswap.hrms.exception.model.Pagination;
 import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.repsotories.PersonRepository;
 import com.minswap.hrms.repsotories.PersonRoleRepository;
-import com.minswap.hrms.request.ChangeStatusEmployeeRequest;
-import com.minswap.hrms.request.EmployeeRequest;
-import com.minswap.hrms.request.EmployeeUpdateRequest;
-import com.minswap.hrms.request.UpdateUserRequest;
+import com.minswap.hrms.request.*;
 import com.minswap.hrms.response.EmployeeInfoResponse;
 import com.minswap.hrms.response.MasterDataResponse;
 import com.minswap.hrms.response.dto.EmployeeDetailDto;
 import com.minswap.hrms.response.dto.EmployeeListDto;
 import com.minswap.hrms.response.dto.MasterDataDto;
+import com.minswap.hrms.service.email.EmailSenderService;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,12 +26,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
-import java.text.DecimalFormat;
 import java.text.Normalizer;
-import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
-import java.time.Year;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -49,10 +43,15 @@ public class PersonServiceImpl implements PersonService {
     @Autowired
     private PersonRoleRepository personRoleRepository;
 
+    @Autowired
+    private EmailSenderService emailSenderService;
+
     private final Long MANAGER_ROLE = 2L;
     private final Long EMPLOYEE_ROLE = 3L;
     private final Long HR_ROLE = 1L;
     private final Long IT_SUPPORT_ROLE = 5L;
+
+    HttpStatus httpStatus;
 
     @Override
     public ResponseEntity<BaseResponse<HttpStatus, Void>> updateUserInformation(UpdateUserRequest updateUserDto) throws Exception {
@@ -245,16 +244,112 @@ public class PersonServiceImpl implements PersonService {
     }
 
     @Override
-    public ResponseEntity<BaseResponse<Boolean, Void>> checkPinCode(String pinCode) {
+    public ResponseEntity<BaseResponse<Boolean, Void>> checkSecureCodeIsCorrect(UpdateSecureCodeRequest secureCodeRequest) {
         Long personId = 2L;
         Optional<Person> person = personRepository.findById(personId);
         if (!person.isPresent()) {
             throw new BaseException(ErrorCode.NO_DATA);
         }
-        if (person.get().getPinCode().equalsIgnoreCase(pinCode)) {
+        if (person.get().getPinCode().equalsIgnoreCase(secureCodeRequest.getCurrentSecureCode())) {
             return BaseResponse.ofSucceeded(true);
         }
         return BaseResponse.ofSucceeded(false);
+    }
+
+    @Override
+    public ResponseEntity<BaseResponse<Boolean, Void>> checkSecureCodeIsExist() {
+
+        Long personId = 2L;
+        Optional<Person> person = personRepository.findById(personId);
+        if (!person.isPresent()) {
+            throw new BaseException(ErrorCode.NO_DATA);
+        }
+        if (!person.get().getPinCode().isEmpty()) {
+            return BaseResponse.ofSucceeded(true);
+        }
+        return BaseResponse.ofSucceeded(false);
+    }
+
+    @Override
+    public ResponseEntity<BaseResponse<Boolean, Void>> forgotPinCode() {
+
+        try {
+            Long personId = 2L;
+            Optional<Person> optionalPerson = personRepository.findById(personId);
+            if(!optionalPerson.isPresent()){
+                throw new BaseException(ErrorCode.newErrorCode(404,
+                        "Person not found!",
+                        httpStatus.NOT_FOUND));
+            }
+            String generatedString = RandomStringUtils.randomAlphanumeric(8);
+            Person person = optionalPerson.get();
+            person.setPinCode(generatedString);
+            personRepository.save(person);
+            String body = "Your pin code has been updated : " + generatedString;
+
+            emailSenderService.sendEmail(person.getEmail(),"Update New Pin Code", body);
+            return BaseResponse.ofSucceeded(true);
+        }catch (Exception e){
+            return BaseResponse.ofSucceeded(false);
+        }
+    }
+
+    @Override
+    public ResponseEntity<BaseResponse<Boolean, Void>> updatePinCode(UpdateSecureCodeRequest secureCodeRequest) {
+
+            Long personId = 2L;
+            Optional<Person> optionalPerson = personRepository.findById(personId);
+            if(!optionalPerson.isPresent()){
+                throw new BaseException(ErrorCode.newErrorCode(404,
+                        "Person not found!",
+                        httpStatus.NOT_FOUND));
+            }
+            Person person = optionalPerson.get();
+            if(!secureCodeRequest.getCurrentSecureCode().equalsIgnoreCase(person.getPinCode())){
+                throw new BaseException(ErrorCode.CURRENT_SECURE_CODE_INCORRECT);
+            }
+            if(!secureCodeRequest.getNewSecureCode().equals(secureCodeRequest.getConfirmSecureCode())){
+                throw new BaseException(ErrorCode.SECURE_CODE_AND_CONFIRM_CODE_DO_NOT_MATCH);
+            }
+            if(secureCodeRequest.getCurrentSecureCode().equalsIgnoreCase(secureCodeRequest.getNewSecureCode())){
+                throw new BaseException(ErrorCode.NEW_CODE_AND_CURRENT_CODE_MUST_DIFFERENT);
+
+            }
+
+        try {
+            person.setPinCode(secureCodeRequest.getNewSecureCode());
+            personRepository.save(person);
+
+            return BaseResponse.ofSucceeded(true);
+        }catch (Exception e){
+            return BaseResponse.ofSucceeded(false);
+        }
+    }
+
+    @Override
+    public ResponseEntity<BaseResponse<Boolean, Void>> createPinCode(UpdateSecureCodeRequest secureCodeRequest) {
+
+        Long personId = 2L;
+        Optional<Person> optionalPerson = personRepository.findById(personId);
+        if(!optionalPerson.isPresent()){
+            throw new BaseException(ErrorCode.newErrorCode(404,
+                    "Person not found!",
+                    httpStatus.NOT_FOUND));
+        }
+        Person person = optionalPerson.get();
+
+        if(!secureCodeRequest.getNewSecureCode().equals(secureCodeRequest.getConfirmSecureCode())){
+            throw new BaseException(ErrorCode.SECURE_CODE_AND_CONFIRM_CODE_DO_NOT_MATCH);
+        }
+
+        try {
+            person.setPinCode(secureCodeRequest.getNewSecureCode());
+            personRepository.save(person);
+
+            return BaseResponse.ofSucceeded(true);
+        }catch (Exception e){
+            return BaseResponse.ofSucceeded(false);
+        }
     }
 
     @Override
