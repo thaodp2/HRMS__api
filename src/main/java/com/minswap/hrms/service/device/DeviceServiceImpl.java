@@ -236,7 +236,7 @@ public class DeviceServiceImpl implements DeviceService {
                     deviceRepository.save(device);
 
                     //notification to all it-support
-                    List<Person> allITSupport = personRepository.getMasterDataPersonByRole(CommonConstant.ROLE_ID_OF_IT_SUPPORT, null);
+                    List<Person> allITSupport = personRepository.getMasterDataAllManager(CommonConstant.ROLE_ID_OF_IT_SUPPORT, null);
                     Long currentUser = Long.valueOf(2);
                     for (Person person : allITSupport) {
                         currentDate = DateTimeUtil.getCurrentTime();

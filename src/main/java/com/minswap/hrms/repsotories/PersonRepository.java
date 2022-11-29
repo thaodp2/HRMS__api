@@ -134,7 +134,7 @@ public interface PersonRepository extends JpaRepository<Person, Long>{
             "from Person p, PersonRole pr, Role r " +
             "where p.personId = pr.personId and pr.roleId = r.roleId and r.roleId = :roleId " +
             "AND (:search IS NULL OR p.fullName LIKE %:search%) ")
-    List<Person> getMasterDataPersonByRole(@Param("roleId") Long roleId,
+    List<Person> getMasterDataAllManager(@Param("roleId") Long roleId,
                                          @Param("search") String search);
 
     @Modifying
