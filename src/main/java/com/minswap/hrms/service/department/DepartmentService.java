@@ -23,4 +23,6 @@ public interface DepartmentService {
     ResponseEntity<BaseResponse<MasterDataResponse, Pageable>> getMasterDataDepartment (String search);
 
     ResponseEntity<BaseResponse<DepartmentResponse, Void>> getDepartmentDetail(Long id);
+
+    boolean checkDepartmentExist(Long departmentId);
 }

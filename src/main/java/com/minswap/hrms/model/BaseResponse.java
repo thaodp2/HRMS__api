@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 
+import static com.minswap.hrms.constants.ErrorCode.INVALID_FILE;
+
 @Data
 @Accessors(chain = true)
 @Slf4j
@@ -30,6 +32,21 @@ public class BaseResponse<T, R> {
       response.metadata = Meta.buildMeta(SUCCESS_BUSINESS_CODE, extraMeta);
       return new ResponseEntity<>(response, HttpStatus.OK);
   }
+
+    public static <T, R> ResponseEntity<BaseResponse<T, R>> ofSucceededOffset(T data, R extraMeta, String message) {
+        BaseResponse<T, R> response = new BaseResponse<>();
+        response.data = data;
+        response.metadata = Meta.buildMeta(SUCCESS_BUSINESS_CODE, extraMeta);
+        response.metadata.setMessage(message);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    public static <T, R> ResponseEntity<BaseResponse<T, R>> ofFailedCustom(Meta<R> meta, R extraMeta) {
+        BaseResponse<T, R> response = new BaseResponse<>();
+        response.metadata = meta;
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
     public static <R> ResponseEntity<BaseResponse<Void, R>> ofFailed(Meta<R> meta, HttpStatus httpStatus) {
         BaseResponse<Void, R> response = new BaseResponse<>();
         response.metadata = meta;

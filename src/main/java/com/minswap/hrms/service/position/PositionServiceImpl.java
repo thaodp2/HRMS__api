@@ -46,4 +46,15 @@ public class PositionServiceImpl implements PositionService{
                 = BaseResponse.ofSucceededOffset(response, null);
         return responseEntity;
     }
+
+    @Override
+    public boolean checkPositionByDepartment(Long positionId, Long departmentId) {
+        Position p = positionRepository.findById(positionId).orElse(null);
+        if(p!= null){
+            if(p.getDepartmentId() == departmentId){
+                return true;
+            }
+        }
+        return false;
+    }
 }
