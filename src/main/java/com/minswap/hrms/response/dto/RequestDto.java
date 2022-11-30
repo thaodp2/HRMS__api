@@ -22,7 +22,7 @@ import java.util.List;
 public class RequestDto {
     public RequestDto(Long requestId, String rollNumber, String personName, Long requestTypeId, String requestTypeName, Date createDate, Date startTime,
                       Date endTime, String reason, String status, String receiver, Long deviceTypeId, String deviceTypeName, Date approvalDate,
-                      Integer isAssigned) {
+                      Integer isAssigned, Date maximumTimeToRollback) {
         this.requestId = requestId;
         this.rollNumber = rollNumber;
         this.personName = personName;
@@ -38,6 +38,7 @@ public class RequestDto {
         this.deviceTypeName = deviceTypeName;
         this.approvalDate = approvalDate;
         this.isAssigned = isAssigned;
+        this.maximumTimeToRollback = maximumTimeToRollback;
     }
 
     public RequestDto(Long requestId, String rollNumber, String personName, Date createDate, String reason, String receiver, String deviceTypeName, Date approvalDate, Integer isAssigned) {
@@ -82,4 +83,7 @@ public class RequestDto {
 
     private Integer isAssigned;
 
+    private Long deviceId;
+
+    private Date maximumTimeToRollback;
 }

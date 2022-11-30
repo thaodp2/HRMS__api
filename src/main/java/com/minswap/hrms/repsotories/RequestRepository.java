@@ -22,7 +22,7 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
     @Query("select new com.minswap.hrms.response.dto.RequestDto(" +
             "r.requestId as requestId, p.rollNumber as rollNumber, p.fullName as personName,rt.requestTypeId as requestTypeId, rt.requestTypeName as requestTypeName, r.createDate as createDate, " +
             "r.startTime as startTime, r.endTime as endTime, " +
-            "r.reason as reason, r.status as status, p2.fullName as receiver, dt.deviceTypeId as deviceTypeId, dt.deviceTypeName as deviceTypeName, r.approvalDate as approvalDate, r.isAssigned as isAssigned) " +
+            "r.reason as reason, r.status as status, p2.fullName as receiver, dt.deviceTypeId as deviceTypeId, dt.deviceTypeName as deviceTypeName, r.approvalDate as approvalDate, r.isAssigned as isAssigned, r.maximumTimeToRollback as maximumTimeToRollback) " +
             "from Request r " +
             "left join RequestType rt on " +
             "r.requestTypeId = rt.requestTypeId " +
@@ -39,13 +39,11 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
     @Transactional
     @Query("update Request r " +
             "set r.status =:status, " +
-            "r.approvalDate =:approvalDate, " +
-            "r.isAssigned =:isAssigned " +
+            "r.approvalDate =:approvalDate " +
             "where r.requestId =:id")
     Integer updateStatusRequest(@Param("status") String status,
                                 @Param("id") Long id,
-                                @Param("approvalDate") Date approvalDate,
-                                @Param("isAssigned") Integer isAssigned);
+                                @Param("approvalDate") Date approvalDate);
 
 
     @Modifying
@@ -109,11 +107,12 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
     @Query("select new com.minswap.hrms.response.dto.DateDto(r.startTime, r.endTime) " +
            "from Request r " +
             "where r.personId=:personId " +
-            "and r.requestTypeId=:requestTypeId " +
-            "and ((r.startTime between :start and :end) or (r.endTime between :start and :end)) " +
+            "and r.requestTypeId = 7 " +
+            "and ((r.startTime between :start and :end) or " +
+            "(r.endTime between :start and :end) or " +
+            "(r.startTime < :start and r.endTime > :end)) " +
             "and r.status=:status")
     List<DateDto> getListRequestApprovedByDate(@Param("personId") Long personId,
-                                               @Param("requestTypeId") Long requestTypeId,
                                                @Param("start") Date start,
                                                @Param("end") Date end,
                                                @Param("status") String status);
@@ -157,7 +156,7 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
     @Query("select r.requestId " +
             "from Request r " +
             "where r.personId=:personId " +
-            "and r.requestTypeId in (1, 2, 3, 5, 6, 8, 10) " +
+            "and r.requestTypeId in (1, 2, 3, 5, 6, 8, 9, 10) " +
             "and ((r.startTime between :start and :end) or " +
             "(r.endTime between :start and :end) or " +
             "(r.startTime < :start and r.endTime > :end)) " +
@@ -166,4 +165,7 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
                                                                @Param("start") Date start,
                                                                @Param("end") Date end,
                                                                @Param("status") String status);
+
+    @Query("select r.isAssigned from Request r where r.requestId=:id")
+    Integer isAssignedOrNot(@Param("id") Long id);
 }
