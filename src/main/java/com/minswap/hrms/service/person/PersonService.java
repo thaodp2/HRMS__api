@@ -1,10 +1,7 @@
 package com.minswap.hrms.service.person;
 
 import com.minswap.hrms.model.BaseResponse;
-import com.minswap.hrms.request.ChangeStatusEmployeeRequest;
-import com.minswap.hrms.request.EmployeeRequest;
-import com.minswap.hrms.request.EmployeeUpdateRequest;
-import com.minswap.hrms.request.UpdateUserRequest;
+import com.minswap.hrms.request.*;
 import com.minswap.hrms.response.EmployeeInfoResponse;
 import com.minswap.hrms.response.MasterDataResponse;
 import com.minswap.hrms.response.dto.EmployeeListDto;
@@ -26,7 +23,7 @@ public interface PersonService {
 
     ResponseEntity<BaseResponse<EmployeeInfoResponse, Void>> getDetailEmployee(String rollNumber);
 
-    ResponseEntity<BaseResponse<EmployeeInfoResponse, Pageable>> getSearchListEmployee(int page, int limit, String fullName,String email,Long departmentId,String rollNumber,String status,Long positionId, String managerRoll);
+    ResponseEntity<BaseResponse<EmployeeInfoResponse, Pageable>> getSearchListEmployee(int page, int limit, String fullName,String email,Long departmentId,String rollNumber,String status,Long positionId, String managerRoll, String sort, String dir);
 
     List<EmployeeListDto> exportEmployee(String fullName, String email, Long departmentId, String rollNumber, Long positionId);
     ResponseEntity<BaseResponse<Void, Void>> updateEmployee(EmployeeUpdateRequest employeeRequest, String rollNumber );
@@ -35,7 +32,15 @@ public interface PersonService {
 
     ResponseEntity<BaseResponse<Void, Void>> updateStatusEmployee(ChangeStatusEmployeeRequest employeeRequest, String rollNumber );
 
-    ResponseEntity<BaseResponse<Boolean, Void>> checkPinCode(String pinCode);
+    ResponseEntity<BaseResponse<Boolean, Void>> checkSecureCodeIsCorrect(UpdateSecureCodeRequest checkSecureCodeRequest);
+
+    ResponseEntity<BaseResponse<Boolean, Void>> checkSecureCodeIsExist();
+
+    ResponseEntity<BaseResponse<Boolean, Void>> forgotPinCode();
+
+    ResponseEntity<BaseResponse<Boolean, Void>> updatePinCode(UpdateSecureCodeRequest secureCodeRequest);
+
+    ResponseEntity<BaseResponse<Boolean, Void>> createPinCode(UpdateSecureCodeRequest secureCodeRequest);
 
     boolean isValidHeaderTemplate(Row row);
 

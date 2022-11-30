@@ -102,6 +102,15 @@ public class ErrorCode {
     public static final BusinessCode PERSON_NOT_EXIST = new BusinessCode(
             ErrorCodeEnum.PERSON_NOT_EXIST.getValue(), "Person not exist!", HttpStatus.NOT_FOUND);
 
+    public static final BusinessCode CURRENT_SECURE_CODE_INCORRECT = new BusinessCode(
+            ErrorCodeEnum.CURRENT_SECURE_CODE_INCORRECT.getValue(), "Current Secure Code Incorrect", HttpStatus.BAD_REQUEST);
+
+    public static final BusinessCode SECURE_CODE_AND_CONFIRM_CODE_DO_NOT_MATCH = new BusinessCode(
+            ErrorCodeEnum.SECURE_CODE_AND_CONFIRM_CODE_DO_NOT_MATCH.getValue(), "Secure code and confirm code do not match", HttpStatus.BAD_REQUEST);
+
+    public static final BusinessCode NEW_CODE_AND_CURRENT_CODE_MUST_DIFFERENT = new BusinessCode(
+            ErrorCodeEnum.SECURE_CODE_AND_CONFIRM_CODE_DO_NOT_MATCH.getValue(), "New secure code and current code should be different", HttpStatus.BAD_REQUEST);
+
     public static final BusinessCode CREATE_FAIL = new BusinessCode(
             ErrorCodeEnum.CREATE_FAIL.getValue(), "Create fail!", HttpStatus.EXPECTATION_FAILED);
 
@@ -124,4 +133,6 @@ public class ErrorCode {
     }
     private ErrorCode() {
     }
+    public static final BusinessCode CITIZEN_INDENTIFICATION_EXSIT = new BusinessCode(
+            ErrorCodeEnum.CITIZEN_INDENTIFICATION_EXSIT.getValue(), "Citizen Identification exist!", HttpStatus.NOT_FOUND);
 }

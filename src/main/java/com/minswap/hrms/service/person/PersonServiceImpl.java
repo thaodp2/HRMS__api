@@ -2,7 +2,6 @@ package com.minswap.hrms.service.person;
 
 import com.minswap.hrms.constants.CommonConstant;
 import com.minswap.hrms.constants.ErrorCode;
-import com.minswap.hrms.entities.Department;
 import com.minswap.hrms.entities.Person;
 import com.minswap.hrms.entities.PersonRole;
 import com.minswap.hrms.exception.model.BaseException;
@@ -11,15 +10,15 @@ import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.model.Meta;
 import com.minswap.hrms.repsotories.PersonRepository;
 import com.minswap.hrms.repsotories.PersonRoleRepository;
-import com.minswap.hrms.request.ChangeStatusEmployeeRequest;
-import com.minswap.hrms.request.EmployeeRequest;
-import com.minswap.hrms.request.EmployeeUpdateRequest;
-import com.minswap.hrms.request.UpdateUserRequest;
+import com.minswap.hrms.request.*;
 import com.minswap.hrms.response.EmployeeInfoResponse;
 import com.minswap.hrms.response.MasterDataResponse;
 import com.minswap.hrms.response.dto.EmployeeDetailDto;
 import com.minswap.hrms.response.dto.EmployeeListDto;
 import com.minswap.hrms.response.dto.MasterDataDto;
+import com.minswap.hrms.service.email.EmailSenderService;
+import com.minswap.hrms.util.CommonUtil;
+import org.apache.commons.lang3.RandomStringUtils;
 import com.minswap.hrms.service.department.DepartmentService;
 import com.minswap.hrms.service.position.PositionService;
 import com.minswap.hrms.service.rank.RankService;
@@ -31,7 +30,9 @@ import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -43,9 +44,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.text.Normalizer;
-import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
-import java.time.Year;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -65,6 +64,9 @@ public class PersonServiceImpl implements PersonService {
     private PersonRoleRepository personRoleRepository;
 
     @Autowired
+    private EmailSenderService emailSenderService;
+
+    @Autowired
     DepartmentService departmentService;
 
     @Autowired
@@ -77,6 +79,8 @@ public class PersonServiceImpl implements PersonService {
     private final Long EMPLOYEE_ROLE = 3L;
     private final Long HR_ROLE = 1L;
     private final Long IT_SUPPORT_ROLE = 5L;
+
+    HttpStatus httpStatus;
 
     @Override
     public ResponseEntity<BaseResponse<HttpStatus, Void>> updateUserInformation(UpdateUserRequest updateUserDto) throws Exception {
@@ -129,8 +133,8 @@ public class PersonServiceImpl implements PersonService {
     }
 
     @Override
-    public ResponseEntity<BaseResponse<EmployeeInfoResponse, Pageable>> getSearchListEmployee(int page, int limit, String fullName, String email, Long departmentId, String rollNumber, String status, Long positionId, String managerRoll) {
-        page = page - 1;
+    public ResponseEntity<BaseResponse<EmployeeInfoResponse, Pageable>> getSearchListEmployee(int page, int limit, String fullName, String email, Long departmentId, String rollNumber, String status, Long positionId, String managerRoll, String sort, String dir) {
+        Sort.Direction dirSort = CommonUtil.getSortDirection(sort, dir);
         Pagination pagination = new Pagination(page, limit);
         Long managerId = null;
         if (!StringUtils.isEmpty(managerRoll)) {
@@ -142,7 +146,7 @@ public class PersonServiceImpl implements PersonService {
             managerRoll = person.getPersonId().toString();
             managerId = Long.parseLong(managerRoll);
         }
-        Page<EmployeeListDto> pageInfo = personRepository.getSearchListPerson(fullName, email, departmentId, rollNumber, positionId, managerId, pagination);
+        Page<EmployeeListDto> pageInfo = personRepository.getSearchListPerson(fullName, email, departmentId, rollNumber, positionId, managerId, PageRequest.of(page - 1, limit, dirSort == null ? Sort.unsorted() : Sort.by(dirSort, sort)));
         List<EmployeeListDto> employeeListDtos = pageInfo.getContent();
         pagination.setTotalRecords(pageInfo);
         pagination.setPage(page + 1);
@@ -165,6 +169,13 @@ public class PersonServiceImpl implements PersonService {
         }
         if (StringUtils.isEmpty(employeeRequest.getCitizenIdentification())) {
             employeeRequest.setCitizenIdentification(employeeDetailDto.getCitizenIdentification());
+        }else{
+            Integer personCheckCitizen = personRepository.getUserByCitizenIdentification(employeeRequest.getCitizenIdentification());
+            if (personCheckCitizen != null && personCheckCitizen > 0) {
+                throw new BaseException(ErrorCode.CITIZEN_INDENTIFICATION_EXSIT);
+            }else{
+                employeeRequest.setCitizenIdentification(employeeRequest.getCitizenIdentification());
+            }
         }
         if (StringUtils.isEmpty(employeeRequest.getPhoneNumber())) {
             employeeRequest.setPhoneNumber(employeeDetailDto.getPhoneNumber());
@@ -202,7 +213,9 @@ public class PersonServiceImpl implements PersonService {
         if (employeeRequest.getOnBoardDate() == null) {
             employeeRequest.setOnBoardDate(employeeDetailDto.getOnBoardDate().toString());
         }
-
+        if (employeeRequest.getActive() == null) {
+            employeeRequest.setActive(employeeDetailDto.getStatus()+"");
+        }
         personRepository.updateEmployee(
                 employeeRequest.getFullName(),
                 employeeRequest.getManagerId(),
@@ -216,7 +229,8 @@ public class PersonServiceImpl implements PersonService {
                 rollNumber,
                 employeeRequest.getSalaryBasic(),
                 employeeRequest.getSalaryBonus(),
-                convertDateInput(employeeRequest.getOnBoardDate()));
+                convertDateInput(employeeRequest.getOnBoardDate()),
+                employeeRequest.getActive());
 
         ResponseEntity<BaseResponse<Void, Void>> responseEntity = BaseResponse.ofSucceeded(null);
         return responseEntity;
@@ -227,7 +241,12 @@ public class PersonServiceImpl implements PersonService {
         Person person = new Person();
         person.setFullName(employeeRequest.getFullName());
         person.setAddress(employeeRequest.getAddress());
-        person.setCitizenIdentification(employeeRequest.getCitizenIdentification());
+        Integer personCheckCitizen = personRepository.getUserByCitizenIdentification(employeeRequest.getCitizenIdentification());
+        if (personCheckCitizen != null && personCheckCitizen > 0) {
+            throw new BaseException(ErrorCode.CITIZEN_INDENTIFICATION_EXSIT);
+        }else{
+            person.setCitizenIdentification(employeeRequest.getCitizenIdentification());
+        }
         person.setPhoneNumber(employeeRequest.getPhoneNumber());
         person.setRollNumber(convertRollNumber());
         person.setRankId(employeeRequest.getRankId());
@@ -243,6 +262,7 @@ public class PersonServiceImpl implements PersonService {
         person.setSalaryBonus(employeeRequest.getSalaryBonus());
         person.setDateOfBirth(convertDateInput(employeeRequest.getDateOfBirth()));
         person.setOnBoardDate(convertDateInput(employeeRequest.getOnBoardDate()));
+
         try {
             personRepository.save(person);
         } catch (Exception e) {
@@ -269,16 +289,112 @@ public class PersonServiceImpl implements PersonService {
     }
 
     @Override
-    public ResponseEntity<BaseResponse<Boolean, Void>> checkPinCode(String pinCode) {
+    public ResponseEntity<BaseResponse<Boolean, Void>> checkSecureCodeIsCorrect(UpdateSecureCodeRequest secureCodeRequest) {
         Long personId = 2L;
         Optional<Person> person = personRepository.findById(personId);
         if (!person.isPresent()) {
             throw new BaseException(ErrorCode.NO_DATA);
         }
-        if (person.get().getPinCode().equalsIgnoreCase(pinCode)) {
+        if (person.get().getPinCode().equalsIgnoreCase(secureCodeRequest.getCurrentSecureCode())) {
             return BaseResponse.ofSucceeded(true);
         }
         return BaseResponse.ofSucceeded(false);
+    }
+
+    @Override
+    public ResponseEntity<BaseResponse<Boolean, Void>> checkSecureCodeIsExist() {
+
+        Long personId = 2L;
+        Optional<Person> person = personRepository.findById(personId);
+        if (!person.isPresent()) {
+            throw new BaseException(ErrorCode.NO_DATA);
+        }
+        if (!person.get().getPinCode().isEmpty()) {
+            return BaseResponse.ofSucceeded(true);
+        }
+        return BaseResponse.ofSucceeded(false);
+    }
+
+    @Override
+    public ResponseEntity<BaseResponse<Boolean, Void>> forgotPinCode() {
+
+        try {
+            Long personId = 2L;
+            Optional<Person> optionalPerson = personRepository.findById(personId);
+            if(!optionalPerson.isPresent()){
+                throw new BaseException(ErrorCode.newErrorCode(404,
+                        "Person not found!",
+                        httpStatus.NOT_FOUND));
+            }
+            String generatedString = RandomStringUtils.randomAlphanumeric(8);
+            Person person = optionalPerson.get();
+            person.setPinCode(generatedString);
+            personRepository.save(person);
+            String body = "Your pin code has been updated : " + generatedString;
+
+            emailSenderService.sendEmail(person.getEmail(),"Update New Pin Code", body);
+            return BaseResponse.ofSucceeded(true);
+        }catch (Exception e){
+            return BaseResponse.ofSucceeded(false);
+        }
+    }
+
+    @Override
+    public ResponseEntity<BaseResponse<Boolean, Void>> updatePinCode(UpdateSecureCodeRequest secureCodeRequest) {
+
+            Long personId = 2L;
+            Optional<Person> optionalPerson = personRepository.findById(personId);
+            if(!optionalPerson.isPresent()){
+                throw new BaseException(ErrorCode.newErrorCode(404,
+                        "Person not found!",
+                        httpStatus.NOT_FOUND));
+            }
+            Person person = optionalPerson.get();
+            if(!secureCodeRequest.getCurrentSecureCode().equalsIgnoreCase(person.getPinCode())){
+                throw new BaseException(ErrorCode.CURRENT_SECURE_CODE_INCORRECT);
+            }
+            if(!secureCodeRequest.getNewSecureCode().equals(secureCodeRequest.getConfirmSecureCode())){
+                throw new BaseException(ErrorCode.SECURE_CODE_AND_CONFIRM_CODE_DO_NOT_MATCH);
+            }
+            if(secureCodeRequest.getCurrentSecureCode().equalsIgnoreCase(secureCodeRequest.getNewSecureCode())){
+                throw new BaseException(ErrorCode.NEW_CODE_AND_CURRENT_CODE_MUST_DIFFERENT);
+
+            }
+
+        try {
+            person.setPinCode(secureCodeRequest.getNewSecureCode());
+            personRepository.save(person);
+
+            return BaseResponse.ofSucceeded(true);
+        }catch (Exception e){
+            return BaseResponse.ofSucceeded(false);
+        }
+    }
+
+    @Override
+    public ResponseEntity<BaseResponse<Boolean, Void>> createPinCode(UpdateSecureCodeRequest secureCodeRequest) {
+
+        Long personId = 2L;
+        Optional<Person> optionalPerson = personRepository.findById(personId);
+        if(!optionalPerson.isPresent()){
+            throw new BaseException(ErrorCode.newErrorCode(404,
+                    "Person not found!",
+                    httpStatus.NOT_FOUND));
+        }
+        Person person = optionalPerson.get();
+
+        if(!secureCodeRequest.getNewSecureCode().equals(secureCodeRequest.getConfirmSecureCode())){
+            throw new BaseException(ErrorCode.SECURE_CODE_AND_CONFIRM_CODE_DO_NOT_MATCH);
+        }
+
+        try {
+            person.setPinCode(secureCodeRequest.getNewSecureCode());
+            personRepository.save(person);
+
+            return BaseResponse.ofSucceeded(true);
+        }catch (Exception e){
+            return BaseResponse.ofSucceeded(false);
+        }
     }
 
     @Override
@@ -508,8 +624,9 @@ public class PersonServiceImpl implements PersonService {
 
     private Date convertDateInput(String dateStr) {
         try {
-            SimpleDateFormat sm = new SimpleDateFormat(CommonConstant.YYYY_MM_DD);
+            SimpleDateFormat sm = new SimpleDateFormat("yyyy-MM-dd");
             Date date = sm.parse(dateStr);
+            date.setTime(date.getTime() + MILLISECOND_PER_DAY);
             return date;
         } catch (Exception e) {
             throw new BaseException(ErrorCode.DATE_FAIL_FOMART);
