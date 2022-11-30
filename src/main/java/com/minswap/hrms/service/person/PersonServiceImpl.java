@@ -8,6 +8,7 @@ import com.minswap.hrms.entities.PersonRole;
 import com.minswap.hrms.exception.model.BaseException;
 import com.minswap.hrms.exception.model.Pagination;
 import com.minswap.hrms.model.BaseResponse;
+import com.minswap.hrms.model.Meta;
 import com.minswap.hrms.repsotories.PersonRepository;
 import com.minswap.hrms.repsotories.PersonRoleRepository;
 import com.minswap.hrms.request.ChangeStatusEmployeeRequest;
@@ -19,7 +20,14 @@ import com.minswap.hrms.response.MasterDataResponse;
 import com.minswap.hrms.response.dto.EmployeeDetailDto;
 import com.minswap.hrms.response.dto.EmployeeListDto;
 import com.minswap.hrms.response.dto.MasterDataDto;
+import com.minswap.hrms.service.department.DepartmentService;
+import com.minswap.hrms.service.position.PositionService;
+import com.minswap.hrms.service.rank.RankService;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -27,8 +35,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.text.Normalizer;
 import java.text.NumberFormat;
@@ -40,6 +52,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
+import static com.minswap.hrms.constants.ErrorCode.INVALID_FILE;
+import static com.minswap.hrms.constants.ErrorCode.UPLOAD_EXCEL;
+
 @Service
 public class PersonServiceImpl implements PersonService {
     @Autowired
@@ -48,6 +63,15 @@ public class PersonServiceImpl implements PersonService {
     private static final long MILLISECOND_PER_DAY = 24 * 60 * 60 * 1000;
     @Autowired
     private PersonRoleRepository personRoleRepository;
+
+    @Autowired
+    DepartmentService departmentService;
+
+    @Autowired
+    PositionService positionService;
+
+    @Autowired
+    RankService rankService;
 
     private final Long MANAGER_ROLE = 2L;
     private final Long EMPLOYEE_ROLE = 3L;
@@ -258,6 +282,144 @@ public class PersonServiceImpl implements PersonService {
     }
 
     @Override
+    public boolean isValidHeaderTemplate(Row row) {
+        try {
+            for (int i = 0; i < CommonConstant.TEMPLATE_HEADER_TO_IMPORT.length; i++) {
+                if (!row.getCell(i).getStringCellValue().equals(CommonConstant.TEMPLATE_HEADER_TO_IMPORT[i])) {
+                    return false;
+                }
+            }
+        } catch (Exception e) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public boolean checkManagerIdValid(Long managerId) {
+        Person p = personRepository.findById(managerId).orElse(null);
+        if (p != null) {
+            PersonRole pr = personRoleRepository.findByPersonIdAndAndRoleId(managerId, CommonConstant.ROLE_ID_OF_MANAGER).orElse(null);
+            if (pr != null) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean checkGenderValid(Integer gender) {
+        if(gender == 0 || gender == 1){
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean checkIsManagerValid(Integer isManager) {
+        if(isManager == 0 || isManager == 1){
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean checkPhoneValid(String phone) {
+        return phone.matches("^(0?)(3[2-9]|5[6|8|9]|7[0|6-9]|8[0-6|8|9]|9[0-4|6-9])[0-9]{7}$");
+    }
+
+    @Override
+    public boolean checkCCCDValid(String cccd) {
+        return cccd.matches("^[0-9]{9}$|^[0-9]{12}$");
+    }
+
+    @Override
+    public ResponseEntity<BaseResponse<HttpStatus, Void>> importExcel(MultipartFile file) {
+        int countRecordSuccess = 0;
+        int countRecordFail = 0;
+        String message = "";
+        String rowFail = "";
+        try {
+            if (!file.isEmpty()) {
+                if (file.getOriginalFilename().split("\\.")[1].equals("xlsx") || file.getOriginalFilename().split("\\.")[1].equals("xls")) {
+                    try {
+                        Path tempDir = Files.createTempDirectory("");
+                        File tempFile = tempDir.resolve(file.getOriginalFilename()).toFile();
+                        file.transferTo(tempFile);
+                        Workbook workbook = WorkbookFactory.create(tempFile);
+                        Sheet sheet = workbook.getSheetAt(0);
+                        int rowStart = 1;
+                        if (isValidHeaderTemplate(sheet.getRow(0))) {
+                            for (Row row : sheet) {
+                                if (rowStart != 1) {
+                                    try {
+                                        String fullName = row.getCell(0).getStringCellValue();
+                                        String dateOfBirth = row.getCell(1).getStringCellValue();
+                                        String onBoardDate = row.getCell(6).getStringCellValue();
+                                        String citizenIdentification = row.getCell(7).getStringCellValue();
+                                        String phoneNumber = row.getCell(8).getStringCellValue();
+                                        String address = row.getCell(9).getStringCellValue();
+                                        long managerId = (long) row.getCell(2).getNumericCellValue();
+                                        long departmentId = (long) row.getCell(3).getNumericCellValue();
+                                        long positionId = (long) row.getCell(4).getNumericCellValue();
+                                        long rankId = (long) row.getCell(5).getNumericCellValue();
+                                        int gender = (int) row.getCell(10).getNumericCellValue();
+                                        double salaryBasic = row.getCell(11).getNumericCellValue();
+                                        double salaryBonus = row.getCell(12).getNumericCellValue();
+                                        int isManager = (int) row.getCell(13).getNumericCellValue();
+
+                                        if (checkManagerIdValid(managerId) &&
+                                                departmentService.checkDepartmentExist(departmentId) &&
+                                                positionService.checkPositionByDepartment(positionId, departmentId) &&
+                                                rankService.checkRankExist(rankId) &&
+                                                checkCCCDValid(citizenIdentification) &&
+                                                checkPhoneValid(phoneNumber) &&
+                                                checkGenderValid(gender) &&
+                                                checkIsManagerValid(isManager)) {
+                                            //create employee
+                                            EmployeeRequest employeeRequest = new EmployeeRequest(fullName, dateOfBirth.toString(),
+                                                    managerId, departmentId, positionId, rankId, onBoardDate.toString(),
+                                                    citizenIdentification + "", phoneNumber + "",
+                                                    address, gender, null, salaryBasic, salaryBonus, isManager
+                                            );
+                                            createEmployee(employeeRequest);
+                                            countRecordSuccess++;
+                                        }else {
+                                            countRecordFail++;
+                                            rowFail += (row.getRowNum() + 1) + ", ";
+                                        }
+                                    } catch (Exception e) {
+                                        //show dòng bị fail
+                                        countRecordFail++;
+                                        rowFail += (row.getRowNum() + 1) + ", ";
+                                    }
+                                }
+                                rowStart++;
+                            }
+                            //show number sucess
+                            message += "Create success " + countRecordSuccess + " employee. ";
+                            if (!rowFail.equals("")) {
+                                message += "Create fail " + countRecordFail + " employee in rows (" + rowFail.substring(0, rowFail.length() - 2) + ")";
+                            }
+                            return BaseResponse.ofSucceededOffset(HttpStatus.OK, null, message);
+                        } else {
+                            return BaseResponse.ofFailedCustom(Meta.buildMeta(INVALID_FILE, null), null);
+                        }
+                    } catch (Exception ex) {
+                        return BaseResponse.ofFailedCustom(Meta.buildMeta(INVALID_FILE, null), null);
+                    }
+                } else {
+                    return BaseResponse.ofFailedCustom(Meta.buildMeta(INVALID_FILE, null), null);
+                }
+            } else {
+                return BaseResponse.ofFailedCustom(Meta.buildMeta(UPLOAD_EXCEL, null), null);
+            }
+        } catch (Exception e) {
+            return BaseResponse.ofFailedCustom(Meta.buildMeta(INVALID_FILE, null), null);
+        }
+    }
+
+    @Override
     public List<EmployeeListDto> exportEmployee(String fullName, String email, Long departmentId, String rollNumber, Long positionId) {
         Page<EmployeeListDto> pageInfo = personRepository.getSearchListPerson(fullName, email, departmentId, rollNumber, positionId, null, null);
         List<EmployeeListDto> employeeListDtos = pageInfo.getContent();
@@ -346,7 +508,7 @@ public class PersonServiceImpl implements PersonService {
 
     private Date convertDateInput(String dateStr) {
         try {
-            SimpleDateFormat sm = new SimpleDateFormat("dd-MM-yyyy");
+            SimpleDateFormat sm = new SimpleDateFormat(CommonConstant.YYYY_MM_DD);
             Date date = sm.parse(dateStr);
             return date;
         } catch (Exception e) {

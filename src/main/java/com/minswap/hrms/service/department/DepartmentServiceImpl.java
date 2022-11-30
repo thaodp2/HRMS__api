@@ -226,6 +226,15 @@ public class DepartmentServiceImpl implements DepartmentService{
         return responseEntity;
     }
 
+    @Override
+    public boolean checkDepartmentExist(Long departmentId) {
+        Department d = departmentRepository.findById(departmentId).orElse(null);
+        if(d != null){
+            return true;
+        }
+        return false;
+    }
+
     public boolean isDepartmentAlreadyExist(String departmentName) {
         List<Department> listDepartment = departmentRepository.findAll();
         for (Department department : listDepartment) {

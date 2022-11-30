@@ -16,6 +16,7 @@ public class Rank {
 
     @Id
     @Column(name = "rank_id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long rankId;
 
     @Column(name = "rank_name")

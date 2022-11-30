@@ -13,9 +13,11 @@ import com.minswap.hrms.service.person.PersonService;
 import com.minswap.hrms.util.ExportEmployee;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
@@ -29,9 +31,6 @@ public class HRPersonController {
 
     @Autowired
     private PersonService personService;
-
-    @Autowired
-    private DeviceTypeRepository deviceTypeRepository;
 
     @GetMapping("/employee/{rollNumber}")
     public ResponseEntity<BaseResponse<EmployeeInfoResponse, Void>> getDetailEmployee(@PathVariable String rollNumber) {
@@ -97,5 +96,10 @@ public class HRPersonController {
             excelExporter.exportEmployee(response);
         }
         return null;
+    }
+
+    @PostMapping("/employee/import")
+    public ResponseEntity<BaseResponse<HttpStatus, Void>> importExcel(@Valid @RequestParam MultipartFile file) throws IOException {
+        return personService.importExcel(file);
     }
 }

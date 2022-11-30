@@ -1,5 +1,6 @@
 package com.minswap.hrms.filter;
 
+import ch.qos.logback.access.servlet.TeeFilter;
 import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -21,7 +22,7 @@ import java.io.IOException;
  */
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
-public class CorsFilter implements Filter {
+public class CorsFilter extends TeeFilter implements Filter {
 
 	/** The logger. */
 	private Logger logger = LoggerFactory.getLogger(CorsFilter.class);
@@ -49,21 +50,23 @@ public class CorsFilter implements Filter {
 	@Override
 	public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
 			throws IOException, ServletException {
+//		req.getParameter("whatever");
+//		super.doFilter(req, res, chain);
 		HttpServletResponse response = (HttpServletResponse) res;
 		HttpServletRequest request = (HttpServletRequest) req;
 		try {
-			ApiKeyVerifiRequestWrapper requestWrapper = new ApiKeyVerifiRequestWrapper(request);
-			JSONParser parser = new JSONParser();
-			JSONObject dataRequest = StringUtils.isEmpty(requestWrapper.getBody()) ? new JSONObject()
-					: (JSONObject) parser.parse(requestWrapper.getBody());
-			requestWrapper.setBody(dataRequest.toString());
+			//ApiKeyVerifiRequestWrapper requestWrapper = new ApiKeyVerifiRequestWrapper(request);
+////			JSONParser parser = new JSONParser();
+////			JSONObject dataRequest = StringUtils.isEmpty(requestWrapper.getBody()) ? new JSONObject()
+////					: (JSONObject) parser.parse(requestWrapper.getBody());
+////			requestWrapper.setBody(dataRequest.toString());
 			response.setHeader("Access-Control-Allow-Origin", "*");
 			response.setHeader("Access-Control-Allow-Credentials", "true");
 			response.setHeader("Access-Control-Allow-Methods", "POST, GET, PUT, OPTIONS, DELETE");
 			response.setHeader("Access-Control-Max-Age", "3600");
 			response.setHeader("Access-Control-Allow-Headers", "X-Requested-With, Content-Type, Authorization, Origin, Accept, Access-Control-Request-Method, Access-Control-Request-Headers");
-
-			chain.doFilter(requestWrapper, res);
+			//chain.doFilter(requestWrapper, res);
+			chain.doFilter(req, res);
 		} catch (Exception e) {
 			e.printStackTrace();
 			response.setStatus(HttpServletResponse.SC_BAD_GATEWAY);

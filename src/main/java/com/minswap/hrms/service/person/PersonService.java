@@ -8,10 +8,15 @@ import com.minswap.hrms.request.UpdateUserRequest;
 import com.minswap.hrms.response.EmployeeInfoResponse;
 import com.minswap.hrms.response.MasterDataResponse;
 import com.minswap.hrms.response.dto.EmployeeListDto;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.validation.Valid;
 import java.util.List;
 
 public interface PersonService {
@@ -31,4 +36,18 @@ public interface PersonService {
     ResponseEntity<BaseResponse<Void, Void>> updateStatusEmployee(ChangeStatusEmployeeRequest employeeRequest, String rollNumber );
 
     ResponseEntity<BaseResponse<Boolean, Void>> checkPinCode(String pinCode);
+
+    boolean isValidHeaderTemplate(Row row);
+
+    boolean checkManagerIdValid(Long managerId);
+
+    boolean checkGenderValid(Integer gender);
+
+    boolean checkIsManagerValid(Integer isManager);
+
+    boolean checkPhoneValid(String phone);
+
+    boolean checkCCCDValid(String cccd);
+
+    ResponseEntity<BaseResponse<HttpStatus, Void>> importExcel(MultipartFile file);
 }

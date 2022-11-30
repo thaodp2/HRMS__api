@@ -1,17 +1,23 @@
 package com.minswap.hrms.controller.itsupport;
 
 import com.minswap.hrms.constants.CommonConstant;
+import com.minswap.hrms.constants.ErrorCode;
 import com.minswap.hrms.exception.annotation.ServiceProcessingValidateAnnotation;
+import com.minswap.hrms.exception.model.BaseException;
 import com.minswap.hrms.model.BaseResponse;
+import com.minswap.hrms.model.Meta;
 import com.minswap.hrms.request.DeviceTypeRequest;
+import com.minswap.hrms.request.EmployeeRequest;
 import com.minswap.hrms.response.DeviceTypeResponse;
 import com.minswap.hrms.response.RequestResponse;
+import com.minswap.hrms.service.department.DepartmentService;
 import com.minswap.hrms.service.devicetype.DeviceTypeService;
+import com.minswap.hrms.service.person.PersonService;
+import com.minswap.hrms.service.position.PositionService;
+import com.minswap.hrms.service.rank.RankService;
 import com.minswap.hrms.service.request.RequestService;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.usermodel.WorkbookFactory;
+import com.minswap.hrms.util.DateTimeUtil;
+import org.apache.poi.ss.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -29,7 +35,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.ParseException;
+import java.util.Date;
 import java.util.logging.Logger;
+
+import static com.minswap.hrms.constants.ErrorCode.INVALID_FILE;
+import static com.minswap.hrms.constants.ErrorCode.UPLOAD_EXCEL;
 
 
 @RestController
@@ -39,17 +49,29 @@ public class ITDeviceTypeController {
     @Autowired
     DeviceTypeService deviceTypeService;
 
+    @Autowired
+    PersonService personService;
+
+    @Autowired
+    DepartmentService departmentService;
+
+    @Autowired
+    PositionService positionService;
+
+    @Autowired
+    RankService rankService;
+
     @GetMapping("/device-type")
     public ResponseEntity<BaseResponse<DeviceTypeResponse, Pageable>> getAllDeviceType(@RequestParam @Min(1) Integer page,
-                                                                                        @RequestParam @Min(0) Integer limit,
-                                                                                        @RequestParam (required = false) String search) {
-        return deviceTypeService.getAllDeviceType(page,limit,search);
+                                                                                       @RequestParam @Min(0) Integer limit,
+                                                                                       @RequestParam(required = false) String search) {
+        return deviceTypeService.getAllDeviceType(page, limit, search);
     }
 
     @PostMapping("/device-type")
     @ServiceProcessingValidateAnnotation
     public ResponseEntity<BaseResponse<HttpStatus, Void>> createDeviceType(@RequestBody
-                                                                     @Valid DeviceTypeRequest deviceTypeRequest,
+                                                                           @Valid DeviceTypeRequest deviceTypeRequest,
                                                                            BindingResult bindingResult) {
         return deviceTypeService.createDeviceType(deviceTypeRequest.getDeviceTypeNames());
     }
@@ -57,9 +79,9 @@ public class ITDeviceTypeController {
     @PutMapping("/device-type/{id}")
     @ServiceProcessingValidateAnnotation
     public ResponseEntity<BaseResponse<HttpStatus, Void>> editDepartment(@RequestBody
-                                                                   @Valid DeviceTypeRequest deviceTypeRequest,
-                                                                   BindingResult bindingResult,
-                                                                   @PathVariable Long id) {
+                                                                         @Valid DeviceTypeRequest deviceTypeRequest,
+                                                                         BindingResult bindingResult,
+                                                                         @PathVariable Long id) {
         return deviceTypeService.editDeviceType(id, deviceTypeRequest.getDeviceTypeName());
     }
 
@@ -68,17 +90,4 @@ public class ITDeviceTypeController {
         return deviceTypeService.deleteDeviceType(id);
     }
 
-    @PostMapping("/import")
-    public void importExcel(@RequestParam MultipartFile file) throws IOException {
-        File tempFile = new File("D:\\Downloads\\test.xlsx");
-        //public void importExcel(@RequestParam("file") MultipartFile file) throws IOException {
-//        Path tempDir = Files.createTempDirectory("");
-//        File tempFile = tempDir.resolve(file.getOriginalFilename()).toFile();
-//        file.transferTo(tempFile);
-        Workbook workbook = WorkbookFactory.create(tempFile);
-        Sheet sheet = workbook.getSheetAt(0);
-        for(Row row : sheet){
-            //LOGGER.info("ROW: " + row.getCell(0).getStringCellValue());
-        }
-    }
 }

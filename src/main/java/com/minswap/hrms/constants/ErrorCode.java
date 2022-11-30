@@ -28,6 +28,12 @@ public class ErrorCode {
     public static final BusinessCode UPDATE_FAIL = new BusinessCode(
             ErrorCodeEnum.UPDATE_FAIL.getValue(), "Update failed", HttpStatus.NOT_FOUND);
 
+    public static final BusinessCode INVALID_DATA = new BusinessCode(
+            ErrorCodeEnum.INVALID_DATA.getValue(), "Data invalid", HttpStatus.NOT_ACCEPTABLE);
+
+    public static final BusinessCode INVALID_FILE = new BusinessCode(
+            ErrorCodeEnum.INVALID_FILE.getValue(), "File invalid", HttpStatus.NOT_ACCEPTABLE);
+
     public static final BusinessCode UPDATE_DAY_OFF_FAIL = new BusinessCode(
             ErrorCodeEnum.UPDATE_DAY_OFF_FAIL.getValue(), "Your remaining days off are not enough", HttpStatus.NOT_ACCEPTABLE);
 
@@ -52,6 +58,9 @@ public class ErrorCode {
 
     public static final BusinessCode YEAR_INVALID = new BusinessCode(
             ErrorCodeEnum.YEAR_INVALID.getValue(), "Year can't be null", HttpStatus.NOT_FOUND);
+
+    public static final BusinessCode UPLOAD_EXCEL = new BusinessCode(
+            ErrorCodeEnum.UPLOAD_EXCEL.getValue(), "Please upload excel file!", HttpStatus.NOT_FOUND);
 
     public static final BusinessCode MONTH_INVALID = new BusinessCode(
             ErrorCodeEnum.MONTH_INVALID.getValue(), "Month can't be null", HttpStatus.NOT_FOUND);
