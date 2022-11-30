@@ -138,4 +138,11 @@ public interface TimeCheckRepository extends JpaRepository<TimeCheck, Long> {
                             @Param("outEarly")  Double  outEarly,
                             @Param("workingTime")  Double  workingTime,
                             @Param("personId") Long personId);
+
+    @Modifying
+    @Transactional
+    @Query("delete from TimeCheck tc where day(tc.timeIn) =:day and MONTH(tc.timeIn) =:month and YEAR (tc.timeIn) =:year")
+    Integer deleteTimeCheckByDate(@Param("day") int day,
+                                  @Param("month") int month,
+                                  @Param("year") int year);
 }

@@ -38,6 +38,8 @@ public interface OTBudgetRepository extends JpaRepository<OTBudget, Long> {
                                   @Param("hoursWorked") double hoursWorked,
                                   @Param("otHoursRemainOfMonth") double otHoursRemainOfMonth);
 
+    @Modifying
+    @Transactional
     @Query("Update OTBudget ob set ob.timeRemainingOfYear=:otHoursRemainOfYear " +
             "where ob.personId=:personId and ob.year=:year")
     Integer updateOTBudgetOfYear(@Param("personId") Long personId,
