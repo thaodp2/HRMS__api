@@ -111,7 +111,9 @@ public class HRPersonController {
     ) throws IOException{
         response.setContentType("application/octet-stream");
         response.setHeader("Content-Disposition", "attachment; filename=template_import_employee.xlsx");
-        InputStreamResource resource = new InputStreamResource(new FileInputStream("D:\\Downloads\\FPTUniversity_Ki_9\\SWP\\HRMS__api\\src\\main\\resources\\templateexcel\\template_import_employee.xlsx"));
+        //InputStreamResource resource = new InputStreamResource(new FileInputStream("D:\\Downloads\\FPTUniversity_Ki_9\\SWP\\HRMS__api\\src\\main\\resources\\templateexcel\\template_import_employee.xlsx"));
+        String localDir = System.getProperty("user.dir");
+        InputStreamResource resource = new InputStreamResource(new FileInputStream(localDir + "\\src\\main\\resources\\templateexcel\\template_import_employee.xlsx"));
         return ResponseEntity.ok().body(resource);
     }
 

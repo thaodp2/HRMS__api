@@ -169,11 +169,11 @@ public class PersonServiceImpl implements PersonService {
         }
         if (StringUtils.isEmpty(employeeRequest.getCitizenIdentification())) {
             employeeRequest.setCitizenIdentification(employeeDetailDto.getCitizenIdentification());
-        }else{
+        } else {
             Integer personCheckCitizen = personRepository.getUserByCitizenIdentification(employeeRequest.getCitizenIdentification());
             if (personCheckCitizen != null && personCheckCitizen > 0) {
                 throw new BaseException(ErrorCode.CITIZEN_INDENTIFICATION_EXSIT);
-            }else{
+            } else {
                 employeeRequest.setCitizenIdentification(employeeRequest.getCitizenIdentification());
             }
         }
@@ -214,7 +214,7 @@ public class PersonServiceImpl implements PersonService {
             employeeRequest.setOnBoardDate(employeeDetailDto.getOnBoardDate().toString());
         }
         if (employeeRequest.getActive() == null) {
-            employeeRequest.setActive(employeeDetailDto.getStatus()+"");
+            employeeRequest.setActive(employeeDetailDto.getStatus() + "");
         }
         personRepository.updateEmployee(
                 employeeRequest.getFullName(),
@@ -244,7 +244,7 @@ public class PersonServiceImpl implements PersonService {
         Integer personCheckCitizen = personRepository.getUserByCitizenIdentification(employeeRequest.getCitizenIdentification());
         if (personCheckCitizen != null && personCheckCitizen > 0) {
             throw new BaseException(ErrorCode.CITIZEN_INDENTIFICATION_EXSIT);
-        }else{
+        } else {
             person.setCitizenIdentification(employeeRequest.getCitizenIdentification());
         }
         person.setPhoneNumber(employeeRequest.getPhoneNumber());
@@ -321,7 +321,7 @@ public class PersonServiceImpl implements PersonService {
         try {
             Long personId = 2L;
             Optional<Person> optionalPerson = personRepository.findById(personId);
-            if(!optionalPerson.isPresent()){
+            if (!optionalPerson.isPresent()) {
                 throw new BaseException(ErrorCode.newErrorCode(404,
                         "Person not found!",
                         httpStatus.NOT_FOUND));
@@ -332,9 +332,9 @@ public class PersonServiceImpl implements PersonService {
             personRepository.save(person);
             String body = "Your pin code has been updated : " + generatedString;
 
-            emailSenderService.sendEmail(person.getEmail(),"Update New Pin Code", body);
+            emailSenderService.sendEmail(person.getEmail(), "Update New Pin Code", body);
             return BaseResponse.ofSucceeded(true);
-        }catch (Exception e){
+        } catch (Exception e) {
             return BaseResponse.ofSucceeded(false);
         }
     }
@@ -342,31 +342,31 @@ public class PersonServiceImpl implements PersonService {
     @Override
     public ResponseEntity<BaseResponse<Boolean, Void>> updatePinCode(UpdateSecureCodeRequest secureCodeRequest) {
 
-            Long personId = 2L;
-            Optional<Person> optionalPerson = personRepository.findById(personId);
-            if(!optionalPerson.isPresent()){
-                throw new BaseException(ErrorCode.newErrorCode(404,
-                        "Person not found!",
-                        httpStatus.NOT_FOUND));
-            }
-            Person person = optionalPerson.get();
-            if(!secureCodeRequest.getCurrentSecureCode().equalsIgnoreCase(person.getPinCode())){
-                throw new BaseException(ErrorCode.CURRENT_SECURE_CODE_INCORRECT);
-            }
-            if(!secureCodeRequest.getNewSecureCode().equals(secureCodeRequest.getConfirmSecureCode())){
-                throw new BaseException(ErrorCode.SECURE_CODE_AND_CONFIRM_CODE_DO_NOT_MATCH);
-            }
-            if(secureCodeRequest.getCurrentSecureCode().equalsIgnoreCase(secureCodeRequest.getNewSecureCode())){
-                throw new BaseException(ErrorCode.NEW_CODE_AND_CURRENT_CODE_MUST_DIFFERENT);
+        Long personId = 2L;
+        Optional<Person> optionalPerson = personRepository.findById(personId);
+        if (!optionalPerson.isPresent()) {
+            throw new BaseException(ErrorCode.newErrorCode(404,
+                    "Person not found!",
+                    httpStatus.NOT_FOUND));
+        }
+        Person person = optionalPerson.get();
+        if (!secureCodeRequest.getCurrentSecureCode().equalsIgnoreCase(person.getPinCode())) {
+            throw new BaseException(ErrorCode.CURRENT_SECURE_CODE_INCORRECT);
+        }
+        if (!secureCodeRequest.getNewSecureCode().equals(secureCodeRequest.getConfirmSecureCode())) {
+            throw new BaseException(ErrorCode.SECURE_CODE_AND_CONFIRM_CODE_DO_NOT_MATCH);
+        }
+        if (secureCodeRequest.getCurrentSecureCode().equalsIgnoreCase(secureCodeRequest.getNewSecureCode())) {
+            throw new BaseException(ErrorCode.NEW_CODE_AND_CURRENT_CODE_MUST_DIFFERENT);
 
-            }
+        }
 
         try {
             person.setPinCode(secureCodeRequest.getNewSecureCode());
             personRepository.save(person);
 
             return BaseResponse.ofSucceeded(true);
-        }catch (Exception e){
+        } catch (Exception e) {
             return BaseResponse.ofSucceeded(false);
         }
     }
@@ -376,14 +376,14 @@ public class PersonServiceImpl implements PersonService {
 
         Long personId = 2L;
         Optional<Person> optionalPerson = personRepository.findById(personId);
-        if(!optionalPerson.isPresent()){
+        if (!optionalPerson.isPresent()) {
             throw new BaseException(ErrorCode.newErrorCode(404,
                     "Person not found!",
                     httpStatus.NOT_FOUND));
         }
         Person person = optionalPerson.get();
 
-        if(!secureCodeRequest.getNewSecureCode().equals(secureCodeRequest.getConfirmSecureCode())){
+        if (!secureCodeRequest.getNewSecureCode().equals(secureCodeRequest.getConfirmSecureCode())) {
             throw new BaseException(ErrorCode.SECURE_CODE_AND_CONFIRM_CODE_DO_NOT_MATCH);
         }
 
@@ -392,7 +392,7 @@ public class PersonServiceImpl implements PersonService {
             personRepository.save(person);
 
             return BaseResponse.ofSucceeded(true);
-        }catch (Exception e){
+        } catch (Exception e) {
             return BaseResponse.ofSucceeded(false);
         }
     }
@@ -425,7 +425,7 @@ public class PersonServiceImpl implements PersonService {
 
     @Override
     public boolean checkGenderValid(Integer gender) {
-        if(gender == 0 || gender == 1){
+        if (gender == 0 || gender == 1) {
             return true;
         }
         return false;
@@ -433,7 +433,7 @@ public class PersonServiceImpl implements PersonService {
 
     @Override
     public boolean checkIsManagerValid(Integer isManager) {
-        if(isManager == 0 || isManager == 1){
+        if (isManager == 0 || isManager == 1) {
             return true;
         }
         return false;
@@ -468,6 +468,23 @@ public class PersonServiceImpl implements PersonService {
                         if (isValidHeaderTemplate(sheet.getRow(0))) {
                             for (Row row : sheet) {
                                 if (rowStart != 1) {
+                                    if ((row.getCell(0)== null) &&
+                                            row.getCell(1)== null &&
+                                            row.getCell(6)== null &&
+                                            row.getCell(7)== null &&
+                                            row.getCell(8)== null &&
+                                            row.getCell(9)== null &&
+                                            row.getCell(2)==null &&
+                                            row.getCell(3)==null &&
+                                            row.getCell(4)==null &&
+                                            row.getCell(5)==null &&
+                                            row.getCell(10)==null &&
+                                            row.getCell(11)==null &&
+                                            row.getCell(12)==null &&
+                                            row.getCell(13)==null
+                                    ) {
+                                        continue;
+                                    }
                                     try {
                                         String fullName = row.getCell(0).getStringCellValue();
                                         String dateOfBirth = row.getCell(1).getStringCellValue();
@@ -500,7 +517,7 @@ public class PersonServiceImpl implements PersonService {
                                             );
                                             createEmployee(employeeRequest);
                                             countRecordSuccess++;
-                                        }else {
+                                        } else {
                                             countRecordFail++;
                                             rowFail += (row.getRowNum() + 1) + ", ";
                                         }
