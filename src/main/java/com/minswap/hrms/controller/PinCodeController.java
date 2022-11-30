@@ -14,7 +14,7 @@ public class PinCodeController {
     @Autowired
     PersonService personService;
 
-    @GetMapping("/secure-code/correct")
+    @PostMapping("/secure-code/correct")
     public ResponseEntity<BaseResponse<Boolean, Void>> checkPinCodeIsCorrect(@RequestBody UpdateSecureCodeRequest secureCodeRequest) {
         return personService.checkSecureCodeIsCorrect(secureCodeRequest);
     }
