@@ -133,23 +133,25 @@ public class DeviceServiceImpl implements DeviceService {
     @Override
     public ResponseEntity<BaseResponse<HttpStatus, Void>> updateDevice(UpdateDeviceRequest deviceRequest, Long deviceId) {
         ResponseEntity<BaseResponse<HttpStatus, Void>> responseEntity = null;
-        Optional<Device> deviceByCode = deviceRepository.findByDeviceCode(deviceRequest.getDeviceCode());
-        if (deviceByCode.isPresent()) {
-            throw new BaseException(ErrorCode.DUPLICATE_DEVICE_CODE);
-        }
+
         Optional<Device> deviceById = deviceRepository.findByDeviceId(deviceId);
         if (!deviceById.isPresent()) {
             throw new BaseException(ErrorCode.DEVICE_NOT_EXIST);
         }
-        if (deviceById.get().getStatus() == 1) {
+        if (deviceById.get().getStatus() != 0) {
             throw new BaseException(ErrorCode.DEVICE_HAS_BEEN_BORROWED);
+        }
+        Device device = deviceById.get();
+        Optional<Device> deviceByCode = deviceRepository.findByDeviceCode(deviceRequest.getDeviceCode());
+        if ( !device.getDeviceCode().equalsIgnoreCase(deviceRequest.getDeviceCode())  && deviceByCode.isPresent()) {
+            throw new BaseException(ErrorCode.DUPLICATE_DEVICE_CODE);
         }
         try {
 
-            Device device = deviceById.get();
             ModelMapper modelMapper = new ModelMapper();
             modelMapper.map(deviceRequest, device);
             device.setDeviceId(deviceId);
+            device.setStatus(0);
             deviceRepository.save(device);
             responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.OK, null);
         } catch (Exception p) {
@@ -165,6 +167,9 @@ public class DeviceServiceImpl implements DeviceService {
         Optional<Device> deviceById = deviceRepository.findByDeviceId(deviceId);
         if (!deviceById.isPresent()) {
             throw new BaseException(ErrorCode.DEVICE_NOT_EXIST);
+        }
+        if (deviceById.get().getStatus() == 1) {
+            throw new BaseException(ErrorCode.DEVICE_HAS_BEEN_BORROWED);
         }
         try {
             deviceRepository.delete(deviceById.get());
@@ -184,6 +189,9 @@ public class DeviceServiceImpl implements DeviceService {
         if (deviceDto == null) {
             throw new BaseException(ErrorCode.DEVICE_NOT_EXIST);
         }
+        if (deviceDto.getStatus() == 1) {
+            deviceDto.setIsAllowDelete(1);
+        }
         DeviceResponse.DetailDeviceResponse detailDeviceResponse = new DeviceResponse.DetailDeviceResponse(deviceDto);
         responseEntity = BaseResponse.ofSucceeded(detailDeviceResponse);
 
@@ -198,6 +206,11 @@ public class DeviceServiceImpl implements DeviceService {
 
         Page<DeviceDto> deviceDtoPage = deviceRepository.searchDeviceBy(search, isUser, deviceTypeId, pagination);
         List<DeviceDto> deviceDtos = deviceDtoPage.getContent();
+        for (DeviceDto item : deviceDtos) {
+            if(item.getStatus() == 1){
+                item.setIsAllowDelete(1);
+            }
+        }
         pagination.setTotalRecords(deviceDtoPage);
         pagination.setPage(page);
         DeviceResponse deviceResponse = new DeviceResponse(deviceDtos);

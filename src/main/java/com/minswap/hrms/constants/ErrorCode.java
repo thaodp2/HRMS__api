@@ -85,7 +85,7 @@ public class ErrorCode {
             ErrorCodeEnum.DEVICE_NOT_EXIST.getValue(), "Device not exist", HttpStatus.BAD_REQUEST);
 
     public static final BusinessCode DEVICE_HAS_BEEN_BORROWED = new BusinessCode(
-            ErrorCodeEnum.DEVICE_HAS_BEEN_BORROWED.getValue(), "Device has been borrowed", HttpStatus.BAD_REQUEST);
+            ErrorCodeEnum.DEVICE_HAS_BEEN_BORROWED.getValue(), "Device has been borrowed, can not update device type", HttpStatus.BAD_REQUEST);
 
     public static final BusinessCode DEVICE_TYPE_NULL_OR_EMPTY = new BusinessCode(
             ErrorCodeEnum.DEVICE_TYPE_NULL_OR_EMPTY.getValue(), "Device type can't null or empty", HttpStatus.BAD_REQUEST);

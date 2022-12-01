@@ -64,7 +64,7 @@ public class OfficeTimeServiceImpl implements OfficeTimeService{
         List<Long> personIds = personRepository.getAllPersonId();
         for (Long item: personIds) {
             Notification notification = new Notification("Office time have just been updated!",
-                    0,"OFFICE TIME UPDATED",0,officeTime.getPersonId(), item, officeTime.getCreateDate());
+                    0,"system-company/office-time",0,officeTime.getPersonId(), item, officeTime.getCreateDate());
             notificationRepository.save(notification);
         }
 

@@ -27,7 +27,7 @@ public interface DeviceRepository extends JpaRepository<Device, Long> {
             " d.deviceCode," +
             " d.description," +
             " d.status," +
-            " dt.deviceTypeName) " +
+            " dt.deviceTypeName, 0) " +
             " from Device d " +
             " join DeviceType dt on d.deviceTypeId = dt.deviceTypeId " +
             " WHERE 1 = 1 " +
@@ -42,7 +42,7 @@ public interface DeviceRepository extends JpaRepository<Device, Long> {
             " d.deviceCode," +
             " d.description," +
             " d.status," +
-            " dt.deviceTypeName) " +
+            " dt.deviceTypeName, 0) " +
             " from Device d " +
             " join DeviceType dt on d.deviceTypeId = dt.deviceTypeId " +
             " WHERE d.deviceId = :deviceId ")
