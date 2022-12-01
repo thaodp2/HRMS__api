@@ -535,6 +535,8 @@ public class RequestServiceImpl implements RequestService {
                 throw new BaseException(ErrorCode.UPDATE_FAIL);
             }
         } else if (!currentStatus.equalsIgnoreCase(PENDING_STATUS)) {
+            // Lấy time rollback từ db ra cần trừ đi 7 tiếng để về thời gian chuẩn
+            maximumTimeToRollback.setTime(maximumTimeToRollback.getTime() - CommonConstant.MILLISECOND_7_HOURS);
             if (currentTime.after(maximumTimeToRollback)) {
                 throw new BaseException(ErrorCode.newErrorCode(208,
                         "You can only rollback within " + TIME_ALLOW_TO_ROLLBACK +
@@ -739,9 +741,11 @@ public class RequestServiceImpl implements RequestService {
         double newHoursWorked = 0;
         double otHoursRemainOfMonth = otBudgetDto.getOtHoursRemainOfMonth();
         double otHoursRemainOfYear = otBudgetDto.getOtHoursRemainOfYear();
+        double remainHoursWorkOfYear = 0;
         // Đang từ approved -> pending or reject
         if (isReturnNumOfDayOff) {
             newHoursWorked = otBudgetDto.getHoursWorked() - otHoursInRequest;
+            remainHoursWorkOfYear = otBudgetDto.getOtHoursRemainOfYear() + otHoursInRequest;
         } else {
             if (getDayOfDate(startTime) == getDayOfDate(endTime)) {
                 Double otTimeWorkedInThisDay = timeCheckRepository.getOTTimeByDay(getDayOfDate(startTime), personId);
@@ -770,9 +774,10 @@ public class RequestServiceImpl implements RequestService {
                 timeCheckRepository.updateOTTime(getDayOfDate(endTime), personId, otTimeWorkedInEndDay + otTimeOfEndDay);
             }
             newHoursWorked = otBudgetDto.getHoursWorked() + otHoursInRequest;
+            remainHoursWorkOfYear = otBudgetDto.getOtHoursRemainOfYear() - otHoursInRequest;
         }
         double remainHoursWorkOfMonth = otBudgetDto.getOtHoursBudget() - newHoursWorked;
-        double remainHoursWorkOfYear = otBudgetDto.getOtHoursRemainOfYear() - otHoursInRequest;
+//        double remainHoursWorkOfYear = otBudgetDto.getOtHoursRemainOfYear() - otHoursInRequest;
         Integer isUpdateOTBudgetOfMonthSucceeded = otBudgetRepository.updateOTBudgetOfMonth(personId,
                                                                                             year,
                                                                                             month,
