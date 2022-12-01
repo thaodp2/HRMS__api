@@ -110,7 +110,7 @@ public class PayrollServiceImpl implements PayrollService{
             Date currentDate = DateTimeUtil.getCurrentTime();
             currentDate.setTime(currentDate.getTime() + CommonConstant.MILLISECOND_7_HOURS);
             Notification notification = new Notification("Salary slip of month " + month + "/" + year + " already available! " ,
-                    0, "emp-self-service/payslip" , 0, 0L, personId, currentDate);
+                    0, "emp-self-service/payslip" , 0, null, personId, currentDate);
             notificationRepository.save(notification);
 
         }
