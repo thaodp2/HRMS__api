@@ -308,7 +308,9 @@ public class RequestServiceImpl implements RequestService {
                     requestDto.setRequestTypeName(LEAVE_TYPE);
                 } else if (requestType == OT_TYPE_ID) {
                     OTBudgetDto otBudgetDto = otBudgetRepository.getOTBudgetByPersonId(personId, year, month);
-                    requestDto.setTimeRemaining(otBudgetDto.getOtHoursBudget() - otBudgetDto.getHoursWorked());
+//                    requestDto.setTimeRemaining(otBudgetDto.getOtHoursBudget() - otBudgetDto.getHoursWorked());
+                    requestDto.setOtTimeRemainingOfMonth(otBudgetDto.getOtHoursRemainOfMonth());
+                    requestDto.setOtTimeRemainingOfYear(otBudgetDto.getOtHoursRemainOfYear());
                     requestDto.setRequestTypeName(OT_TYPE);
                 } else if (requestType == FORGOT_CHECK_IN_OUT) {
                     requestDto.setRequestTypeName(FORGOT_CHECK_IN_CHECK_OUT_TYPE);
