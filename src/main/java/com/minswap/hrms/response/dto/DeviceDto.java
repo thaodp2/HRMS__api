@@ -27,4 +27,7 @@ public class DeviceDto {
 
     @JsonProperty("deviceTypeName")
     private String deviceTypeName;
+
+    @JsonProperty("isAllowDelete")
+    private Integer isAllowDelete;
 }
