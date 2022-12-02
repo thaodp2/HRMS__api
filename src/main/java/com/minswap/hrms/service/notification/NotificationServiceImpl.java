@@ -35,7 +35,7 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public List<Notification> getNotifs(Long userID) {
-        List<Notification> notifs = notificationRepository.findByUserToAndAndDelivered(userID, 0);
+        List<Notification> notifs = notificationRepository.findByUserToAndDelivered(userID, 0);
         if (!notifs.isEmpty()) {
             notifs.forEach(x -> x.setDelivered(1));
             notificationRepository.saveAll(notifs);
