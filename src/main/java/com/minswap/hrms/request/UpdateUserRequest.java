@@ -11,9 +11,6 @@ import java.util.Date;
 @AllArgsConstructor
 public class UpdateUserRequest {
 
-    @JsonProperty("personId")
-    private Long personId;
-
     @JsonProperty("fullName")
     private String fullName;
 

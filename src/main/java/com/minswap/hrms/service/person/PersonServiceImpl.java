@@ -86,7 +86,8 @@ public class PersonServiceImpl implements PersonService {
     public ResponseEntity<BaseResponse<HttpStatus, Void>> updateUserInformation(UpdateUserRequest updateUserDto) throws Exception {
         try {
             ModelMapper modelMapper = new ModelMapper();
-            Optional<Person> personFromDB = personRepository.findPersonByPersonId(updateUserDto.getPersonId());
+            Long personId = 26L;
+            Optional<Person> personFromDB = personRepository.findPersonByPersonId(personId);
 
             if (!personFromDB.isPresent()) {
                 throw new Exception("Person not exist");
