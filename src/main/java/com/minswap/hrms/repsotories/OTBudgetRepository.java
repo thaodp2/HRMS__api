@@ -15,6 +15,7 @@ import org.springframework.stereotype.Repository;
 
 import javax.transaction.Transactional;
 import java.time.Year;
+import java.util.Optional;
 
 @Repository
 public interface OTBudgetRepository extends JpaRepository<OTBudget, Long> {
@@ -59,6 +60,6 @@ public interface OTBudgetRepository extends JpaRepository<OTBudget, Long> {
                                                 @Param("personId") Long personId,
                                                 Pageable pageable);
 
-    OTBudget findByPersonIdAndMonthAndYear(Long personId, Integer month, Year year);
+    Optional<OTBudget> findByPersonIdAndMonthAndYear(Long personId, Integer month, Year year);
 
 }

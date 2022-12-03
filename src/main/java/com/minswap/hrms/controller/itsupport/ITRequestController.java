@@ -33,9 +33,8 @@ public class ITRequestController {
             @RequestParam (required = false) @Pattern(regexp = "[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1]) (2[0-3]|[01][0-9]):[0-5][0-9]:[0-5][0-9]", message = "Invalid aprrovalDateFrom") String approvalDateFrom,
             @RequestParam (required = false) @Pattern(regexp = "[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1]) (2[0-3]|[01][0-9]):[0-5][0-9]:[0-5][0-9]", message = "Invalid aprrovalDateTo") String approvalDateTo,
             @RequestParam (required = false) Long deviceTypeId,
-            @RequestParam (required = false) Integer isAssigned,
             @RequestParam (required = false) String sort,
             @RequestParam (required = false) String dir) throws ParseException {
-        return requestService.getBorrowDeviceRequestList(page, limit, search, approvalDateFrom, approvalDateTo, deviceTypeId, isAssigned, sort, dir);
+        return requestService.getBorrowDeviceRequestList(page, limit, search, approvalDateFrom, approvalDateTo, deviceTypeId, sort, dir);
     }
 }

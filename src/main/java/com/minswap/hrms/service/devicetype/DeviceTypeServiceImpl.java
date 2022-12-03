@@ -139,6 +139,8 @@ public class DeviceTypeServiceImpl implements DeviceTypeService {
         DeviceType deviceType = deviceTypeRepository.findById(id).orElse(null);
         if (deviceType != null) {
             deviceTypeRepository.deleteById(id);
+            List<Device> deviceList = deviceRepository.findByDeviceTypeId(id);
+            deviceRepository.deleteAll(deviceList);
             responseEntity = BaseResponse.ofSucceeded(null);
         } else {
             throw new BaseException(ErrorCode.NOT_FOUND_DEVICE_TYPE);

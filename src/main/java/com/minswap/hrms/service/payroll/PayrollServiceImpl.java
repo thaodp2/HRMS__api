@@ -257,7 +257,7 @@ public class PayrollServiceImpl implements PayrollService{
             body += "Deductions" + "\n";
             body += "\t"+"Tax: " + payrollDisplayDto.getTax() + "\n";
             body += "\t"+"Social Insurance (10.5%): " + payrollDisplayDto.getSocialInsurance() + "\n";
-            body += "\t"+"Fine Amount: " + payrollDisplayDto.getFineAmount() + "\n\n";
+//            body += "\t"+"Fine Amount: " + payrollDisplayDto.getFineAmount() + "\n\n";
             body += "Net Income: " + payrollDisplayDto.getActuallyReceived() + "\n";
 
             //send mail
