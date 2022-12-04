@@ -338,9 +338,18 @@ public class TimeCheckServiceImpl implements TimeCheckService{
         TimeCheck timeCheck = new TimeCheck();
         Optional<SignatureProfile> signatureProfileOptional = signatureProfileRepository.findSignatureProfileByPrivateKeySignature(timeCheckInRequest.getIdSignature());
         if(!signatureProfileOptional.isPresent()){
-            throw new BaseException(ErrorCode.SIGNATURE_NOT_EXIST);
+            //if dont have signature id -> save new signature
+            SignatureProfile signatureProfileNew = new SignatureProfile();
+            signatureProfileNew.setPrivateKeySignature(timeCheckInRequest.getIdSignature());
+            signatureProfileNew.setRegisteredDate(convertDateInput(timeCheckInRequest.getTimeLog().toString()));
+            signatureProfileNew.setPersonId(-1L);
+            signatureProfileRepository.save(signatureProfileNew);
+            return BaseResponse.ofSucceeded(null);
         }
         SignatureProfile signatureProfile = signatureProfileOptional.get();
+        if(signatureProfile.getPersonId() == -1){
+            throw new BaseException(ErrorCode.FINGERPRINT_INVALID);
+        }
         //check time in exsit
         DailyTimeCheckDto dailyTimeCheckDto = timeCheckRepository.getDailyTimeCheck(signatureProfile.getPersonId(), convertDateInput(timeCheckInRequest.getTimeLog()));
         Optional<OfficeTime> officeTimeDb = officeTimeRepository.findOfficeTimeByOfficeTimeId(1L);

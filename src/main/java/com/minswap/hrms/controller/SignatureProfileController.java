@@ -6,6 +6,7 @@ import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.request.EmployeeRequest;
 import com.minswap.hrms.request.SignatureProfileRequest;
 import com.minswap.hrms.response.BenefitBudgetResponse;
+import com.minswap.hrms.response.SignatureProfileResponse;
 import com.minswap.hrms.service.benefitbudget.BenefitBudgetService;
 import com.minswap.hrms.service.signatureProfile.SignatureProfileService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,12 +28,12 @@ public class SignatureProfileController {
     @Autowired
     SignatureProfileService signatureProfileService;
 
-    @PostMapping("/register-signature")
-    @ServiceProcessingValidateAnnotation
-    public ResponseEntity<BaseResponse<Void, Void>> registerSignatureEmployee(
-            @RequestBody @Valid SignatureProfileRequest signatureProfileRequest,
+    @GetMapping("/signature_register")
+    public ResponseEntity<BaseResponse<SignatureProfileResponse, Pageable>> registerSignatureEmployee(
+            @RequestParam int page,
+            @RequestParam int limit,
             BindingResult bindingResult) {
 
-        return signatureProfileService.registerSignature(signatureProfileRequest);
+        return signatureProfileService.listSignatureRegister(page, limit);
     }
 }

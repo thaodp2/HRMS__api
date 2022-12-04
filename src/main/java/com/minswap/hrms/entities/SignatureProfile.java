@@ -20,13 +20,13 @@ public class SignatureProfile {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long signatureId;
 
-	@Column(name = "roll_number")
-	private String rollNumber;
-
 	@Column(name = "private_key_signature")
 	private String privateKeySignature;
 
 	@Column(name = "person_id")
 	private Long personId;
+
+	@Column(name = "registered_date")
+	private Date registeredDate;
 
 }
