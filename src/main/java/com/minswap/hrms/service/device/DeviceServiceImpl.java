@@ -149,6 +149,15 @@ public class DeviceServiceImpl implements DeviceService {
         try {
 
             ModelMapper modelMapper = new ModelMapper();
+            if(deviceRequest.getDeviceName() == null){
+                deviceRequest.setDeviceName(device.getDeviceName());
+            }
+            if(deviceRequest.getDeviceCode()== null){
+                deviceRequest.setDeviceCode(device.getDeviceCode());
+            }
+            if (deviceRequest.getDeviceTypeId() == null){
+                deviceRequest.setDeviceTypeId(device.getDeviceTypeId());
+            }
             modelMapper.map(deviceRequest, device);
             device.setDeviceId(deviceId);
             device.setStatus(0);
