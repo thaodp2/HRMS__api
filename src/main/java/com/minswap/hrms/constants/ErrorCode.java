@@ -137,4 +137,6 @@ public class ErrorCode {
             ErrorCodeEnum.CITIZEN_INDENTIFICATION_EXSIT.getValue(), "Citizen Identification exist!", HttpStatus.NOT_FOUND);
     public static final BusinessCode FINGERPRINT_INVALID = new BusinessCode(
             ErrorCodeEnum.FINGERPRINT_INVALID.getValue(), "Contact HR to register this fingerprint!", HttpStatus.NOT_FOUND);
+    public static final BusinessCode UNAUTHORIZE = new BusinessCode(
+            ErrorCodeEnum.UNAUTHORIZE.getValue(), "Sorry! We've got an Unauthorized Redirect URI and can't proceed with the authentication", HttpStatus.UNAUTHORIZED);
 }

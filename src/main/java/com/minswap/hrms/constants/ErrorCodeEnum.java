@@ -1,5 +1,7 @@
 package com.minswap.hrms.constants;
 
+import org.springframework.http.HttpStatus;
+
 /** The Enum ErrorCodeEnum. */
 public enum ErrorCodeEnum {
 
@@ -68,10 +70,8 @@ public enum ErrorCodeEnum {
   INVALID_DATA(680),
   INVALID_FILE(681),
   UPLOAD_EXCEL(682),
-
-  FINGERPRINT_INVALID(207)
-
-  ;
+  FINGERPRINT_INVALID(207),
+  UNAUTHORIZE(HttpStatus.UNAUTHORIZED.value());
 
   /** The value. */
   private int value;
