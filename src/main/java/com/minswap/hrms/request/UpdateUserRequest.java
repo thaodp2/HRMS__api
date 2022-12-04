@@ -18,6 +18,7 @@ public class UpdateUserRequest {
     private String address;
 
     @JsonProperty("citizenIdentification")
+    @Pattern(regexp = "^[0-9]{9}$|^[0-9]{12}$", message = "617")
     private String citizenIdentification;
 
     @JsonProperty("phoneNumber")
