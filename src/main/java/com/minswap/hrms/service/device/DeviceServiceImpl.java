@@ -95,7 +95,7 @@ public class DeviceServiceImpl implements DeviceService {
                 Long currentUser = Long.valueOf(2);
                 Date currentDate = DateTimeUtil.getCurrentTime();
                 currentDate.setTime(currentDate.getTime() + CommonConstant.MILLISECOND_7_HOURS);
-                Notification notification = new Notification("You have just been assigned a device " + device.getDeviceName() + " - " + device.getDeviceCode() + "!",
+                Notification notification = new Notification("just assigned you a device " + device.getDeviceName() + " - " + device.getDeviceCode() + "!",
                         0, "emp-self-service/device-history/detail/" + borrowHistory.getBorrowHistoryId(), 0, currentUser, request.getPersonId(), currentDate);
                 notificationRepository.save(notification);
 
@@ -254,7 +254,7 @@ public class DeviceServiceImpl implements DeviceService {
                     for (Person person : allITSupport) {
                         currentDate = DateTimeUtil.getCurrentTime();
                         currentDate.setTime(currentDate.getTime() + CommonConstant.MILLISECOND_7_HOURS);
-                        Notification notification = new Notification("Employee A retunred device " + device.getDeviceName() + " - " + device.getDeviceCode(),
+                        Notification notification = new Notification("retunred device " + device.getDeviceName() + " - " + device.getDeviceCode(),
                                 0, "human-resource/borrow-device-history/detail/" + borrowHistoryId, 0, currentUser, person.getPersonId(), currentDate);
                         notificationRepository.save(notification);
                     }

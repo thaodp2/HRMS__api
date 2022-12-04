@@ -51,4 +51,6 @@ public class NotificationDto {
     @JsonFormat(pattern = CommonConstant.YYYY_MM_DD_HH_MM_SS, shape = JsonFormat.Shape.STRING)
     private Date createDate;
 
+    private Long totalNotificationNotRead;
+
 }

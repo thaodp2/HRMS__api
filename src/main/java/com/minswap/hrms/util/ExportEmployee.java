@@ -48,8 +48,11 @@ public class ExportEmployee extends ExcelExporter {
                         cell.setCellValue(employeeListDtoList.get(j).getActive() == 1 ? "Active" : "Inactive");
                         break;
                 }
-                getSheets().get(0).autoSizeColumn(i);
+//                getSheets().get(0).autoSizeColumn(i);
             }
+        }
+        for (int i = 0; i < CommonConstant.LIST_HEADER_EMPLOYEE.length; i++) {
+            getSheets().get(0).autoSizeColumn(i);
         }
     }
 

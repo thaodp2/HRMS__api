@@ -5,8 +5,11 @@ import com.minswap.hrms.exception.model.Pagination;
 import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.repsotories.NotificationRepository;
 import com.minswap.hrms.response.NotificationResponse;
+import com.minswap.hrms.response.dto.NotificationDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.stereotype.Service;
@@ -25,36 +28,57 @@ public class NotificationServiceImpl implements NotificationService {
     NotificationRepository notificationRepository;
 
     @Override
-    public ResponseEntity<BaseResponse<NotificationResponse, Pagination>> getNotificationsByUserID(Long userID) {
-        List<Notification> list = notificationRepository.findByUserTo(userID);
-        NotificationResponse response = new NotificationResponse(list);
+    public ResponseEntity<BaseResponse<NotificationResponse, Pagination>> getNotificationsByUserID(Integer page, Integer limit, Long userID) {
+        //List<Notification> list = notificationRepository.findByUserTo(userID);
+        Page<NotificationDto> pageInfo = notificationRepository.getMyNotifications(userID, PageRequest.of(page - 1, limit));
+        Pagination pagination = new Pagination(page, limit);
+        pagination.setTotalRecords(pageInfo);
+
+        NotificationResponse response = new NotificationResponse(pageInfo.getContent());
         ResponseEntity<BaseResponse<NotificationResponse, Pagination>> responseEntity
-                = BaseResponse.ofSucceededOffset(response, null);
+                = BaseResponse.ofSucceededOffset(response, pagination);
         return responseEntity;
     }
 
     @Override
-    public List<Notification> getNotifs(Long userID) {
-        List<Notification> notifs = notificationRepository.findByUserToAndDelivered(userID, 0);
-        if (!notifs.isEmpty()) {
-            notifs.forEach(x -> x.setDelivered(1));
-            notificationRepository.saveAll(notifs);
+    public NotificationResponse getNotifs(Long userID) {
+        List<Notification> notifsSave = notificationRepository.findByUserToAndDelivered(userID, 0);
+        List<NotificationDto> notifs = notificationRepository.getNotiByUserToAndDelivered(userID);
+
+        Long total = getTotal(userID);
+        if ((notifs != null && !notifs.isEmpty())) {
+            for (NotificationDto noti : notifs) {
+                noti.setTotalNotificationNotRead(total);
+            }
         }
-        return notifs;
+        NotificationResponse response = new NotificationResponse(notifs);
+
+        if (notifsSave != null && !notifsSave.isEmpty()) {
+            notifsSave.forEach(x -> x.setDelivered(1));
+            notificationRepository.saveAll(notifsSave);
+        }
+        return response;
     }
 
-    @Override
-    public Flux<ServerSentEvent<List<Notification>>> getNotificationsByUserToID(Long userID) {
+    public Long getTotal(Long userID) {
+        List<Notification> notifs = notificationRepository.findByUserToAndIsRead(userID,0);
+        if (notifs != null && !notifs.isEmpty()) {
+            return (long) notifs.size();
+        }
+        return (long) 0;
+    }
+
+    public Flux<ServerSentEvent<NotificationResponse>> getNotificationsByUserToID(Long userID) {
         if (userID != null) {
             return Flux.interval(Duration.ofSeconds(1))
                     .publishOn(Schedulers.boundedElastic())
-                    .map(sequence -> ServerSentEvent.<List<Notification>>builder().id(String.valueOf(sequence))
+                    .map(sequence -> ServerSentEvent.<NotificationResponse>builder().id(String.valueOf(sequence))
                             .event("user-list-event").data(getNotifs(userID))
                             .build());
         }
 
-        return Flux.interval(Duration.ofSeconds(1)).map(sequence -> ServerSentEvent.<List<Notification>>builder()
-                .id(String.valueOf(sequence)).event("user-list-event").data(new ArrayList<>()).build());
+        return Flux.interval(Duration.ofSeconds(1)).map(sequence -> ServerSentEvent.<NotificationResponse>builder()
+                .id(String.valueOf(sequence)).event("user-list-event").data(new NotificationResponse()).build());
     }
 
     @Override
