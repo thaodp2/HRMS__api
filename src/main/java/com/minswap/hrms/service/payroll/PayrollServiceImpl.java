@@ -1,22 +1,27 @@
 package com.minswap.hrms.service.payroll;
 
+import com.minswap.hrms.constants.CommonConstant;
 import com.minswap.hrms.constants.ErrorCode;
+import com.minswap.hrms.entities.Notification;
 import com.minswap.hrms.entities.Person;
 import com.minswap.hrms.entities.Salary;
 import com.minswap.hrms.exception.model.BaseException;
 import com.minswap.hrms.model.BaseResponse;
+import com.minswap.hrms.repsotories.NotificationRepository;
 import com.minswap.hrms.repsotories.PayrollRepository;
 import com.minswap.hrms.repsotories.PersonRepository;
 import com.minswap.hrms.response.PayrollResponse;
 import com.minswap.hrms.response.dto.PayrollDisplayDto;
 import com.minswap.hrms.response.dto.PayrollDto;
 import com.minswap.hrms.service.email.EmailSenderService;
+import com.minswap.hrms.util.DateTimeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.text.ParseException;
 import java.time.Year;
 import java.util.Calendar;
 import java.util.Date;
@@ -35,8 +40,11 @@ public class PayrollServiceImpl implements PayrollService{
     @Autowired
     EmailSenderService emailSenderService;
 
+    @Autowired
+    NotificationRepository notificationRepository;
+
     @Scheduled(cron = "* 0 1 1 * *")
-    public void  cronjobUpdateSalary() {
+    public void  cronjobUpdateSalary() throws ParseException {
 
         List<Long> allPersonId = personRepository.getAllPersonId();
         for (Long personId : allPersonId) {
@@ -99,6 +107,11 @@ public class PayrollServiceImpl implements PayrollService{
                 salary.setSalaryId(salaryOptional.get().getSalaryId());
             }
             payrollRepository.save(salary);
+            Date currentDate = DateTimeUtil.getCurrentTime();
+            currentDate.setTime(currentDate.getTime() + CommonConstant.MILLISECOND_7_HOURS);
+            Notification notification = new Notification("Salary slip of month " + month + "/" + year + " already available! " ,
+                    0, "emp-self-service/payslip" , 0, null, personId, currentDate);
+            notificationRepository.save(notification);
 
         }
     }
@@ -244,7 +257,7 @@ public class PayrollServiceImpl implements PayrollService{
             body += "Deductions" + "\n";
             body += "\t"+"Tax: " + payrollDisplayDto.getTax() + "\n";
             body += "\t"+"Social Insurance (10.5%): " + payrollDisplayDto.getSocialInsurance() + "\n";
-            body += "\t"+"Fine Amount: " + payrollDisplayDto.getFineAmount() + "\n\n";
+//            body += "\t"+"Fine Amount: " + payrollDisplayDto.getFineAmount() + "\n\n";
             body += "Net Income: " + payrollDisplayDto.getActuallyReceived() + "\n";
 
             //send mail

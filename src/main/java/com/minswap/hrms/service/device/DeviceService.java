@@ -1,5 +1,6 @@
 package com.minswap.hrms.service.device;
 
+import com.minswap.hrms.entities.Device;
 import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.request.AssignRequest;
 import com.minswap.hrms.request.DeviceRequest;
@@ -11,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.text.ParseException;
+import java.util.List;
 
 public interface DeviceService {
     ResponseEntity<BaseResponse<MasterDataResponse, Pageable>> getMasterDataDeviceByDeviceType (Long deviceTypeId, Integer status, String deviceName);

@@ -84,13 +84,20 @@ public class PersonServiceImpl implements PersonService {
 
     @Override
     public ResponseEntity<BaseResponse<HttpStatus, Void>> updateUserInformation(UpdateUserRequest updateUserDto) throws Exception {
+
+        Integer personCheckCitizen = personRepository.getUserByCitizenIdentification(updateUserDto.getCitizenIdentification());
+        if (personCheckCitizen != null && personCheckCitizen > 0) {
+            throw new BaseException(ErrorCode.CITIZEN_INDENTIFICATION_EXSIT);
+        }
         try {
             ModelMapper modelMapper = new ModelMapper();
-            Optional<Person> personFromDB = personRepository.findPersonByPersonId(updateUserDto.getPersonId());
+            Long personId = 26L;
+            Optional<Person> personFromDB = personRepository.findPersonByPersonId(personId);
 
             if (!personFromDB.isPresent()) {
                 throw new Exception("Person not exist");
             }
+
             Person person = personFromDB.get();
             modelMapper.map(updateUserDto, person);
             Date dateOfBirth = new Date();
@@ -294,6 +301,9 @@ public class PersonServiceImpl implements PersonService {
         Optional<Person> person = personRepository.findById(personId);
         if (!person.isPresent()) {
             throw new BaseException(ErrorCode.NO_DATA);
+        }
+        if (!secureCodeRequest.getCurrentSecureCode().equals(secureCodeRequest.getConfirmSecureCode())) {
+            throw new BaseException(ErrorCode.SECURE_CODE_AND_CONFIRM_CODE_DO_NOT_MATCH);
         }
         if (person.get().getPinCode().equalsIgnoreCase(secureCodeRequest.getCurrentSecureCode())) {
             return BaseResponse.ofSucceeded(true);

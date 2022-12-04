@@ -28,8 +28,5 @@ public class OfficeTime {
     @Column(name = "create_date")
     private Date createDate;
 
-    @Column(name = "person_id")
-    private Long personId;
-
 
 }

@@ -8,6 +8,7 @@ import com.minswap.hrms.repsotories.PersonRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import java.text.DecimalFormat;
 import java.time.Year;
 import java.util.ArrayList;
@@ -26,13 +27,16 @@ public class LeaveBudgetServiceImpl implements LeaveBudgetService {
     public void createLeaveBudget() {
         List<Person> personList = personRepository.findByRankIdIsNot(CommonConstant.RANK_ID_OF_INTERN);
         List<LeaveBudget> leaveBudgetList = new ArrayList<>();
-        if(!personList.isEmpty()) {
+        if (!personList.isEmpty()) {
             for (Person person : personList) {
-                leaveBudgetList.add(new LeaveBudget(person.getPersonId(), 0, 0, 0, Year.now(), CommonConstant.LIST_REQUEST_TYPE_ID_IN_LEAVE_BUDGET[0]));
-                leaveBudgetList.add(new LeaveBudget(person.getPersonId(), 180, 0, 0, Year.now(), CommonConstant.LIST_REQUEST_TYPE_ID_IN_LEAVE_BUDGET[1]));
-                leaveBudgetList.add(new LeaveBudget(person.getPersonId(), 20, 0, 0, Year.now(), CommonConstant.LIST_REQUEST_TYPE_ID_IN_LEAVE_BUDGET[2]));
-                leaveBudgetList.add(new LeaveBudget(person.getPersonId(), 70, 0, 0, Year.now(), CommonConstant.LIST_REQUEST_TYPE_ID_IN_LEAVE_BUDGET[3]));
-                leaveBudgetList.add(new LeaveBudget(person.getPersonId(), 3, 0, 0, Year.now(), CommonConstant.LIST_REQUEST_TYPE_ID_IN_LEAVE_BUDGET[4]));
+                LeaveBudget leaveBudget = leaveBudgetRepository.findByPersonIdAndYear(person.getPersonId(), Year.now()).orElse(null);
+                if (leaveBudget == null) {
+                    leaveBudgetList.add(new LeaveBudget(person.getPersonId(), 0, 0, 0, Year.now(), CommonConstant.LIST_REQUEST_TYPE_ID_IN_LEAVE_BUDGET[0]));
+                    leaveBudgetList.add(new LeaveBudget(person.getPersonId(), 180, 0, 0, Year.now(), CommonConstant.LIST_REQUEST_TYPE_ID_IN_LEAVE_BUDGET[1]));
+                    leaveBudgetList.add(new LeaveBudget(person.getPersonId(), 20, 0, 0, Year.now(), CommonConstant.LIST_REQUEST_TYPE_ID_IN_LEAVE_BUDGET[2]));
+                    leaveBudgetList.add(new LeaveBudget(person.getPersonId(), 70, 0, 0, Year.now(), CommonConstant.LIST_REQUEST_TYPE_ID_IN_LEAVE_BUDGET[3]));
+                    leaveBudgetList.add(new LeaveBudget(person.getPersonId(), 3, 0, 0, Year.now(), CommonConstant.LIST_REQUEST_TYPE_ID_IN_LEAVE_BUDGET[4]));
+                }
             }
             leaveBudgetRepository.saveAll(leaveBudgetList);
         }
@@ -42,11 +46,11 @@ public class LeaveBudgetServiceImpl implements LeaveBudgetService {
     public void updateLeaveBudgetEachMonth() {
         DecimalFormat df = new DecimalFormat("#.##");
         List<Person> personList = personRepository.findByRankIdIsNot(CommonConstant.RANK_ID_OF_INTERN);
-        if(!personList.isEmpty()) {
+        if (!personList.isEmpty()) {
             for (Person person : personList) {
                 Double increaseLeaveBudget = Double.valueOf(df.format(person.getAnnualLeaveBudget() / 12));
-                LeaveBudget preLeaveBudget = leaveBudgetRepository.findByPersonIdAndYearAndRequestTypeId(person.getPersonId(), Year.now(), CommonConstant.REQUEST_TYPE_ID_OF_ANNUAL_LEAVE);
-                if(preLeaveBudget != null) {
+                LeaveBudget preLeaveBudget = leaveBudgetRepository.findByPersonIdAndYearAndRequestTypeId(person.getPersonId(), Year.now(), CommonConstant.REQUEST_TYPE_ID_OF_ANNUAL_LEAVE).orElse(null);
+                if (preLeaveBudget != null) {
                     preLeaveBudget.setLeaveBudget(preLeaveBudget.getLeaveBudget() + increaseLeaveBudget);
                     leaveBudgetRepository.save(preLeaveBudget);
                 }

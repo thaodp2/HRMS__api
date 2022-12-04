@@ -16,11 +16,14 @@ import org.springframework.stereotype.Repository;
 import javax.transaction.Transactional;
 import java.time.Year;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface LeaveBudgetRepository extends JpaRepository<LeaveBudget, Long> {
 
-    LeaveBudget findByPersonIdAndYearAndRequestTypeId(Long personId, Year year, Long requestTypeId);
+    Optional<LeaveBudget> findByPersonIdAndYearAndRequestTypeId(Long personId, Year year, Long requestTypeId);
+
+    Optional<LeaveBudget> findByPersonIdAndYear(Long personId, Year year);
 
     @Query("SELECT new com.minswap.hrms.response.dto.LeaveBudgetDto(lb.leaveBudget, lb.numberOfDayOff, lb.remainDayOff) " +
             "from LeaveBudget lb " +
