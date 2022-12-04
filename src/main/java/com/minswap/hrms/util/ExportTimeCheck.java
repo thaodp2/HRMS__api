@@ -56,6 +56,9 @@ public class ExportTimeCheck extends ExcelExporter{
 //                getSheets().get(0).autoSizeColumn(i);
             }
         }
+        for (int i = 0; i < CommonConstant.LIST_HEADER_TIME_CHECK.length; i++) {
+            getSheets().get(0).autoSizeColumn(i);
+        }
     }
 
     public void exportTimeCheck(HttpServletResponse response) throws IOException {

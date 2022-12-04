@@ -25,7 +25,7 @@ public interface RequestService {
 
     void autoUpdateRequestStatus();
 
-    ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getBorrowDeviceRequestList(Integer page, Integer limit, String search, String approvalDateFrom, String approvalDateTo, Long deviceTypeId,Integer isAssigned, String sort, String dir) throws ParseException;
+    ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getBorrowDeviceRequestList(Integer page, Integer limit, String search, String approvalDateFrom, String approvalDateTo, Long deviceTypeId, String sort, String dir) throws ParseException;
 
     ResponseEntity<BaseResponse<Void, Void>> cancelRequest(Long id);
 }

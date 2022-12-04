@@ -11,7 +11,7 @@ import org.springframework.http.ResponseEntity;
 import java.util.List;
 
 public interface DeviceTypeService {
-    ResponseEntity<BaseResponse<DeviceTypeResponse, Pageable>> getAllDeviceType (Integer page,
+    ResponseEntity<BaseResponse<DeviceTypeResponse.DeviceTypeDtoResponse, Pageable>> getAllDeviceType (Integer page,
                                                                                   Integer limit,
                                                                                   String deviceTypeName);
     ResponseEntity<BaseResponse<HttpStatus, Void>> createDeviceType (List<String> deviceTypeName);

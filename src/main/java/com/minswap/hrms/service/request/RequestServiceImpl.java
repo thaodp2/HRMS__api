@@ -612,7 +612,7 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
-    public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getBorrowDeviceRequestList(Integer page, Integer limit, String search, String approvalDateFrom, String approvalDateTo, Long deviceTypeId, Integer isAssigned, String sort, String dir) throws ParseException {
+    public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getBorrowDeviceRequestList(Integer page, Integer limit, String search, String approvalDateFrom, String approvalDateTo, Long deviceTypeId, String sort, String dir) throws ParseException {
         Pagination pagination = null;
         Sort.Direction dirSort = CommonUtil.getSortDirection(sort, dir);
         Date startDateFormat = null;
@@ -623,7 +623,7 @@ public class RequestServiceImpl implements RequestService {
             endDateFormat = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).parse(approvalDateTo);
             endDateFormat.setTime(endDateFormat.getTime() + MILLISECOND_7_HOURS);
         }
-        Page<RequestDto> requestDtoPage = requestRepository.getBorrowDeviceRequestList((search == null || search.trim().isEmpty()) ? null : search.trim(), startDateFormat, endDateFormat, deviceTypeId, isAssigned, PageRequest.of(page - 1, limit, dirSort == null ? Sort.by(Sort.Direction.DESC, "approvalDate") : Sort.by(dirSort, sort)));
+        Page<RequestDto> requestDtoPage = requestRepository.getBorrowDeviceRequestList((search == null || search.trim().isEmpty()) ? null : search.trim(), startDateFormat, endDateFormat, deviceTypeId, PageRequest.of(page - 1, limit, dirSort == null ? Sort.by(Sort.Direction.DESC, "approvalDate") : Sort.by(dirSort, sort)));
         List<RequestDto> requestDtoList = requestDtoPage.getContent();
         if (page != null & limit != null) {
             pagination = new Pagination(page, limit);

@@ -62,7 +62,7 @@ public class ITDeviceTypeController {
     RankService rankService;
 
     @GetMapping("/device-type")
-    public ResponseEntity<BaseResponse<DeviceTypeResponse, Pageable>> getAllDeviceType(@RequestParam @Min(1) Integer page,
+    public ResponseEntity<BaseResponse<DeviceTypeResponse.DeviceTypeDtoResponse, Pageable>> getAllDeviceType(@RequestParam @Min(1) Integer page,
                                                                                        @RequestParam @Min(0) Integer limit,
                                                                                        @RequestParam(required = false) String search) {
         return deviceTypeService.getAllDeviceType(page, limit, search);

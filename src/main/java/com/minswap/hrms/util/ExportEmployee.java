@@ -51,6 +51,9 @@ public class ExportEmployee extends ExcelExporter {
 //                getSheets().get(0).autoSizeColumn(i);
             }
         }
+        for (int i = 0; i < CommonConstant.LIST_HEADER_EMPLOYEE.length; i++) {
+            getSheets().get(0).autoSizeColumn(i);
+        }
     }
 
     public void exportEmployee(HttpServletResponse response) throws IOException {
