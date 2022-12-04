@@ -302,9 +302,6 @@ public class PersonServiceImpl implements PersonService {
         if (!person.isPresent()) {
             throw new BaseException(ErrorCode.NO_DATA);
         }
-        if (!secureCodeRequest.getCurrentSecureCode().equals(secureCodeRequest.getConfirmSecureCode())) {
-            throw new BaseException(ErrorCode.SECURE_CODE_AND_CONFIRM_CODE_DO_NOT_MATCH);
-        }
         if (person.get().getPinCode().equalsIgnoreCase(secureCodeRequest.getCurrentSecureCode())) {
             return BaseResponse.ofSucceeded(true);
         }
