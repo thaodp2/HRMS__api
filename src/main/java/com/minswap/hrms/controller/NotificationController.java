@@ -30,7 +30,7 @@ public class NotificationController {
         return notificationService.getNotificationsByUserToID(userID);
     }
 
-    @PatchMapping("/read-notifications/{notifID}")
+    @PutMapping("/read-notifications/{notifID}")
     public ResponseEntity<BaseResponse<HttpStatus, Void>> changeNotifStatusToRead(@PathVariable Long notifID) {
         notificationService.changeNotifStatusToRead(notifID);
         return BaseResponse.ofSucceededOffset(HttpStatus.OK, null);

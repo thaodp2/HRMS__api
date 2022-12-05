@@ -53,9 +53,6 @@ public class ExportBenefitBudget extends ExcelExporter {
 //                getSheets().get(0).autoSizeColumn(i);
             }
         }
-        for (int i = 0; i < header.length; i++) {
-            getSheets().get(0).autoSizeColumn(i);
-        }
     }
 
     public void exportBenefitBudget(HttpServletResponse response) throws IOException {
