@@ -14,7 +14,9 @@ import com.minswap.hrms.response.DeviceResponse;
 import com.minswap.hrms.response.MasterDataResponse;
 import com.minswap.hrms.response.dto.DeviceDto;
 import com.minswap.hrms.response.dto.MasterDataDto;
+import com.minswap.hrms.security.UserPrincipal;
 import com.minswap.hrms.service.borrowhistory.BorrowHistoryService;
+import com.minswap.hrms.service.person.PersonService;
 import com.minswap.hrms.util.DateTimeUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -53,6 +55,9 @@ public class DeviceServiceImpl implements DeviceService {
     @Autowired
     NotificationRepository notificationRepository;
 
+    @Autowired
+    PersonService personService;
+
     @Override
     public ResponseEntity<BaseResponse<MasterDataResponse, Pageable>> getMasterDataDeviceByDeviceType(Long deviceTypeId, Integer status, String search) {
         List<Device> devices;
@@ -73,7 +78,7 @@ public class DeviceServiceImpl implements DeviceService {
     }
 
     @Override
-    public ResponseEntity<BaseResponse<HttpStatus, Void>> assignDevice(AssignRequest assignRequest) {
+    public ResponseEntity<BaseResponse<HttpStatus, Void>> assignDevice(AssignRequest assignRequest, UserPrincipal userPrincipal) {
         ResponseEntity<BaseResponse<HttpStatus, Void>> responseEntity = null;
         try {
             //create borrow history
@@ -92,7 +97,8 @@ public class DeviceServiceImpl implements DeviceService {
 
                 //send a notification to person is assigned
                 //fake id of it support is 2 (current user)
-                Long currentUser = Long.valueOf(2);
+//                Long currentUser = Long.valueOf(2);
+                Long currentUser = personService.getPersonInforByEmail(userPrincipal.getEmail()).getPersonId();
                 Date currentDate = DateTimeUtil.getCurrentTime();
                 currentDate.setTime(currentDate.getTime() + CommonConstant.MILLISECOND_7_HOURS);
                 Notification notification = new Notification("just assigned you a device " + device.getDeviceName() + " - " + device.getDeviceCode() + "!",
@@ -240,7 +246,7 @@ public class DeviceServiceImpl implements DeviceService {
     }
 
     @Override
-    public ResponseEntity<BaseResponse<HttpStatus, Void>> returnDevice(Long borrowHistoryId) {
+    public ResponseEntity<BaseResponse<HttpStatus, Void>> returnDevice(Long borrowHistoryId, UserPrincipal userPrincipal) {
         ResponseEntity<BaseResponse<HttpStatus, Void>> responseEntity = null;
         try {
             BorrowHistory borrowHistory = borrowHistoryRepository.findById(borrowHistoryId).orElse(null);
@@ -259,7 +265,8 @@ public class DeviceServiceImpl implements DeviceService {
 
                     //notification to all it-support
                     List<Person> allITSupport = personRepository.getMasterDataPersonByRole(CommonConstant.ROLE_ID_OF_IT_SUPPORT, null);
-                    Long currentUser = Long.valueOf(2);
+//                    Long currentUser = Long.valueOf(2);
+                    Long currentUser = personService.getPersonInforByEmail(userPrincipal.getEmail()).getPersonId();
                     for (Person person : allITSupport) {
                         currentDate = DateTimeUtil.getCurrentTime();
                         currentDate.setTime(currentDate.getTime() + CommonConstant.MILLISECOND_7_HOURS);

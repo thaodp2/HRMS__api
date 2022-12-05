@@ -3,7 +3,10 @@ package com.minswap.hrms.controller.manager;
 import com.minswap.hrms.constants.CommonConstant;
 import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.response.BenefitBudgetResponse;
+import com.minswap.hrms.security.UserPrincipal;
+import com.minswap.hrms.security.oauth2.CurrentUser;
 import com.minswap.hrms.service.benefitbudget.BenefitBudgetService;
+import com.minswap.hrms.service.person.PersonService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +28,9 @@ public class ManagerBenefitBudgetController {
     @Autowired
     private BenefitBudgetService benefitBudgetService;
 
+    @Autowired
+    PersonService personService;
+
     @GetMapping("/benefit-budget")
     public ResponseEntity<BaseResponse<BenefitBudgetResponse.BenefitBudgetListResponse, Pageable>> getBenefitBudgetOfSubordinate(
             @RequestParam @Min(1) Integer page,
@@ -34,9 +40,11 @@ public class ManagerBenefitBudgetController {
             @RequestParam(required = false) @Min(1) @Max(12) Integer month,
             @RequestParam(required = false) Year year,
             @RequestParam(required = false) String sort,
-            @RequestParam(required = false) String dir
+            @RequestParam(required = false) String dir,
+            @CurrentUser UserPrincipal userPrincipal
     ) throws ParseException {
-        Long managerId = Long.valueOf(6);
+//        Long managerId = Long.valueOf(6);
+        Long managerId = personService.getPersonInforByEmail(userPrincipal.getEmail()).getPersonId();
         return benefitBudgetService.getBenefitBudget(managerId, null, page, limit, requestTypeId, search, month, year, sort, dir);
     }
 }

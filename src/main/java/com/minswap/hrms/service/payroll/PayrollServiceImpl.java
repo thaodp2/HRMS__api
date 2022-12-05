@@ -13,7 +13,9 @@ import com.minswap.hrms.repsotories.PersonRepository;
 import com.minswap.hrms.response.PayrollResponse;
 import com.minswap.hrms.response.dto.PayrollDisplayDto;
 import com.minswap.hrms.response.dto.PayrollDto;
+import com.minswap.hrms.security.UserPrincipal;
 import com.minswap.hrms.service.email.EmailSenderService;
+import com.minswap.hrms.service.person.PersonService;
 import com.minswap.hrms.util.DateTimeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -42,6 +44,9 @@ public class PayrollServiceImpl implements PayrollService{
 
     @Autowired
     NotificationRepository notificationRepository;
+
+    @Autowired
+    PersonService personService;
 
     @Scheduled(cron = "* 0 1 1 * *")
     public void  cronjobUpdateSalary() throws ParseException {
@@ -217,10 +222,11 @@ public class PayrollServiceImpl implements PayrollService{
     }
 
     @Override
-    public ResponseEntity<BaseResponse<HttpStatus, Void>> sendPayrollToEmail(int month, int year) {
+    public ResponseEntity<BaseResponse<HttpStatus, Void>> sendPayrollToEmail(UserPrincipal userPrincipal, int month, int year) {
         ResponseEntity<BaseResponse<HttpStatus, Void>> responseEntity = null;
         try {
-            Long personId = 28L;
+            Long personId = personService.getPersonInforByEmail(userPrincipal.getEmail()).getPersonId();
+//            Long personId = 28L;
             Optional<Salary> salaryFromDB = payrollRepository.findByPersonIdAndMonthAndYear(personId, month, Year.of(year));
             if(!salaryFromDB.isPresent()){
                 throw new BaseException(ErrorCode.newErrorCode(404,
@@ -261,7 +267,7 @@ public class PayrollServiceImpl implements PayrollService{
             body += "Net Income: " + payrollDisplayDto.getActuallyReceived() + "\n";
 
             //send mail
-            String toMail = "kimanh3082@gmail.com";
+            String toMail = userPrincipal.getEmail();
             emailSenderService.sendEmail(toMail, "Payslip " + month + "/" + year, body);
             responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.OK, null);
         }catch (Exception e){
