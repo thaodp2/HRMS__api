@@ -21,7 +21,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @Slf4j
@@ -70,6 +72,12 @@ public class DeviceTypeServiceImpl implements DeviceTypeService {
     }
 
     public boolean checkDuplicateDeviceType(List<String> deviceTypeName) {
+        Set<String> store = new HashSet<>();
+        for (String item : deviceTypeName) {
+            if (store.add(item.toLowerCase()) == false){
+                return true;
+            }
+        }
         for (String item : deviceTypeName) {
             List<DeviceType> deviceTypes = deviceTypeRepository.findByDeviceTypeNameIgnoreCase(item);
             if (deviceTypes.size() != 0) {
