@@ -2,6 +2,8 @@ package com.minswap.hrms.controller;
 
 import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.response.MasterDataResponse;
+import com.minswap.hrms.security.UserPrincipal;
+import com.minswap.hrms.security.oauth2.CurrentUser;
 import com.minswap.hrms.service.device.DeviceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -26,7 +28,7 @@ public class DeviceController {
     }
 
     @PutMapping("/return-device/{id}")
-    public ResponseEntity<BaseResponse<HttpStatus, Void>> returnDevice(@PathVariable Long id) {
-        return deviceService.returnDevice(id);
+    public ResponseEntity<BaseResponse<HttpStatus, Void>> returnDevice(@PathVariable Long id, @CurrentUser UserPrincipal userPrincipal) {
+        return deviceService.returnDevice(id, userPrincipal);
     }
 }
