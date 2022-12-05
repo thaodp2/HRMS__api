@@ -14,6 +14,7 @@ import com.minswap.hrms.util.ExcelExporter;
 import com.minswap.hrms.util.ExportEmployee;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -29,6 +30,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
+import java.util.Properties;
 
 @RestController
 @RequestMapping(CommonConstant.HR + "/")
@@ -36,6 +38,9 @@ public class HRPersonController {
 
     @Autowired
     private PersonService personService;
+
+    @Value("${template.dir}")
+    private String templateDir;
 
     @GetMapping("/employee/{rollNumber}")
     public ResponseEntity<BaseResponse<EmployeeInfoResponse, Void>> getDetailEmployee(@PathVariable String rollNumber) {
@@ -111,9 +116,8 @@ public class HRPersonController {
     ) throws IOException{
         response.setContentType("application/octet-stream");
         response.setHeader("Content-Disposition", "attachment; filename=template_import_employee.xlsx");
-        //InputStreamResource resource = new InputStreamResource(new FileInputStream("D:\\Downloads\\FPTUniversity_Ki_9\\SWP\\HRMS__api\\src\\main\\resources\\templateexcel\\template_import_employee.xlsx"));
-        String localDir = System.getProperty("user.dir");
-        InputStreamResource resource = new InputStreamResource(new FileInputStream(localDir + "\\src\\main\\resources\\templateexcel\\template_import_employee.xlsx"));
+        String localDir =templateDir;
+        InputStreamResource resource = new InputStreamResource(new FileInputStream(localDir));
         return ResponseEntity.ok().body(resource);
     }
 
