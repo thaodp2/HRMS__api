@@ -86,4 +86,7 @@ public class RequestDto {
     private Long deviceId;
 
     private Date maximumTimeToRollback;
+
+    private double otTimeRemainingOfMonth;
+    private double otTimeRemainingOfYear;
 }

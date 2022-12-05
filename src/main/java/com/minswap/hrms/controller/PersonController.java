@@ -4,6 +4,8 @@ import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.request.UpdateUserRequest;
 import com.minswap.hrms.response.EmployeeInfoResponse;
 import com.minswap.hrms.response.MasterDataResponse;
+import com.minswap.hrms.security.UserPrincipal;
+import com.minswap.hrms.security.oauth2.CurrentUser;
 import com.minswap.hrms.service.person.PersonService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -23,9 +25,8 @@ public class PersonController {
     }
 
     @GetMapping("/user-info")
-    public ResponseEntity<BaseResponse<EmployeeInfoResponse, Void>> getDetailEmployee() {
-        String rollNumber = "MS0018";
-        return personService.getDetailEmployee(rollNumber);
+    public ResponseEntity<BaseResponse<UserPrincipal, Void>> getDetailEmployee(@CurrentUser UserPrincipal userPrincipal) {
+        return BaseResponse.ofSucceeded(userPrincipal);
     }
 
     @GetMapping("/all-manager-master-data")
