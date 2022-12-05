@@ -25,8 +25,9 @@ public class PersonController {
     }
 
     @GetMapping("/user-info")
-    public ResponseEntity<BaseResponse<UserPrincipal, Void>> getDetailEmployee(@CurrentUser UserPrincipal userPrincipal) {
-        return BaseResponse.ofSucceeded(userPrincipal);
+    public ResponseEntity<BaseResponse<EmployeeInfoResponse, Void>> getDetailEmployee(@CurrentUser UserPrincipal userPrincipal) {
+        String rollNumber = personService.getPersonInforByEmail(userPrincipal.getEmail()).getRollNumber();
+        return personService.getDetailEmployee(rollNumber);
     }
 
     @GetMapping("/all-manager-master-data")

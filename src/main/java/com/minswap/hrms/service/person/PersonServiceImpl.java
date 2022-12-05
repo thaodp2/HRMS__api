@@ -560,6 +560,12 @@ public class PersonServiceImpl implements PersonService {
     }
 
     @Override
+    public Person getPersonInforByEmail(String email) {
+        Person person = personRepository.findPersonByEmail(email).orElse(null);
+        return person;
+    }
+
+    @Override
     public List<EmployeeListDto> exportEmployee(String fullName, String email, Long departmentId, String rollNumber, Long positionId) {
         Page<EmployeeListDto> pageInfo = personRepository.getSearchListPerson(fullName, email, departmentId, rollNumber, positionId, null, null);
         List<EmployeeListDto> employeeListDtos = pageInfo.getContent();

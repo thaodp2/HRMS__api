@@ -1,5 +1,6 @@
 package com.minswap.hrms.response.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.minswap.hrms.entities.Person;
 
@@ -13,6 +14,7 @@ import lombok.Setter;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class EmployeeListDto {
 
     @JsonProperty("id")

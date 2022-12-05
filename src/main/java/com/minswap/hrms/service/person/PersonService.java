@@ -1,5 +1,6 @@
 package com.minswap.hrms.service.person;
 
+import com.minswap.hrms.entities.Person;
 import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.request.*;
 import com.minswap.hrms.response.EmployeeInfoResponse;
@@ -55,4 +56,6 @@ public interface PersonService {
     boolean checkCCCDValid(String cccd);
 
     ResponseEntity<BaseResponse<HttpStatus, Void>> importExcel(MultipartFile file);
+
+    Person getPersonInforByEmail(String email);
 }
