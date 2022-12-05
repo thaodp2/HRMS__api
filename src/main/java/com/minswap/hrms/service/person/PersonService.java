@@ -18,7 +18,7 @@ import javax.validation.Valid;
 import java.util.List;
 
 public interface PersonService {
-    ResponseEntity<BaseResponse<HttpStatus, Void>> updateUserInformation(UpdateUserRequest persondto) throws Exception;
+    ResponseEntity<BaseResponse<HttpStatus, Void>> updateUserInformation(UpdateUserRequest persondto, Long personId) throws Exception;
 
     ResponseEntity<BaseResponse<MasterDataResponse, Pageable>> getMasterDataAllManager (String search);
 
@@ -33,15 +33,15 @@ public interface PersonService {
 
     ResponseEntity<BaseResponse<Void, Void>> updateStatusEmployee(ChangeStatusEmployeeRequest employeeRequest, String rollNumber );
 
-    ResponseEntity<BaseResponse<Boolean, Void>> checkSecureCodeIsCorrect(UpdateSecureCodeRequest checkSecureCodeRequest);
+    ResponseEntity<BaseResponse<Boolean, Void>> checkSecureCodeIsCorrect(UpdateSecureCodeRequest checkSecureCodeRequest, Long personId);
 
-    ResponseEntity<BaseResponse<Boolean, Void>> checkSecureCodeIsExist();
+    ResponseEntity<BaseResponse<Boolean, Void>> checkSecureCodeIsExist(Long personId);
 
-    ResponseEntity<BaseResponse<Boolean, Void>> forgotPinCode();
+    ResponseEntity<BaseResponse<Boolean, Void>> forgotPinCode(Long personId);
 
-    ResponseEntity<BaseResponse<Boolean, Void>> updatePinCode(UpdateSecureCodeRequest secureCodeRequest);
+    ResponseEntity<BaseResponse<Boolean, Void>> updatePinCode(UpdateSecureCodeRequest secureCodeRequest, Long personId);
 
-    ResponseEntity<BaseResponse<Boolean, Void>> createPinCode(UpdateSecureCodeRequest secureCodeRequest);
+    ResponseEntity<BaseResponse<Boolean, Void>> createPinCode(UpdateSecureCodeRequest secureCodeRequest, Long personId);
 
     boolean isValidHeaderTemplate(Row row);
 
