@@ -22,7 +22,7 @@ public class DeviceDto {
     @JsonProperty("description")
     private String description;
 
-    @JsonProperty("status")
+    @JsonProperty("isUsed")
     private Integer status;
 
     @JsonProperty("deviceTypeName")

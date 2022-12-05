@@ -20,8 +20,10 @@ public class PersonController {
     PersonService personService;
 
     @PutMapping("/user-info")
-    public ResponseEntity<BaseResponse<HttpStatus, Void>> updateUserInformation(@RequestBody UpdateUserRequest updateUserDto) throws Exception {
-        return personService.updateUserInformation(updateUserDto);
+    public ResponseEntity<BaseResponse<HttpStatus, Void>> updateUserInformation(@RequestBody UpdateUserRequest updateUserDto,
+                                                                                @CurrentUser UserPrincipal userPrincipal) throws Exception {
+        Long personId = personService.getPersonInforByEmail(userPrincipal.getEmail()).getPersonId();
+        return personService.updateUserInformation(updateUserDto, personId);
     }
 
     @GetMapping("/user-info")

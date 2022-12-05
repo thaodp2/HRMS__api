@@ -3,6 +3,9 @@ package com.minswap.hrms.controller.manager;
 import com.minswap.hrms.constants.CommonConstant;
 import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.response.TimeCheckResponse;
+import com.minswap.hrms.security.UserPrincipal;
+import com.minswap.hrms.security.oauth2.CurrentUser;
+import com.minswap.hrms.service.person.PersonService;
 import com.minswap.hrms.service.timeCheck.TimeCheckService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +25,9 @@ public class ManagerTimeCheckController {
     @Autowired
     TimeCheckService timeCheckService;
 
+    @Autowired
+    PersonService personService;
+
     @GetMapping("/detail-subordinate")
     public ResponseEntity<BaseResponse<TimeCheckResponse.TimeCheckEachPersonResponse, Pageable>> getDetailSubordinateTimeCheck(@RequestParam Long personId,
                                                                                                                                @RequestParam @Pattern(regexp = "[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1]) (2[0-3]|[01][0-9]):[0-5][0-9]:[0-5][0-9]", message = "Invalid createDateFrom") String startDate,
@@ -32,11 +38,12 @@ public class ManagerTimeCheckController {
     }
 
     @GetMapping("/all-subordinate")
-    public ResponseEntity<BaseResponse<TimeCheckResponse.TimeCheckEachSubordinateResponse, Pageable>> getListSubordinateTimeCheck(@RequestParam (required = false) String search,
+    public ResponseEntity<BaseResponse<TimeCheckResponse.TimeCheckEachSubordinateResponse, Pageable>> getListSubordinateTimeCheck(@CurrentUser UserPrincipal userPrincipal,
+                                                                                                                                  @RequestParam (required = false) String search,
                                                                                                                                   @RequestParam @Pattern(regexp = "[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1]) (2[0-3]|[01][0-9]):[0-5][0-9]:[0-5][0-9]", message = "Invalid createDateFrom") String startDate,
                                                                                                                                   @RequestParam @Pattern(regexp = "[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1]) (2[0-3]|[01][0-9]):[0-5][0-9]:[0-5][0-9]", message = "Invalid createDateTo") String endDate,
                                                                                                                                   @RequestParam (defaultValue = "1") Integer page, @RequestParam (defaultValue = "10") Integer limit) throws Exception {
-        Long managerId = 3L;
+        Long managerId = personService.getPersonInforByEmail(userPrincipal.getEmail()).getPersonId();
         return timeCheckService.getListTimeCheck(search, managerId, startDate, endDate, page, limit);
     }
 }

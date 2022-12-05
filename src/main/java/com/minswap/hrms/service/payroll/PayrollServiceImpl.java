@@ -53,7 +53,6 @@ public class PayrollServiceImpl implements PayrollService{
 
         List<Long> allPersonId = personRepository.getAllPersonId();
         for (Long personId : allPersonId) {
-//        Long personId = 28L;
             int month = Calendar.getInstance().get(Calendar.MONTH);
             int year = Calendar.getInstance().get(Calendar.YEAR);
             if(month == 0){
@@ -187,8 +186,8 @@ public class PayrollServiceImpl implements PayrollService{
     }
 
     @Override
-    public ResponseEntity<BaseResponse<PayrollResponse, Void>> getDetailPayroll(int month, int year) {
-        Long personId = 28L;
+    public ResponseEntity<BaseResponse<PayrollResponse, Void>> getDetailPayroll(int month, int year, Long personId) {
+
         Optional<Salary> salaryFromDB = payrollRepository.findByPersonIdAndMonthAndYear(personId, month, Year.of(year));
         if(!salaryFromDB.isPresent()){
             throw new BaseException(ErrorCode.newErrorCode(404,
@@ -226,7 +225,6 @@ public class PayrollServiceImpl implements PayrollService{
         ResponseEntity<BaseResponse<HttpStatus, Void>> responseEntity = null;
         try {
             Long personId = personService.getPersonInforByEmail(userPrincipal.getEmail()).getPersonId();
-//            Long personId = 28L;
             Optional<Salary> salaryFromDB = payrollRepository.findByPersonIdAndMonthAndYear(personId, month, Year.of(year));
             if(!salaryFromDB.isPresent()){
                 throw new BaseException(ErrorCode.newErrorCode(404,
