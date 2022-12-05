@@ -6,7 +6,6 @@ import com.minswap.hrms.security.oauth2.CurrentUser;
 import com.minswap.hrms.service.person.PersonService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import com.minswap.hrms.security.UserPrincipal;
 
