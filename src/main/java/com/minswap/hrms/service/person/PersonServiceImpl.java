@@ -83,22 +83,22 @@ public class PersonServiceImpl implements PersonService {
     HttpStatus httpStatus;
 
     @Override
-    public ResponseEntity<BaseResponse<HttpStatus, Void>> updateUserInformation(UpdateUserRequest updateUserDto) throws Exception {
+    public ResponseEntity<BaseResponse<HttpStatus, Void>> updateUserInformation(UpdateUserRequest updateUserDto, Long personId) throws Exception {
 
         Integer personCheckCitizen = personRepository.getUserByCitizenIdentification(updateUserDto.getCitizenIdentification());
-        if (personCheckCitizen != null && personCheckCitizen > 0) {
+        Optional<Person> personFromDB = personRepository.findPersonByPersonId(personId);
+
+        if (!personFromDB.isPresent()) {
+            throw new Exception("Person not exist");
+        }
+
+        Person person = personFromDB.get();
+        if (personCheckCitizen != null && personCheckCitizen > 0 && !person.getCitizenIdentification().equals(updateUserDto.getCitizenIdentification()) ) {
             throw new BaseException(ErrorCode.CITIZEN_INDENTIFICATION_EXSIT);
         }
         try {
             ModelMapper modelMapper = new ModelMapper();
-            Long personId = 26L;
-            Optional<Person> personFromDB = personRepository.findPersonByPersonId(personId);
 
-            if (!personFromDB.isPresent()) {
-                throw new Exception("Person not exist");
-            }
-
-            Person person = personFromDB.get();
             modelMapper.map(updateUserDto, person);
             Date dateOfBirth = new Date();
             dateOfBirth.setTime(person.getDateOfBirth().getTime() + MILLISECOND_PER_DAY); // go to the next day
@@ -296,8 +296,8 @@ public class PersonServiceImpl implements PersonService {
     }
 
     @Override
-    public ResponseEntity<BaseResponse<Boolean, Void>> checkSecureCodeIsCorrect(UpdateSecureCodeRequest secureCodeRequest) {
-        Long personId = 2L;
+    public ResponseEntity<BaseResponse<Boolean, Void>> checkSecureCodeIsCorrect(UpdateSecureCodeRequest secureCodeRequest, Long personId) {
+
         Optional<Person> person = personRepository.findById(personId);
         if (!person.isPresent()) {
             throw new BaseException(ErrorCode.NO_DATA);
@@ -309,9 +309,8 @@ public class PersonServiceImpl implements PersonService {
     }
 
     @Override
-    public ResponseEntity<BaseResponse<Boolean, Void>> checkSecureCodeIsExist() {
+    public ResponseEntity<BaseResponse<Boolean, Void>> checkSecureCodeIsExist(Long personId) {
 
-        Long personId = 2L;
         Optional<Person> person = personRepository.findById(personId);
         if (!person.isPresent()) {
             throw new BaseException(ErrorCode.NO_DATA);
@@ -323,10 +322,10 @@ public class PersonServiceImpl implements PersonService {
     }
 
     @Override
-    public ResponseEntity<BaseResponse<Boolean, Void>> forgotPinCode() {
+    public ResponseEntity<BaseResponse<Boolean, Void>> forgotPinCode(Long personId) {
 
         try {
-            Long personId = 2L;
+
             Optional<Person> optionalPerson = personRepository.findById(personId);
             if (!optionalPerson.isPresent()) {
                 throw new BaseException(ErrorCode.newErrorCode(404,
@@ -347,9 +346,8 @@ public class PersonServiceImpl implements PersonService {
     }
 
     @Override
-    public ResponseEntity<BaseResponse<Boolean, Void>> updatePinCode(UpdateSecureCodeRequest secureCodeRequest) {
+    public ResponseEntity<BaseResponse<Boolean, Void>> updatePinCode(UpdateSecureCodeRequest secureCodeRequest, Long personId) {
 
-        Long personId = 2L;
         Optional<Person> optionalPerson = personRepository.findById(personId);
         if (!optionalPerson.isPresent()) {
             throw new BaseException(ErrorCode.newErrorCode(404,
@@ -379,9 +377,8 @@ public class PersonServiceImpl implements PersonService {
     }
 
     @Override
-    public ResponseEntity<BaseResponse<Boolean, Void>> createPinCode(UpdateSecureCodeRequest secureCodeRequest) {
+    public ResponseEntity<BaseResponse<Boolean, Void>> createPinCode(UpdateSecureCodeRequest secureCodeRequest, Long personId) {
 
-        Long personId = 2L;
         Optional<Person> optionalPerson = personRepository.findById(personId);
         if (!optionalPerson.isPresent()) {
             throw new BaseException(ErrorCode.newErrorCode(404,
