@@ -3,6 +3,9 @@ package com.minswap.hrms.controller.manager;
 import com.minswap.hrms.constants.CommonConstant;
 import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.response.RequestResponse;
+import com.minswap.hrms.security.UserPrincipal;
+import com.minswap.hrms.security.oauth2.CurrentUser;
+import com.minswap.hrms.service.person.PersonService;
 import com.minswap.hrms.service.request.RequestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -21,6 +24,9 @@ public class ManagerRequestController {
     @Autowired
     private RequestService requestService;
 
+    @Autowired
+    PersonService personService;
+
     @GetMapping("/request")
     public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getSubordinateRequest(
             @RequestParam @Min(1) Integer page,
@@ -31,9 +37,11 @@ public class ManagerRequestController {
             @RequestParam (required = false) String search,
             @RequestParam (required = false) String status,
             @RequestParam (required = false) String sort,
-            @RequestParam (required = false) String dir) throws ParseException {
-        Long managerId = Long.valueOf(5);
-            return requestService.getSubordinateRequest(managerId,page,limit,search,createDateFrom,createDateTo,requestTypeId, status, sort, dir);
+            @RequestParam (required = false) String dir,
+            @CurrentUser UserPrincipal userPrincipal) throws ParseException {
+//        Long managerId = Long.valueOf(5);
+        Long managerId = personService.getPersonInforByEmail(userPrincipal.getEmail()).getPersonId();
+        return requestService.getSubordinateRequest(managerId,page,limit,search,createDateFrom,createDateTo,requestTypeId, status, sort, dir);
     }
 
 

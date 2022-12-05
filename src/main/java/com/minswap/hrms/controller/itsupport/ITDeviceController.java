@@ -8,6 +8,8 @@ import com.minswap.hrms.request.DeviceRequest;
 import com.minswap.hrms.request.DeviceTypeRequest;
 import com.minswap.hrms.request.UpdateDeviceRequest;
 import com.minswap.hrms.response.DeviceResponse;
+import com.minswap.hrms.security.UserPrincipal;
+import com.minswap.hrms.security.oauth2.CurrentUser;
 import com.minswap.hrms.service.device.DeviceService;
 import com.minswap.hrms.service.devicetype.DeviceTypeService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,9 +33,9 @@ public class ITDeviceController {
     @PostMapping("/assign")
     @ServiceProcessingValidateAnnotation
     public ResponseEntity<BaseResponse<HttpStatus, Void>> assignDevice(@RequestBody
-                                                                           @Valid AssignRequest assignRequest,
-                                                                           BindingResult bindingResult) throws ParseException {
-        return deviceService.assignDevice(assignRequest);
+                                                                       @Valid AssignRequest assignRequest,
+                                                                       @CurrentUser UserPrincipal userPrincipal) throws ParseException {
+        return deviceService.assignDevice(assignRequest, userPrincipal);
     }
 
     @PostMapping("/device")
@@ -59,11 +61,11 @@ public class ITDeviceController {
     }
 
     @GetMapping("/device")
-    public ResponseEntity<BaseResponse<DeviceResponse, Pageable>> searchListDevice(@RequestParam (required = false) String search,
-                                                                                   @RequestParam (required = false) Integer isUsed,
-                                                                                   @RequestParam (required = false) Long deviceTypeId,
-                                                                                   @RequestParam (defaultValue = "1") Integer page,
-                                                                                   @RequestParam (defaultValue = "10") Integer limit) {
+    public ResponseEntity<BaseResponse<DeviceResponse, Pageable>> searchListDevice(@RequestParam(required = false) String search,
+                                                                                   @RequestParam(required = false) Integer isUsed,
+                                                                                   @RequestParam(required = false) Long deviceTypeId,
+                                                                                   @RequestParam(defaultValue = "1") Integer page,
+                                                                                   @RequestParam(defaultValue = "10") Integer limit) {
         return deviceService.searchListDevice(search, isUsed, deviceTypeId, page, limit);
     }
 

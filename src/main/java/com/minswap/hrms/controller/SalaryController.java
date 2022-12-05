@@ -34,11 +34,10 @@ public class SalaryController {
     }
 
     @GetMapping("/send")
-    public ResponseEntity<BaseResponse<HttpStatus, Void>> sendPayrollToEmail(@CurrentUser UserPrincipal userPrincipal,
-                                                                             @RequestParam int month,
-                                                                             @RequestParam int year){
-        Long personId = personService.getPersonInforByEmail(userPrincipal.getEmail()).getPersonId();
-        return payrollService.sendPayrollToEmail(month, year, personId);
+    public ResponseEntity<BaseResponse<HttpStatus, Void>> sendPayrollToEmail(@RequestParam int month,
+                                                                             @RequestParam int year,
+                                                                             @CurrentUser UserPrincipal userPrincipal) {
+        return payrollService.sendPayrollToEmail(userPrincipal,month, year);
     }
 
 }
