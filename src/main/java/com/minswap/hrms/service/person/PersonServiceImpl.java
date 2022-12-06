@@ -315,7 +315,7 @@ public class PersonServiceImpl implements PersonService {
         if (!person.isPresent()) {
             throw new BaseException(ErrorCode.NO_DATA);
         }
-        if (!person.get().getPinCode().isEmpty()) {
+        if (person.get().getPinCode() == null) {
             return BaseResponse.ofSucceeded(true);
         }
         return BaseResponse.ofSucceeded(false);
