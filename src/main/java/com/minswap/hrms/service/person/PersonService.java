@@ -4,8 +4,10 @@ import com.minswap.hrms.entities.Person;
 import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.request.*;
 import com.minswap.hrms.response.EmployeeInfoResponse;
+import com.minswap.hrms.response.ListRolesResponse;
 import com.minswap.hrms.response.MasterDataResponse;
 import com.minswap.hrms.response.dto.EmployeeListDto;
+import com.minswap.hrms.security.UserPrincipal;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.springframework.data.domain.Pageable;
@@ -58,4 +60,6 @@ public interface PersonService {
     ResponseEntity<BaseResponse<HttpStatus, Void>> importExcel(MultipartFile file);
 
     Person getPersonInforByEmail(String email);
+
+	ResponseEntity<BaseResponse<ListRolesResponse, Void>> getRoles(UserPrincipal userPrincipal);
 }

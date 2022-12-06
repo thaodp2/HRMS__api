@@ -18,9 +18,9 @@ import javax.validation.constraints.Pattern;
 
 @RestController
 @Validated
-@RequestMapping("/time-check")
+@RequestMapping(TimeCheckController.TIME_CHECK)
 public class TimeCheckController {
-
+    public static final String TIME_CHECK = "/time-check";
     @Autowired
     TimeCheckService timeCheckService;
 
