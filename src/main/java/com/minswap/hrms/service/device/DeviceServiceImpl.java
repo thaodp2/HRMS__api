@@ -12,6 +12,7 @@ import com.minswap.hrms.request.DeviceRequest;
 import com.minswap.hrms.request.UpdateDeviceRequest;
 import com.minswap.hrms.response.DeviceResponse;
 import com.minswap.hrms.response.MasterDataResponse;
+import com.minswap.hrms.response.dto.DeviceDetailDto;
 import com.minswap.hrms.response.dto.DeviceDto;
 import com.minswap.hrms.response.dto.MasterDataDto;
 import com.minswap.hrms.security.UserPrincipal;
@@ -199,15 +200,15 @@ public class DeviceServiceImpl implements DeviceService {
     public ResponseEntity<BaseResponse<DeviceResponse.DetailDeviceResponse, Void>> getDetailDevice(Long deviceId) {
 
         ResponseEntity<BaseResponse<DeviceResponse.DetailDeviceResponse, Void>> responseEntity = null;
-        DeviceDto deviceDto = deviceRepository.getDetailDeviceById(deviceId);
+        DeviceDetailDto deviceDetailDto = deviceRepository.getDetailDeviceById(deviceId);
 
-        if (deviceDto == null) {
+        if (deviceDetailDto == null) {
             throw new BaseException(ErrorCode.DEVICE_NOT_EXIST);
         }
-        if (deviceDto.getStatus() == 1) {
-            deviceDto.setIsAllowDelete(1);
+        if (deviceDetailDto.getStatus() == 1) {
+            deviceDetailDto.setIsAllowDelete(1);
         }
-        DeviceResponse.DetailDeviceResponse detailDeviceResponse = new DeviceResponse.DetailDeviceResponse(deviceDto);
+        DeviceResponse.DetailDeviceResponse detailDeviceResponse = new DeviceResponse.DetailDeviceResponse(deviceDetailDto);
         responseEntity = BaseResponse.ofSucceeded(detailDeviceResponse);
 
         return responseEntity;
