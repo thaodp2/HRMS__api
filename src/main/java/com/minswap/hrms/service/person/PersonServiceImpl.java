@@ -318,9 +318,9 @@ public class PersonServiceImpl implements PersonService {
             throw new BaseException(ErrorCode.NO_DATA);
         }
         if (person.get().getPinCode() == null) {
-            return BaseResponse.ofSucceeded(true);
+            return BaseResponse.ofSucceeded(false);
         }
-        return BaseResponse.ofSucceeded(false);
+        return BaseResponse.ofSucceeded(true);
     }
 
     @Override
