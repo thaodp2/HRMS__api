@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.constraints.Min;
 import javax.validation.constraints.Pattern;
 import java.util.List;
 
@@ -32,8 +33,8 @@ public class ManagerTimeCheckController {
     public ResponseEntity<BaseResponse<TimeCheckResponse.TimeCheckEachPersonResponse, Pageable>> getDetailSubordinateTimeCheck(@RequestParam Long personId,
                                                                                                                                @RequestParam @Pattern(regexp = "[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1]) (2[0-3]|[01][0-9]):[0-5][0-9]:[0-5][0-9]", message = "Invalid createDateFrom") String startDate,
                                                                                                                                @RequestParam @Pattern(regexp = "[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1]) (2[0-3]|[01][0-9]):[0-5][0-9]:[0-5][0-9]", message = "Invalid createDateTo") String endDate,
-                                                                                                                               @RequestParam (defaultValue = "1") Integer page,
-                                                                                                                               @RequestParam (defaultValue = "10") Integer limit) throws Exception {
+                                                                                                                               @RequestParam @Min(1) Integer page,
+                                                                                                                               @RequestParam @Min(0)  Integer limit) throws Exception {
         return timeCheckService.getMyTimeCheck(personId, startDate, endDate, page, limit);
     }
 
@@ -42,8 +43,11 @@ public class ManagerTimeCheckController {
                                                                                                                                   @RequestParam (required = false) String search,
                                                                                                                                   @RequestParam @Pattern(regexp = "[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1]) (2[0-3]|[01][0-9]):[0-5][0-9]:[0-5][0-9]", message = "Invalid createDateFrom") String startDate,
                                                                                                                                   @RequestParam @Pattern(regexp = "[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1]) (2[0-3]|[01][0-9]):[0-5][0-9]:[0-5][0-9]", message = "Invalid createDateTo") String endDate,
-                                                                                                                                  @RequestParam (defaultValue = "1") Integer page, @RequestParam (defaultValue = "10") Integer limit) throws Exception {
+                                                                                                                                  @RequestParam @Min(1) Integer page,
+                                                                                                                                  @RequestParam @Min(0)  Integer limit,
+                                                                                                                                  @RequestParam(required = false) String sort,
+                                                                                                                                  @RequestParam(required = false) String dir) throws Exception {
         Long managerId = personService.getPersonInforByEmail(userPrincipal.getEmail()).getPersonId();
-        return timeCheckService.getListTimeCheck(search, managerId, startDate, endDate, page, limit);
+        return timeCheckService.getListTimeCheck(search, managerId, startDate, endDate, page, limit, sort, dir);
     }
 }
