@@ -95,7 +95,7 @@ public class PersonServiceImpl implements PersonService {
         }
 
         Person person = personFromDB.get();
-        if (personCheckCitizen != null && personCheckCitizen > 0 && !person.getCitizenIdentification().equals(updateUserDto.getCitizenIdentification()) ) {
+        if (personCheckCitizen != null && personCheckCitizen > 0 && !person.getCitizenIdentification().equals(updateUserDto.getCitizenIdentification())) {
             throw new BaseException(ErrorCode.CITIZEN_INDENTIFICATION_EXSIT);
         }
         try {
@@ -456,6 +456,14 @@ public class PersonServiceImpl implements PersonService {
     }
 
     @Override
+    public boolean checkSalaryValid(Double salary) {
+        if (salary >= 0) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
     public ResponseEntity<BaseResponse<HttpStatus, Void>> importExcel(MultipartFile file) {
         int countRecordSuccess = 0;
         int countRecordFail = 0;
@@ -474,20 +482,20 @@ public class PersonServiceImpl implements PersonService {
                         if (isValidHeaderTemplate(sheet.getRow(0))) {
                             for (Row row : sheet) {
                                 if (rowStart != 1) {
-                                    if ((row.getCell(0)== null) &&
-                                            row.getCell(1)== null &&
-                                            row.getCell(6)== null &&
-                                            row.getCell(7)== null &&
-                                            row.getCell(8)== null &&
-                                            row.getCell(9)== null &&
-                                            row.getCell(2)==null &&
-                                            row.getCell(3)==null &&
-                                            row.getCell(4)==null &&
-                                            row.getCell(5)==null &&
-                                            row.getCell(10)==null &&
-                                            row.getCell(11)==null &&
-                                            row.getCell(12)==null &&
-                                            row.getCell(13)==null
+                                    if ((row.getCell(0) == null) &&
+                                            row.getCell(1) == null &&
+                                            row.getCell(6) == null &&
+                                            row.getCell(7) == null &&
+                                            row.getCell(8) == null &&
+                                            row.getCell(9) == null &&
+                                            row.getCell(2) == null &&
+                                            row.getCell(3) == null &&
+                                            row.getCell(4) == null &&
+                                            row.getCell(5) == null &&
+                                            row.getCell(10) == null &&
+                                            row.getCell(11) == null &&
+                                            row.getCell(12) == null &&
+                                            row.getCell(13) == null
                                     ) {
                                         continue;
                                     }
@@ -514,7 +522,8 @@ public class PersonServiceImpl implements PersonService {
                                                 checkCCCDValid(citizenIdentification) &&
                                                 checkPhoneValid(phoneNumber) &&
                                                 checkGenderValid(gender) &&
-                                                checkIsManagerValid(isManager)) {
+                                                checkIsManagerValid(isManager) &&
+                                                checkSalaryValid(salaryBasic) && checkSalaryValid(salaryBonus)) {
                                             //create employee
                                             EmployeeRequest employeeRequest = new EmployeeRequest(fullName, dateOfBirth.toString(),
                                                     managerId, departmentId, positionId, rankId, onBoardDate.toString(),

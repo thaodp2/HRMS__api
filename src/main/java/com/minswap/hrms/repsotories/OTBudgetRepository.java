@@ -15,6 +15,7 @@ import org.springframework.stereotype.Repository;
 
 import javax.transaction.Transactional;
 import java.time.Year;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -53,12 +54,24 @@ public interface OTBudgetRepository extends JpaRepository<OTBudget, Long> {
             "where ob.month = :month and ob.year = :year and (:search IS NULL OR p.rollNumber like %:search% OR p.fullName like %:search%) " +
             "and (:managerId IS NULL OR p.managerId = :managerId) " +
             "and (:personId IS NULL OR p.personId = :personId)")
+    List<BenefitBudgetDto> getBenefitBudgetListWithoutPaging(@Param("month") Integer month,
+                                                             @Param("year") Year year,
+                                                             @Param("search") String search,
+                                                             @Param("managerId") Long managerId,
+                                                             @Param("personId") Long personId, Sort sort);
+
+    @Query("SELECT new com.minswap.hrms.response.dto.BenefitBudgetDto(ob.otBudgetId as id, p.rollNumber as rollNumber, p.fullName as fullName, " +
+            "ob.otHoursBudget as budget, ob.hoursWorked as used, ob.timeRemainingOfMonth as remainOfMonth, ob.timeRemainingOfYear as remainOfYear) " +
+            "from OTBudget ob inner join Person p on ob.personId = p.personId " +
+            "where ob.month = :month and ob.year = :year and (:search IS NULL OR p.rollNumber like %:search% OR p.fullName like %:search%) " +
+            "and (:managerId IS NULL OR p.managerId = :managerId) " +
+            "and (:personId IS NULL OR p.personId = :personId)")
     Page<BenefitBudgetDto> getBenefitBudgetList(@Param("month") Integer month,
-                                                @Param("year") Year year,
-                                                @Param("search") String search,
-                                                @Param("managerId") Long managerId,
-                                                @Param("personId") Long personId,
-                                                Pageable pageable);
+                                                             @Param("year") Year year,
+                                                             @Param("search") String search,
+                                                             @Param("managerId") Long managerId,
+                                                             @Param("personId") Long personId,
+                                                             Pageable pageable);
 
     Optional<OTBudget> findByPersonIdAndMonthAndYear(Long personId, Integer month, Year year);
 

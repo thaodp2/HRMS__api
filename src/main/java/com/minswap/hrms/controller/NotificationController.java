@@ -31,10 +31,10 @@ public class NotificationController {
     @Autowired
     PersonService personService;
 
-    @GetMapping("push-notifications")
-    public Flux<ServerSentEvent<NotificationResponse>> streamLastMessage(@CurrentUser UserPrincipal userPrincipal) {
+    @GetMapping("push-notifications/{email}")
+    public Flux<ServerSentEvent<NotificationResponse>> streamLastMessage(@PathVariable String email) {
 //        Long userID = Long.valueOf(2);
-        Long userID = personService.getPersonInforByEmail(userPrincipal.getEmail()).getPersonId();
+        Long userID = personService.getPersonInforByEmail(email.trim()).getPersonId();
         return notificationService.getNotificationsByUserToID(userID);
     }
 
@@ -51,6 +51,14 @@ public class NotificationController {
 //        Long userID = Long.valueOf(2);
         Long userID = personService.getPersonInforByEmail(userPrincipal.getEmail()).getPersonId();
         return notificationService.getNotificationsByUserID(page, limit, userID);
+    }
+
+    @GetMapping("employee/notifications/unread")
+    public ResponseEntity<BaseResponse<NotificationResponse, Pagination>> getTotalUnreadNotifications(
+            @CurrentUser UserPrincipal userPrincipal) {
+//        Long userID = Long.valueOf(2);
+        Long userID = personService.getPersonInforByEmail(userPrincipal.getEmail()).getPersonId();
+        return notificationService.getTotalUnreadNotifs(userID);
     }
 
 }

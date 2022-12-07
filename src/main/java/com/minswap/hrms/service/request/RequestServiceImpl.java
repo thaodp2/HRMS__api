@@ -186,7 +186,7 @@ public class RequestServiceImpl implements RequestService {
 
         queryAllRequest.append(whereBuild);
         //sort
-        if (sort != null && (sort.equalsIgnoreCase(CommonConstant.CREATE_DATE_FIELD) || sort.equalsIgnoreCase(CommonConstant.START_TIME_FIELD) || sort.equalsIgnoreCase(CommonConstant.END_TIME_FIELD))) {
+        if (sort != null && (sort.equalsIgnoreCase(CommonConstant.CREATE_DATE_FIELD) || sort.equalsIgnoreCase(CommonConstant.START_TIME_FIELD) || sort.equalsIgnoreCase(CommonConstant.END_TIME_FIELD) || sort.equalsIgnoreCase(CommonConstant.ROLL_NUMBER_FIELD)|| sort.equalsIgnoreCase("fullName"))) {
             StringBuilder orderByBuild = new StringBuilder("Order by ");
             switch (sort) {
                 case CommonConstant.CREATE_DATE_FIELD:
@@ -207,6 +207,8 @@ public class RequestServiceImpl implements RequestService {
             }
             if (dir != null && dir.equalsIgnoreCase("desc")) {
                 orderByBuild.append("desc ");
+            }else {
+                orderByBuild.append("asc ");
             }
             queryAllRequest.append(orderByBuild);
         }

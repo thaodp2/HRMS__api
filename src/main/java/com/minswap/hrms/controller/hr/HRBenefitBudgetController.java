@@ -57,7 +57,7 @@ public class HRBenefitBudgetController {
             @RequestParam(required = false) @Min(1) @Max(12) Integer month,
             @RequestParam(required = false) Year year
     ) throws IOException{
-        List<BenefitBudgetDto> benefitBudgetDtoList = benefitBudgetService.getBenefitBudgetList(null, null, null, null, requestTypeId, search, month, year, null, null).getContent();
+        List<BenefitBudgetDto> benefitBudgetDtoList = benefitBudgetService.getBenefitBudgetList(null, null, null, null, requestTypeId, search, month, year, null, null);
         if (benefitBudgetDtoList != null && benefitBudgetDtoList.size() > 0) {
             String monthString = "";
             if(requestTypeId == CommonConstant.REQUEST_TYPE_ID_OF_OT){

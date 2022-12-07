@@ -41,8 +41,8 @@ public class DeviceTypeServiceImpl implements DeviceTypeService {
         List<DeviceType> deviceTypes = null;
         List<DeviceTypeDto> deviceTypeDtos = new ArrayList<>();
         if (deviceTypeName != null) {
-            pagination.setTotalRecords(deviceTypeRepository.findByDeviceTypeNameContainsIgnoreCase(deviceTypeName).size());
-            deviceTypes = deviceTypeRepository.findByDeviceTypeNameContainsIgnoreCase(deviceTypeName, new Pagination(page - 1, limit));
+            pagination.setTotalRecords(deviceTypeRepository.findByDeviceTypeNameContainsIgnoreCase(deviceTypeName.trim()).size());
+            deviceTypes = deviceTypeRepository.findByDeviceTypeNameContainsIgnoreCase(deviceTypeName.trim(), new Pagination(page - 1, limit));
         } else {
             pagination.setTotalRecords(deviceTypeRepository.findAll().size());
             deviceTypes = deviceTypeRepository.findAll(new Pagination(page - 1, limit)).getContent();
