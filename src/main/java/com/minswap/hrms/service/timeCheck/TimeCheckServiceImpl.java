@@ -175,7 +175,7 @@ public class TimeCheckServiceImpl implements TimeCheckService{
                 }
                 TimeCheckEachSubordinateDto eachSubordinateDto = new TimeCheckEachSubordinateDto();
                 eachSubordinateDto.setId(personId);
-                eachSubordinateDto.setPersonName(personFromDB.get().getFullName());
+                eachSubordinateDto.setFullName(personFromDB.get().getFullName());
                 eachSubordinateDto.setRollNumber(personFromDB.get().getRollNumber());
                 int dateCount = 2;
                 for (Date item : listDate){
@@ -243,7 +243,7 @@ public class TimeCheckServiceImpl implements TimeCheckService{
                 }
                 TimeCheckEachSubordinateDto eachSubordinateDto = new TimeCheckEachSubordinateDto();
                 eachSubordinateDto.setId(personId);
-                eachSubordinateDto.setPersonName(personFromDB.get().getFullName());
+                eachSubordinateDto.setFullName(personFromDB.get().getFullName());
                 eachSubordinateDto.setRollNumber(personFromDB.get().getRollNumber());
                 int dateCount = 2;
                 for (Date item : listDate){
@@ -303,7 +303,7 @@ public class TimeCheckServiceImpl implements TimeCheckService{
             }
             TimeCheckEachSubordinateDto eachSubordinateDto = new TimeCheckEachSubordinateDto();
             eachSubordinateDto.setId(personId);
-            eachSubordinateDto.setPersonName(personFromDB.get().getFullName());
+            eachSubordinateDto.setFullName(personFromDB.get().getFullName());
             eachSubordinateDto.setRollNumber(personFromDB.get().getRollNumber());
             int dateCount = 2;
             for (Date item : listDate){
