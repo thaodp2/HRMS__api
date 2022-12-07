@@ -354,6 +354,9 @@ public class RequestServiceImpl implements RequestService {
                 }
                 else if (requestType.intValue() == MATERNITY_TYPE_ID) {
                     requestDto.setRequestTypeName(MATERNITY_TYPE);
+                    long timeBetween = requestDto.getEndTime().getTime() - requestDto.getStartTime().getTime();
+                    long numOfDaysOffBetweenStartAndEnd = TimeUnit.DAYS.convert(timeBetween, TimeUnit.MILLISECONDS);
+                    requestDto.setPeriodTime((int) numOfDaysOffBetweenStartAndEnd);
                 }
                 else {
                     requestDto.setRequestTypeName(OTHER_TYPE);
@@ -366,8 +369,6 @@ public class RequestServiceImpl implements RequestService {
                     requestDto.setIsAllowRollback(ALLOW_ROLLBACK);
                 }
             }
-
-//            Long personId = requestRepository.getPersonIdByRequestId(id);
             requestDto.setRollNumber(personRepository.getRollNumberByPersonId(personId));
             List<String> listImage = evidenceRepository.getListImageByRequest(id);
             requestDto.setListEvidence(listImage);
@@ -800,24 +801,34 @@ public class RequestServiceImpl implements RequestService {
             endCalendar.setTime(endTimeDate);
 
             OfficeTimeDto officeTimeDto = officeTimeRepository.getOfficeTime();
+
             Date startOfficeTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
                     parse("2022-01-01" + " " + officeTimeDto.getTimeStart());
             Date finishOfficeTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
                     parse("2022-01-01" + " " + officeTimeDto.getTimeEnd());
-            double workingTimeHoursInOneDay = calculateHoursBetweenTwoDateTime(startOfficeTime, finishOfficeTime);
 
-            if (startCalendar.get(Calendar.DAY_OF_MONTH) == endCalendar.get(Calendar.DAY_OF_MONTH)) {
-                startOfficeTime = formatTimeToKnownDate(startTimeDate, officeTimeDto.getTimeStart());
-                finishOfficeTime = formatTimeToKnownDate(startTimeDate, officeTimeDto.getTimeEnd());
-                if (startTimeDate.before(startOfficeTime) && endTimeDate.after(finishOfficeTime)) {
-                    numberOfDayOff = calculateHoursBetweenTwoDateTime(startOfficeTime, finishOfficeTime) / workingTimeHoursInOneDay;
-                } else if (startTimeDate.before(startOfficeTime) && endTimeDate.before(finishOfficeTime)) {
-                    numberOfDayOff = calculateHoursBetweenTwoDateTime(startOfficeTime, endTimeDate) / workingTimeHoursInOneDay;
-                } else if (startTimeDate.after(startOfficeTime) && endTimeDate.after(finishOfficeTime)) {
-                    numberOfDayOff = calculateHoursBetweenTwoDateTime(startTimeDate, finishOfficeTime) / workingTimeHoursInOneDay;
-                } else {
-                    numberOfDayOff = calculateHoursBetweenTwoDateTime(startTimeDate, endTimeDate) / workingTimeHoursInOneDay;
-                }
+            Date lunchBreakStartTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
+                    parse("2022-01-01" + " " + officeTimeDto.getLunchBreakStartTime());
+            Date lunchBreakEndTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
+                    parse("2022-01-01" + " " + officeTimeDto.getLunchBreakEndTime());
+
+            double breakTimeHoursInOneDay = calculateHoursBetweenTwoDateTime(lunchBreakStartTime, lunchBreakEndTime);
+            double workingTimeHoursInOneDay = calculateHoursBetweenTwoDateTime(startOfficeTime, finishOfficeTime) - breakTimeHoursInOneDay;
+
+            if (startCalendar.get(Calendar.DAY_OF_MONTH) == endCalendar.get(Calendar.DAY_OF_MONTH)
+                    && startCalendar.get(Calendar.MONTH) == endCalendar.get(Calendar.MONTH)) {
+                numberOfDayOff = calculateNumOfHoursWorkedInADay(startTimeDate, endTimeDate) / workingTimeHoursInOneDay;
+//                startOfficeTime = formatTimeToKnownDate(startTimeDate, officeTimeDto.getTimeStart());
+//                finishOfficeTime = formatTimeToKnownDate(startTimeDate, officeTimeDto.getTimeEnd());
+//                if (startTimeDate.before(startOfficeTime) && endTimeDate.after(finishOfficeTime)) {
+//                    numberOfDayOff = calculateHoursBetweenTwoDateTime(startOfficeTime, finishOfficeTime) / workingTimeHoursInOneDay;
+//                } else if (startTimeDate.before(startOfficeTime) && endTimeDate.before(finishOfficeTime)) {
+//                    numberOfDayOff = calculateHoursBetweenTwoDateTime(startOfficeTime, endTimeDate) / workingTimeHoursInOneDay;
+//                } else if (startTimeDate.after(startOfficeTime) && endTimeDate.after(finishOfficeTime)) {
+//                    numberOfDayOff = calculateHoursBetweenTwoDateTime(startTimeDate, finishOfficeTime) / workingTimeHoursInOneDay;
+//                } else {
+//                    numberOfDayOff = calculateHoursBetweenTwoDateTime(startTimeDate, endTimeDate) / workingTimeHoursInOneDay;
+//                }
             } else {
 //                Calendar calendarCompare = getCalendarByDate(startTimeDate);
                 long timeBetween = endTimeDate.getTime() - startTimeDate.getTime();
@@ -830,24 +841,26 @@ public class RequestServiceImpl implements RequestService {
                 if (startCalendar.get(Calendar.DAY_OF_WEEK) != Calendar.SATURDAY
                         && startCalendar.get(Calendar.DAY_OF_WEEK) != Calendar.SUNDAY) {
                     finishOfficeTime = formatTimeToKnownDate(startTimeDate, officeTimeDto.getTimeEnd());
-                    // Nghỉ trước giờ vào làm
-                    if (startTimeDate.before(startOfficeTime) || startTimeDate.compareTo(startOfficeTime) == 0) {
-                        hoursOffInStartDay = workingTimeHoursInOneDay;
-                    }
-                    // Nghỉ từ sau giờ vào làm
-                    else {
-                        hoursOffInStartDay = calculateHoursBetweenTwoDateTime(startTimeDate, finishOfficeTime);
-                    }
+                    hoursOffInStartDay = calculateNumOfHoursWorkedInADay(startTimeDate, finishOfficeTime);
+//                    // Nghỉ trước giờ vào làm
+//                    if (startTimeDate.before(startOfficeTime) || startTimeDate.compareTo(startOfficeTime) == 0) {
+//                        hoursOffInStartDay = workingTimeHoursInOneDay;
+//                    }
+//                    // Nghỉ từ sau giờ vào làm
+//                    else {
+//                        hoursOffInStartDay = calculateHoursBetweenTwoDateTime(startTimeDate, finishOfficeTime);
+//                    }
                 }
                 if (endCalendar.get(Calendar.DAY_OF_WEEK) != Calendar.SATURDAY
                         && endCalendar.get(Calendar.DAY_OF_WEEK) != Calendar.SUNDAY) {
                     startOfficeTime = formatTimeToKnownDate(endTimeDate, officeTimeDto.getTimeStart());
                     finishOfficeTime = formatTimeToKnownDate(endTimeDate, officeTimeDto.getTimeEnd());
-                    if (endTimeDate.before(finishOfficeTime)) {
-                        hoursOffInEndDay = calculateHoursBetweenTwoDateTime(startOfficeTime, endTimeDate);
-                    } else {
-                        hoursOffInEndDay = workingTimeHoursInOneDay;
-                    }
+                    hoursOffInEndDay = calculateNumOfHoursWorkedInADay(startOfficeTime, endTimeDate);
+//                    if (endTimeDate.before(finishOfficeTime)) {
+//                        hoursOffInEndDay = calculateHoursBetweenTwoDateTime(startOfficeTime, endTimeDate);
+//                    } else {
+//                        hoursOffInEndDay = workingTimeHoursInOneDay;
+//                    }
                 }
                 numberOfDayOff = numOfDaysOffBetweenStartAndEnd +
                         (hoursOffInStartDay + hoursOffInEndDay) / workingTimeHoursInOneDay;
@@ -967,7 +980,8 @@ public class RequestServiceImpl implements RequestService {
                 Calendar calendarStartTime = getCalendarByDate(startTimeOfApprovedRequest);
                 Calendar calendarEndTime = getCalendarByDate(endTimeOfApprovedRequest);
                 // StartTime và EndTime cùng một ngày
-                if (calendarStartTime.get(Calendar.DAY_OF_MONTH) == calendarEndTime.get(Calendar.DAY_OF_MONTH)) {
+                if (calendarStartTime.get(Calendar.DAY_OF_MONTH) == calendarEndTime.get(Calendar.DAY_OF_MONTH)
+                        && calendarStartTime.get(Calendar.MONTH) == calendarEndTime.get(Calendar.MONTH)) {
                     otHoursWorked += calculateHoursBetweenTwoDateTime(startTimeOfApprovedRequest, endTimeOfApprovedRequest);
                 } else {
                     // thằng start cùng ngày
@@ -994,6 +1008,7 @@ public class RequestServiceImpl implements RequestService {
         try {
             OfficeTimeDto officeTimeDto = officeTimeRepository.getOfficeTime();
             int dayOfStartTime = getDayOfDate(startTime);
+            int monthOfStartTime = getCalendarByDate(startTime).get(Calendar.MONTH);
             double otTime = getAmountOfTimeOTByDate(personId, startTime);
             double workingTime = 0;
             double inLate = 0;
@@ -1001,15 +1016,16 @@ public class RequestServiceImpl implements RequestService {
             Date startOfficeTime = formatTimeToKnownDate(startTime, officeTimeDto.getTimeStart());
             Date finishOfficeTime = formatTimeToKnownDate(startTime, officeTimeDto.getTimeEnd());
             if (startTime.after(startOfficeTime)) {
-                inLate = calculateHoursBetweenTwoDateTime(startOfficeTime, startTime);
+                inLate = calculateNumOfHoursWorkedInADay(startOfficeTime, startTime);
             }
             if (endTime.before(finishOfficeTime)) {
-                outEarly = calculateHoursBetweenTwoDateTime(endTime, finishOfficeTime);
+                outEarly = calculateNumOfHoursWorkedInADay(endTime, finishOfficeTime);
             }
-            workingTime = calculateWorkingTime(inLate, outEarly, startTime, endTime, startOfficeTime, finishOfficeTime);
+//            workingTime = calculateWorkingTime(inLate, outEarly, startTime, endTime, startOfficeTime, finishOfficeTime);
+            workingTime = calculateNumOfHoursWorkedInADay(startTime, endTime);
             startTime.setTime(startTime.getTime() + CommonConstant.MILLISECOND_7_HOURS);
             endTime.setTime(endTime.getTime() + CommonConstant.MILLISECOND_7_HOURS);
-            if (timeCheckRepository.getTimeInOfPersonByDay(personId, dayOfStartTime) == null) {
+            if (timeCheckRepository.getTimeInOfPersonByDay(personId, dayOfStartTime, monthOfStartTime) == null) {
                 TimeCheck timeCheck = new TimeCheck(personId, inLate, outEarly, startTime,
                         endTime, otTime, workingTime);
                 timeCheckRepository.save(timeCheck);
@@ -1101,34 +1117,32 @@ public class RequestServiceImpl implements RequestService {
         double inLate = 0;
         double outEarly = 0;
 
-        if (startCalendar.get(Calendar.DAY_OF_MONTH) == endCalendar.get(Calendar.DAY_OF_MONTH)) {
+        if (startCalendar.get(Calendar.DAY_OF_MONTH) == endCalendar.get(Calendar.DAY_OF_MONTH)
+                && startCalendar.get(Calendar.MONTH) == endCalendar.get(Calendar.MONTH)) {
             if (startTime.after(startOfficeTime)) {
-                inLate = calculateHoursBetweenTwoDateTime(startOfficeTime, startTime);
+//                inLate = calculateHoursBetweenTwoDateTime(startOfficeTime, startTime);
+                  inLate = calculateNumOfHoursWorkedInADay(startOfficeTime, startTime);
             }
             if (endTime.before(finishOfficeTime)) {
-                outEarly = calculateHoursBetweenTwoDateTime(endTime, finishOfficeTime);
+//                outEarly = calculateHoursBetweenTwoDateTime(endTime, finishOfficeTime);
+                outEarly = calculateNumOfHoursWorkedInADay(endTime, finishOfficeTime);
             }
-            workingTime = calculateWorkingTime(inLate, outEarly, startTime, endTime, startOfficeTime, finishOfficeTime);
+//            workingTime = calculateWorkingTime(inLate, outEarly, startTime, endTime, startOfficeTime, finishOfficeTime);
+            workingTime = calculateNumOfHoursWorkedInADay(startTime, endTime);
             saveTimeCheck(startTime, endTime, personId, inLate, outEarly, workingTime);
         } else {
             double workingTimeInFirstDay = 0;
             double workingTimeInLastDay = 0;
             if (startTime.after(startOfficeTime)) {
-                inLate = calculateHoursBetweenTwoDateTime(startOfficeTime, startTime);
-                workingTimeInFirstDay = calculateHoursBetweenTwoDateTime(startTime, finishOfficeTime);
+                inLate = calculateNumOfHoursWorkedInADay(startOfficeTime, startTime);
             }
-            else {
-                workingTimeInFirstDay = calculateNumOfHoursWorkedInADay();
-            }
+            workingTimeInFirstDay = calculateHoursBetweenTwoDateTime(startTime, finishOfficeTime);
             Date finishOfficeTimeByEndDay = formatTimeToKnownDate(endTime, officeTimeDto.getTimeEnd());
             if (endTime.before(finishOfficeTimeByEndDay)) {
                 startOfficeTime = formatTimeToKnownDate(endTime, officeTimeDto.getTimeStart());
-                outEarly = calculateHoursBetweenTwoDateTime(endTime, finishOfficeTimeByEndDay);
-                workingTimeInLastDay = calculateHoursBetweenTwoDateTime(startOfficeTime, endTime);
+                outEarly = calculateNumOfHoursWorkedInADay(endTime, finishOfficeTimeByEndDay);
             }
-            else {
-                workingTimeInLastDay = calculateNumOfHoursWorkedInADay();
-            }
+            workingTimeInLastDay = calculateNumOfHoursWorkedInADay(startOfficeTime, endTime);
 
             saveTimeCheck(startTime, finishOfficeTime, personId, inLate, outEarly, workingTimeInFirstDay);
             saveTimeCheck(startOfficeTime, endTime, personId, inLate, outEarly, workingTimeInLastDay);
@@ -1142,7 +1156,7 @@ public class RequestServiceImpl implements RequestService {
                         parse(date.toString() + officeTimeDto.getTimeStart());
                 finishOfficeTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
                         parse(date.toString() + officeTimeDto.getTimeEnd());
-                saveTimeCheck(startOfficeTime, finishOfficeTime, personId, 0, 0, calculateNumOfHoursWorkedInADay());
+                saveTimeCheck(startOfficeTime, finishOfficeTime, personId, 0, 0, calculateNumOfHoursWorkedInADay(startOfficeTime, finishOfficeTime));
             }
         }
     }
@@ -1172,7 +1186,8 @@ public class RequestServiceImpl implements RequestService {
                             httpStatus.NOT_ACCEPTABLE));
                 }
                 // Validate 5: Thời gian nghỉ không được nằm hoàn toàn ngài giờ hành chính
-                else if (calendarStart.get(Calendar.DAY_OF_MONTH) == calendarEnd.get(Calendar.DAY_OF_MONTH)) {
+                else if (calendarStart.get(Calendar.DAY_OF_MONTH) == calendarEnd.get(Calendar.DAY_OF_MONTH)
+                        && calendarStart.get(Calendar.MONTH) == calendarEnd.get(Calendar.MONTH)) {
                     start = formatTimeToKnownDate(startTime, officeTimeDto.getTimeStart());
                     end = formatTimeToKnownDate(startTime, officeTimeDto.getTimeEnd());
                     if ((startTime.before(start) && endTime.before(start))
@@ -1186,7 +1201,8 @@ public class RequestServiceImpl implements RequestService {
             if (requestTypeId.intValue() != FORGOT_CHECK_IN_OUT.intValue()) {
                 // Validate 2: Tạo trước 1 ngày
 
-                if (calendarCreate.get(Calendar.DAY_OF_MONTH) == calendarStart.get(Calendar.DAY_OF_MONTH)) {
+                if (calendarCreate.get(Calendar.DAY_OF_MONTH) == calendarStart.get(Calendar.DAY_OF_MONTH)
+                        && calendarCreate.get(Calendar.MONTH) == calendarStart.get(Calendar.MONTH)) {
                     throw new BaseException(ErrorCode.newErrorCode(208,
                             "You must make request 1 day before start date",
                             httpStatus.NOT_ACCEPTABLE));
@@ -1212,6 +1228,11 @@ public class RequestServiceImpl implements RequestService {
                 // Validate 6: Không được tạo trong những giờ đã tạo và được phê duyệt
                 validateLeaveRequestTimeAlreadyInAnotherLeaveRequest(personId, startTime, endTime);
             }
+            if (isRequestValidInBreakTime(startTime, endTime)) {
+                throw new BaseException(ErrorCode.newErrorCode(208,
+                        "You must not make requests whose validity is within the lunch break",
+                        httpStatus.NOT_ACCEPTABLE));
+            }
         } catch (ParseException e) {
             throw new RuntimeException(e);
         }
@@ -1232,7 +1253,8 @@ public class RequestServiceImpl implements RequestService {
         Calendar startCalendar = getCalendarByDate(startTime);
         Calendar endCalendar = getCalendarByDate(endTime);
         Calendar currentCalendar = getCalendarByDate(currentDate);
-        if (startCalendar.get(Calendar.DAY_OF_MONTH) != endCalendar.get(Calendar.DAY_OF_MONTH)) {
+        if (startCalendar.get(Calendar.DAY_OF_MONTH) != endCalendar.get(Calendar.DAY_OF_MONTH)
+                || startCalendar.get(Calendar.MONTH) != endCalendar.get(Calendar.MONTH)) {
             throw new BaseException(ErrorCode.newErrorCode(208,
                     "This request only applies for 1 day",
                     httpStatus.NOT_ACCEPTABLE));
@@ -1302,7 +1324,8 @@ public class RequestServiceImpl implements RequestService {
 
             double otHoursRemainOfMonth = otBudgetDto.getOtHoursRemainOfMonth();
             double otHoursRemainOfYear = otBudgetDto.getOtHoursRemainOfYear();
-            if (calendarStart.get(Calendar.DAY_OF_MONTH) == calendarEnd.get(Calendar.DAY_OF_MONTH)) {
+            if (calendarStart.get(Calendar.DAY_OF_MONTH) == calendarEnd.get(Calendar.DAY_OF_MONTH)
+            && calendarStart.get(Calendar.MONTH) == calendarEnd.get(Calendar.MONTH)) {
                 if ((startTime.before(otStartTime) && startTime.after(otEndTime))
                         || (endTime.before(otStartTime) && endTime.after(otEndTime))) {
                     throw new BaseException(ErrorCode.newErrorCode(208,
@@ -1344,33 +1367,63 @@ public class RequestServiceImpl implements RequestService {
         }
     }
 
-    public double calculateWorkingTime(double inLate, double outEarly, Date startTime, Date endTime,
-                                     Date startOfficeTime, Date finishOfficeTime) {
-        double workingTime = 0;
-        if (inLate == 0 && outEarly == 0) {
-            workingTime = calculateHoursBetweenTwoDateTime(startOfficeTime, finishOfficeTime);
-        } else if (inLate != 0 && outEarly == 0) {
-            workingTime = calculateHoursBetweenTwoDateTime(startTime, finishOfficeTime);
-        } else if (inLate == 0 && outEarly != 0) {
-            workingTime = calculateHoursBetweenTwoDateTime(startOfficeTime, endTime);
-        } else {
-            workingTime = calculateHoursBetweenTwoDateTime(startTime, endTime);
-        }
-        return workingTime;
-    }
-
-    public double calculateNumOfHoursWorkedInADay() {
+    public double calculateNumOfHoursWorkedInADay(Date startTime, Date endTime) {
         OfficeTimeDto officeTimeDto = officeTimeRepository.getOfficeTime();
-        try {
-            Date startOfficeTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
-                    parse("2022-01-01" + " " + officeTimeDto.getTimeStart());
-            Date finishOfficeTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
-                    parse("2022-01-01" + " " + officeTimeDto.getTimeEnd());
-            double workingTimeHoursInOneDay = calculateHoursBetweenTwoDateTime(startOfficeTime, finishOfficeTime);
-            return workingTimeHoursInOneDay;
-        } catch (ParseException e) {
-            throw new RuntimeException(e);
+        Date startOfficeTime = formatTimeToKnownDate(startTime, officeTimeDto.getTimeStart());
+        Date endOfficeTime = formatTimeToKnownDate(startTime, officeTimeDto.getTimeEnd());
+        Date lunchBreakStartTime = formatTimeToKnownDate(startTime, officeTimeDto.getLunchBreakStartTime());
+        Date lunchBreakEndTime = formatTimeToKnownDate(startTime, officeTimeDto.getLunchBreakEndTime());
+        double breakTimeHoursInOneDay = calculateHoursBetweenTwoDateTime(lunchBreakStartTime, lunchBreakEndTime);
+        double workingTimeHoursInOneDay = 0;
+        // khi gọi đến hàm này, mặc định là start time va end time cùng ngày với nhau
+        if (startTime.before(startOfficeTime)) {
+            if (endTime.after(endOfficeTime)) {
+                workingTimeHoursInOneDay = calculateHoursBetweenTwoDateTime(startOfficeTime, endOfficeTime) - breakTimeHoursInOneDay;
+            }
+            else if (endTime.after(lunchBreakEndTime) && endTime.getTime() <= endOfficeTime.getTime()) {
+                workingTimeHoursInOneDay = calculateHoursBetweenTwoDateTime(startOfficeTime, lunchBreakStartTime)
+                                            + calculateHoursBetweenTwoDateTime(lunchBreakEndTime, endTime);
+            }
+            else if (endTime.getTime() >= lunchBreakStartTime.getTime() && endTime.getTime() <= lunchBreakEndTime.getTime()) {
+                workingTimeHoursInOneDay = calculateHoursBetweenTwoDateTime(startOfficeTime, lunchBreakStartTime);
+            }
+            else {
+                workingTimeHoursInOneDay = calculateHoursBetweenTwoDateTime(startOfficeTime, endTime);
+            }
         }
+        else if (startTime.getTime() >= startOfficeTime.getTime() && startTime.getTime() < lunchBreakStartTime.getTime()) {
+            if (endTime.after(endOfficeTime)) {
+                workingTimeHoursInOneDay = calculateHoursBetweenTwoDateTime(startTime, lunchBreakStartTime)
+                                            + calculateHoursBetweenTwoDateTime(lunchBreakEndTime, endOfficeTime);
+            }
+            else if (endTime.after(lunchBreakEndTime) && endTime.getTime() <= endOfficeTime.getTime()) {
+                workingTimeHoursInOneDay = calculateHoursBetweenTwoDateTime(startTime, lunchBreakStartTime)
+                                            + calculateHoursBetweenTwoDateTime(lunchBreakEndTime, endTime);
+            }
+            else if (endTime.getTime() >= lunchBreakStartTime.getTime() && endTime.getTime() <= lunchBreakEndTime.getTime()) {
+                workingTimeHoursInOneDay = calculateHoursBetweenTwoDateTime(startTime, lunchBreakStartTime);
+            }
+            else {
+                workingTimeHoursInOneDay = calculateHoursBetweenTwoDateTime(startTime, endTime);
+            }
+        }
+        else if (startTime.getTime() >= lunchBreakStartTime.getTime() && startTime.getTime() <= lunchBreakEndTime.getTime()) {
+            if (endTime.after(endOfficeTime)) {
+                workingTimeHoursInOneDay = calculateHoursBetweenTwoDateTime(lunchBreakEndTime, endOfficeTime);
+            }
+            else if (endTime.after(lunchBreakEndTime) && endTime.getTime() <= endOfficeTime.getTime()) {
+                workingTimeHoursInOneDay = calculateHoursBetweenTwoDateTime(lunchBreakEndTime, endTime);
+            }
+        }
+        else {
+            if (endTime.after(endOfficeTime)) {
+                workingTimeHoursInOneDay = calculateHoursBetweenTwoDateTime(startTime, endOfficeTime);
+            }
+            else if (endTime.after(lunchBreakEndTime) && endTime.getTime() <= endOfficeTime.getTime()) {
+                workingTimeHoursInOneDay = calculateHoursBetweenTwoDateTime(startTime, endTime);
+            }
+        }
+        return workingTimeHoursInOneDay;
     }
 
     public void saveTimeCheck(Date startTime, Date endTime, Long personId, double inLate, double outEarly, double workingTime) {
@@ -1434,6 +1487,25 @@ public class RequestServiceImpl implements RequestService {
         LocalDate endDate = LocalDate.parse(getStringDateFromDateTime(endTime));
         for (LocalDate date = startDate; date.isBefore(endDate.plusDays(1)); date = date.plusDays(1)) {
             timeCheckRepository.deleteTimeCheckByDate(date.getDayOfMonth(), date.getMonthValue(), date.getYear());
+        }
+    }
+    public boolean isRequestValidInBreakTime(Date startTime, Date endTime) {
+        Calendar calendarStart = getCalendarByDate(startTime);
+        Calendar calendarEnd = getCalendarByDate(endTime);
+        OfficeTimeDto officeTimeDto = officeTimeRepository.getOfficeTime();
+        Date lunchBreakStartTime = formatTimeToKnownDate(startTime, officeTimeDto.getLunchBreakStartTime());
+        Date lunchBreakEndTime = formatTimeToKnownDate(startTime, officeTimeDto.getLunchBreakEndTime());
+        if (calendarStart.get(Calendar.DAY_OF_MONTH) == calendarEnd.get(Calendar.DAY_OF_MONTH)
+                && calendarStart.get(Calendar.MONTH) == calendarEnd.get(Calendar.MONTH)) {
+            if (startTime.getTime() == lunchBreakStartTime.getTime() && endTime.getTime() == lunchBreakEndTime.getTime()) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+        else {
+            return false;
         }
     }
 }

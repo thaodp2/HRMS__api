@@ -85,7 +85,7 @@ public class DepartmentServiceImpl implements DepartmentService{
     @Override
     public ResponseEntity<BaseResponse<Void, Void>> createDepartment(DepartmentRequest departmentRequest) {
         String departmentName = getFormattedName(departmentRequest.getDepartmentName());
-        List<String> listPositionName = departmentRequest.getListPosition();
+        List<Position> listPositionName = departmentRequest.getListPosition();
         List<String> listFormattedPositionName = getListPositionNameAfterFormat(departmentRequest);
         if(isDepartmentAlreadyExist(departmentName)) {
             throw new BaseException(ErrorCode.INVALID_DEPARTMENT);
@@ -149,6 +149,28 @@ public class DepartmentServiceImpl implements DepartmentService{
                                                         "In the same department can't have the same position!",
                                                                 httpStatus.ALREADY_REPORTED));
         }
+        List<Long> listPosition = positionRepository.getPositionIdsByDepartmentId(id);
+        List<Long> listPositionIdAfterEdit = new ArrayList<>();
+        for (Position position : departmentRequest.getListPosition()) {
+            if (position.getPositionName().trim().isEmpty()) {
+                throw new BaseException(ErrorCode.newErrorCode(406,
+                        "Position can't be empty!",
+                        httpStatus.NOT_ACCEPTABLE));
+            }
+            listPositionIdAfterEdit.add(position.getPositionId());
+        }
+        for (Long positionId : listPosition) {
+            if (!listPositionIdAfterEdit.contains(positionId)) {
+                if (personRepository.getListPersonIdByPositionId(positionId, "1").size() > 0) {
+                    throw new BaseException(ErrorCode.newErrorCode(406,
+                            "Can't remove position: " +
+                                    positionRepository.getPositionNameByPositionId(positionId) +
+                                    " because it's active",
+                            httpStatus.NOT_ACCEPTABLE));
+                }
+            }
+        }
+
         Integer isUpdateSucceeded = departmentRepository.updateDepartment(formattedDepartName, id);
         if (isUpdateSucceeded == CommonConstant.UPDATE_SUCCESS) {
             Integer deleteResult = positionRepository.deletePositionByDepartmentId(id);
@@ -178,8 +200,7 @@ public class DepartmentServiceImpl implements DepartmentService{
                     "Department ID not found!",
                     httpStatus.NOT_FOUND));
         }
-        else if (departmentRepository.getPersonIdByDepartmentId(id) == null
-                || departmentRepository.getPersonIdByDepartmentId(id).isEmpty()) {
+        else if (departmentRepository.getPersonIdByDepartmentId(id) != null) {
             throw new BaseException(ErrorCode.newErrorCode(404,
                     "You can't delete this department because it is active",
                     httpStatus.NOT_ACCEPTABLE));
@@ -260,11 +281,11 @@ public class DepartmentServiceImpl implements DepartmentService{
         return false;
     }
 
-    public List<String> getListPositionAlreadyExist(List<String> listPositionName, Long id) {
+    public List<String> getListPositionAlreadyExist(List<Position> listPositionName, Long id) {
         List<String> listPositionNameAlreadyExist = new ArrayList<>();
-        for (String positionName : listPositionName) {
-            if (positionRepository.isPositionAlreadyExist(positionName, id) != null) {
-                listPositionNameAlreadyExist.add(positionName);
+        for (Position positionName : listPositionName) {
+            if (positionRepository.isPositionAlreadyExist(positionName.getPositionName(), id) != null) {
+                listPositionNameAlreadyExist.add(positionName.getPositionName());
             }
         }
 
@@ -306,8 +327,8 @@ public class DepartmentServiceImpl implements DepartmentService{
 
     public List<String> getListPositionNameAfterFormat(DepartmentRequest departmentRequest) {
         List<String> listFormattedPositionName = new ArrayList<>();
-        for (String posName : departmentRequest.getListPosition()) {
-            listFormattedPositionName.add(getFormattedName(posName));
+        for (Position posName : departmentRequest.getListPosition()) {
+            listFormattedPositionName.add(getFormattedName(posName.getPositionName()));
         }
         return listFormattedPositionName;
     }
