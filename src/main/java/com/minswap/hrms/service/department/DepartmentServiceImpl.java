@@ -149,6 +149,13 @@ public class DepartmentServiceImpl implements DepartmentService{
                                                         "In the same department can't have the same position!",
                                                                 httpStatus.ALREADY_REPORTED));
         }
+        for (String position : departmentRequest.getListPosition()) {
+            if (position.trim().isEmpty()) {
+                throw new BaseException(ErrorCode.newErrorCode(406,
+                        "Position can't be empty!",
+                        httpStatus.NOT_ACCEPTABLE));
+            }
+        }
         Integer isUpdateSucceeded = departmentRepository.updateDepartment(formattedDepartName, id);
         if (isUpdateSucceeded == CommonConstant.UPDATE_SUCCESS) {
             Integer deleteResult = positionRepository.deletePositionByDepartmentId(id);
@@ -178,8 +185,7 @@ public class DepartmentServiceImpl implements DepartmentService{
                     "Department ID not found!",
                     httpStatus.NOT_FOUND));
         }
-        else if (departmentRepository.getPersonIdByDepartmentId(id) == null
-                || departmentRepository.getPersonIdByDepartmentId(id).isEmpty()) {
+        else if (departmentRepository.getPersonIdByDepartmentId(id) != null) {
             throw new BaseException(ErrorCode.newErrorCode(404,
                     "You can't delete this department because it is active",
                     httpStatus.NOT_ACCEPTABLE));
