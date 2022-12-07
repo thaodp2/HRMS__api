@@ -40,7 +40,7 @@ public class BenefitBudgetServiceImpl implements BenefitBudgetService {
     EntityManager entityManager;
 
     @Override
-    public ResponseEntity<BaseResponse<BenefitBudgetResponse.BenefitBudgetListResponse, Pageable>> getBenefitBudget(Long managerId, Long personId, Integer page, Integer limit, Long requestTypeId, String search, Integer month, Year year, String sort, String dir) throws ParseException {
+    public ResponseEntity<BaseResponse<BenefitBudgetResponse.BenefitBudgetListResponse, Pageable>> getBenefitBudget(Long managerId, Long personId, Integer page, Integer limit, Long requestTypeId, String search, Integer month, Year year, String sort, String dir){
         Pagination pagination = null;
         List<BenefitBudgetDto> benefitBudgetDtos = getBenefitBudgetList(managerId,personId,page,limit,requestTypeId,search,month,year,sort,dir);
         if(page != null & limit != null) {
@@ -68,7 +68,6 @@ public class BenefitBudgetServiceImpl implements BenefitBudgetService {
                 pageInfor = otBudgetRepository.getBenefitBudgetListWithoutPaging(month == null ? java.time.LocalDateTime.now().getMonthValue() : month, year == null ? Year.now() : year, (search == null || search.trim().isEmpty()) ? null : search.trim(), managerId, personId,  dirSort == null ? Sort.unsorted() : Sort.by(dirSort, sort));
             }else {
                 pageInfor = otBudgetRepository.getBenefitBudgetList(month == null ? java.time.LocalDateTime.now().getMonthValue() : month, year == null ? Year.now() : year, (search == null || search.trim().isEmpty()) ? null : search.trim(), managerId, personId, PageRequest.of(page - 1, limit, dirSort == null ? Sort.unsorted() : Sort.by(dirSort, sort))).getContent();
-
             }
         }
         return pageInfor;
