@@ -155,10 +155,9 @@ public class PersonServiceImpl implements PersonService {
             managerRoll = person.getPersonId().toString();
             managerId = Long.parseLong(managerRoll);
         }
-        Page<EmployeeListDto> pageInfo = personRepository.getSearchListPerson(fullName, email, departmentId, rollNumber, positionId, managerId, PageRequest.of(page - 1, limit, dirSort == null ? Sort.unsorted() : Sort.by(dirSort, sort)));
+        Page<EmployeeListDto> pageInfo = personRepository.getSearchListPerson((fullName == null || fullName.trim().isEmpty()) ? null : fullName.trim(),(email == null || email.trim().isEmpty()) ? null : email.trim(), departmentId, (rollNumber == null || rollNumber.trim().isEmpty()) ? null : rollNumber.trim(), positionId, managerId, status == null ? null : status, PageRequest.of(page - 1, limit, dirSort == null ? Sort.unsorted() : Sort.by(dirSort, sort)));
         List<EmployeeListDto> employeeListDtos = pageInfo.getContent();
         pagination.setTotalRecords(pageInfo);
-        pagination.setPage(page + 1);
         ResponseEntity<BaseResponse<EmployeeInfoResponse, Pageable>> responseEntity = BaseResponse
                 .ofSucceededOffset(EmployeeInfoResponse.of(employeeListDtos), pagination);
         return responseEntity;
@@ -583,7 +582,7 @@ public class PersonServiceImpl implements PersonService {
 
     @Override
     public List<EmployeeListDto> exportEmployee(String fullName, String email, Long departmentId, String rollNumber, Long positionId) {
-        Page<EmployeeListDto> pageInfo = personRepository.getSearchListPerson(fullName, email, departmentId, rollNumber, positionId, null, null);
+        Page<EmployeeListDto> pageInfo = personRepository.getSearchListPerson(fullName, email, departmentId, rollNumber, positionId, null, null, null);
         List<EmployeeListDto> employeeListDtos = pageInfo.getContent();
         return employeeListDtos;
     }
