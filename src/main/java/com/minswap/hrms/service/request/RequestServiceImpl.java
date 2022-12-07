@@ -1008,6 +1008,7 @@ public class RequestServiceImpl implements RequestService {
         try {
             OfficeTimeDto officeTimeDto = officeTimeRepository.getOfficeTime();
             int dayOfStartTime = getDayOfDate(startTime);
+            int monthOfStartTime = getCalendarByDate(startTime).get(Calendar.MONTH);
             double otTime = getAmountOfTimeOTByDate(personId, startTime);
             double workingTime = 0;
             double inLate = 0;
@@ -1024,7 +1025,7 @@ public class RequestServiceImpl implements RequestService {
             workingTime = calculateNumOfHoursWorkedInADay(startTime, endTime);
             startTime.setTime(startTime.getTime() + CommonConstant.MILLISECOND_7_HOURS);
             endTime.setTime(endTime.getTime() + CommonConstant.MILLISECOND_7_HOURS);
-            if (timeCheckRepository.getTimeInOfPersonByDay(personId, dayOfStartTime) == null) {
+            if (timeCheckRepository.getTimeInOfPersonByDay(personId, dayOfStartTime, monthOfStartTime) == null) {
                 TimeCheck timeCheck = new TimeCheck(personId, inLate, outEarly, startTime,
                         endTime, otTime, workingTime);
                 timeCheckRepository.save(timeCheck);
