@@ -89,4 +89,6 @@ public class RequestDto {
 
     private double otTimeRemainingOfMonth;
     private double otTimeRemainingOfYear;
+
+    private int periodTime;
 }

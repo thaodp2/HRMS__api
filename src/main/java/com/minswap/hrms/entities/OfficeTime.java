@@ -28,5 +28,11 @@ public class OfficeTime {
     @Column(name = "create_date")
     private Date createDate;
 
+    @Column(name = "lunch_break_start_time")
+    private String lunchBreakStartTime;
+
+    @Column(name = "lunch_break_end_time")
+    private String lunchBreakEndTime;
+
 
 }

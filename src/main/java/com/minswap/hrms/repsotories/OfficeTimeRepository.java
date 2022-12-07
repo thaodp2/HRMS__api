@@ -17,6 +17,7 @@ public interface OfficeTimeRepository extends JpaRepository<OfficeTime, Long> {
 
     Optional<OfficeTime> findOfficeTimeByOfficeTimeId(@Param("officeTimeId") Long officeTimeId);
 
-    @Query("select new com.minswap.hrms.response.dto.OfficeTimeDto(ot.timeStart, ot.timeFinish) from OfficeTime ot")
+    @Query("select new com.minswap.hrms.response.dto.OfficeTimeDto(ot.timeStart, ot.timeFinish, " +
+            "ot.lunchBreakStartTime, ot.lunchBreakEndTime) from OfficeTime ot")
     OfficeTimeDto getOfficeTime();
 }
