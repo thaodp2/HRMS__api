@@ -190,7 +190,7 @@ public class PersonServiceImpl implements PersonService {
             employeeRequest.setCitizenIdentification(employeeDetailDto.getCitizenIdentification());
         } else {
             Integer personCheckCitizen = personRepository.getUserByCitizenIdentification(employeeRequest.getCitizenIdentification());
-            if (personCheckCitizen != null && personCheckCitizen > 0) {
+            if (personCheckCitizen != null && personCheckCitizen > 0 && !employeeDetailDto.getCitizenIdentification().equals(employeeRequest.getCitizenIdentification())) {
                 throw new BaseException(ErrorCode.CITIZEN_INDENTIFICATION_EXSIT);
             } else {
                 employeeRequest.setCitizenIdentification(employeeRequest.getCitizenIdentification());
