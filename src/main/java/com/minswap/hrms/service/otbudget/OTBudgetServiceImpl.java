@@ -42,6 +42,8 @@ public class OTBudgetServiceImpl implements OTBudgetService {
                         OTBudget preOTBudget = otBudgetRepository.findByPersonIdAndMonthAndYear(person.getPersonId(), preMonth, Year.now()).orElse(null);
                         if (preOTBudget != null) {
                             otBudgetList.add(new OTBudget(person.getPersonId(), preOTBudget.getTimeRemainingOfYear() < 40 ? preOTBudget.getTimeRemainingOfYear() : 40, 0, preOTBudget.getTimeRemainingOfYear() < 40 ? preOTBudget.getTimeRemainingOfYear() : 40, preOTBudget.getTimeRemainingOfYear(), java.time.LocalDateTime.now().getMonthValue(), Year.now()));
+                        }else {
+                            otBudgetList.add(new OTBudget(person.getPersonId(), 40, 0, 40, 200, java.time.LocalDateTime.now().getMonthValue(), Year.now()));
                         }
                     } else {
                         otBudgetList.add(new OTBudget(person.getPersonId(), 40, 0, 40, 200, java.time.LocalDateTime.now().getMonthValue(), Year.now()));

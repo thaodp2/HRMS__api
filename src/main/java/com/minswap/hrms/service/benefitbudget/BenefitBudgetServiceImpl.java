@@ -42,11 +42,10 @@ public class BenefitBudgetServiceImpl implements BenefitBudgetService {
     @Override
     public ResponseEntity<BaseResponse<BenefitBudgetResponse.BenefitBudgetListResponse, Pageable>> getBenefitBudget(Long managerId, Long personId, Integer page, Integer limit, Long requestTypeId, String search, Integer month, Year year, String sort, String dir) throws ParseException {
         Pagination pagination = null;
-        Page<BenefitBudgetDto> pageInfor = getBenefitBudgetList(managerId,personId,page,limit,requestTypeId,search,month,year,sort,dir);
-        List<BenefitBudgetDto> benefitBudgetDtos = pageInfor.getContent();
+        List<BenefitBudgetDto> benefitBudgetDtos = getBenefitBudgetList(managerId,personId,page,limit,requestTypeId,search,month,year,sort,dir);
         if(page != null & limit != null) {
             pagination = new Pagination(page, limit);
-            pagination.setTotalRecords(pageInfor);
+            pagination.setTotalRecords(getBenefitBudgetList(managerId,personId,null,null,requestTypeId,search,month,year,sort,dir).size());
         }
         BenefitBudgetResponse.BenefitBudgetListResponse response = new BenefitBudgetResponse.BenefitBudgetListResponse(benefitBudgetDtos);
         ResponseEntity<BaseResponse<BenefitBudgetResponse.BenefitBudgetListResponse, Pageable>> responseEntity
@@ -55,21 +54,22 @@ public class BenefitBudgetServiceImpl implements BenefitBudgetService {
     }
 
     @Override
-    public Page<BenefitBudgetDto> getBenefitBudgetList(Long managerId, Long personId, Integer page, Integer limit, Long requestTypeId, String search, Integer month, Year year, String sort, String dir) {
-//        Sort.Direction dirSort = null;
-//        if (sort != null && !sort.trim().isEmpty()) {
-//            if (dir == null || dir.trim().equalsIgnoreCase("asc")) {
-//                dirSort = Sort.Direction.ASC;
-//            } else if (dir.trim().equalsIgnoreCase("desc")) {
-//                dirSort = Sort.Direction.DESC;
-//            }
-//        }
+    public List<BenefitBudgetDto> getBenefitBudgetList(Long managerId, Long personId, Integer page, Integer limit, Long requestTypeId, String search, Integer month, Year year, String sort, String dir) {
         Sort.Direction dirSort = CommonUtil.getSortDirection(sort,dir);
-        Page<BenefitBudgetDto> pageInfor = null;
+        List<BenefitBudgetDto> pageInfor = null;
         if (requestTypeId != CommonConstant.REQUEST_TYPE_ID_OF_OT) {
-            pageInfor = leaveBudgetRepository.getBenefitBudgetList(year == null ? Year.now() : year, (search == null || search.trim().isEmpty()) ? null:search.trim(), managerId, requestTypeId, personId,(page == null && limit == null)?null: PageRequest.of(page - 1, limit, dirSort == null ? Sort.unsorted() : Sort.by(dirSort, sort)));
+            if(page == null && limit == null) {
+                pageInfor = leaveBudgetRepository.getBenefitBudgetListWithoutPaging(year == null ? Year.now() : year, (search == null || search.trim().isEmpty()) ? null : search.trim(), managerId, requestTypeId, personId, dirSort == null ? Sort.unsorted() : Sort.by(dirSort, sort));
+            }else {
+                pageInfor = leaveBudgetRepository.getBenefitBudgetList(year == null ? Year.now() : year, (search == null || search.trim().isEmpty()) ? null : search.trim(), managerId, requestTypeId, personId, PageRequest.of(page - 1, limit,dirSort == null ? Sort.unsorted() : Sort.by(dirSort, sort))).getContent();
+            }
         } else {
-            pageInfor = otBudgetRepository.getBenefitBudgetList(month == null ? java.time.LocalDateTime.now().getMonthValue() : month, year == null ? Year.now() : year, (search == null || search.trim().isEmpty()) ? null:search.trim(), managerId, personId, (page == null && limit == null)?null: PageRequest.of(page - 1, limit, dirSort == null ? Sort.unsorted() : Sort.by(dirSort, sort)));
+            if(page == null && limit == null) {
+                pageInfor = otBudgetRepository.getBenefitBudgetListWithoutPaging(month == null ? java.time.LocalDateTime.now().getMonthValue() : month, year == null ? Year.now() : year, (search == null || search.trim().isEmpty()) ? null : search.trim(), managerId, personId,  dirSort == null ? Sort.unsorted() : Sort.by(dirSort, sort));
+            }else {
+                pageInfor = otBudgetRepository.getBenefitBudgetList(month == null ? java.time.LocalDateTime.now().getMonthValue() : month, year == null ? Year.now() : year, (search == null || search.trim().isEmpty()) ? null : search.trim(), managerId, personId, PageRequest.of(page - 1, limit, dirSort == null ? Sort.unsorted() : Sort.by(dirSort, sort))).getContent();
+
+            }
         }
         return pageInfor;
     }

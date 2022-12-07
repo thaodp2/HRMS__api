@@ -17,6 +17,8 @@ public interface NotificationService {
 
     NotificationResponse getNotifs(Long userID);
 
+    ResponseEntity<BaseResponse<NotificationResponse, Pagination>> getTotalUnreadNotifs(Long userID);
+
     Flux<ServerSentEvent<NotificationResponse>> getNotificationsByUserToID(Long userID);
 
     void changeNotifStatusToRead(Long notifID);
