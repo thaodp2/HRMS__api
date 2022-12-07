@@ -3,6 +3,7 @@ package com.minswap.hrms.controller;
 import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.request.UpdateUserRequest;
 import com.minswap.hrms.response.EmployeeInfoResponse;
+import com.minswap.hrms.response.ListRolesResponse;
 import com.minswap.hrms.response.MasterDataResponse;
 import com.minswap.hrms.security.UserPrincipal;
 import com.minswap.hrms.security.oauth2.CurrentUser;
@@ -30,6 +31,11 @@ public class PersonController {
     public ResponseEntity<BaseResponse<EmployeeInfoResponse, Void>> getDetailEmployee(@CurrentUser UserPrincipal userPrincipal) {
         String rollNumber = personService.getPersonInforByEmail(userPrincipal.getEmail()).getRollNumber();
         return personService.getDetailEmployee(rollNumber);
+    }
+
+    @GetMapping("/roles")
+    public ResponseEntity<BaseResponse<ListRolesResponse, Void>> getRoles(@CurrentUser UserPrincipal userPrincipal) {
+        return personService.getRoles(userPrincipal);
     }
 
     @GetMapping("/all-manager-master-data")

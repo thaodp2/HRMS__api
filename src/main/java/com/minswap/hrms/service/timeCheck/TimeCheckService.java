@@ -20,13 +20,18 @@ public interface TimeCheckService {
     ResponseEntity<BaseResponse<TimeCheckResponse.TimeCheckEachSubordinateResponse, Pageable>> getListTimeCheck(String search,
                                                                                                                 Long managerId,
                                                                                                                 String startDate,
-                                                                                                                String endDate, Integer page,
-                                                                                                                Integer limit) throws Exception;
+                                                                                                                String endDate,
+                                                                                                                Integer page,
+                                                                                                                Integer limit,
+                                                                                                                String sort,
+                                                                                                                String dir) throws Exception;
 
     ResponseEntity<BaseResponse<TimeCheckResponse.TimeCheckEachSubordinateResponse, Pageable>> getListTimeCheckByHR(String search,
                                                                                                                     String startDate,
                                                                                                                     String endDate, Integer page,
-                                                                                                                    Integer limit) throws Exception;
+                                                                                                                    Integer limit,
+                                                                                                                    String sort,
+                                                                                                                    String dir) throws Exception;
 
     List<TimeCheckEachSubordinateDto> listTimeCheckToExport(String search,
                                                            String startDate,

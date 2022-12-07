@@ -52,6 +52,10 @@ public class UserPrincipal implements OAuth2User {
 		return attributes;
 	}
 
+	public List<Role> getRoles() {
+		return roles;
+	}
+
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
 		if (CollectionUtils.isEmpty(roles)) {
