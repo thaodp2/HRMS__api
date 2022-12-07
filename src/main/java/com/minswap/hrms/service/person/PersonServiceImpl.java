@@ -4,6 +4,7 @@ import com.minswap.hrms.constants.CommonConstant;
 import com.minswap.hrms.constants.ErrorCode;
 import com.minswap.hrms.entities.Person;
 import com.minswap.hrms.entities.PersonRole;
+import com.minswap.hrms.entities.Role;
 import com.minswap.hrms.exception.model.BaseException;
 import com.minswap.hrms.exception.model.Pagination;
 import com.minswap.hrms.model.BaseResponse;
@@ -12,10 +13,12 @@ import com.minswap.hrms.repsotories.PersonRepository;
 import com.minswap.hrms.repsotories.PersonRoleRepository;
 import com.minswap.hrms.request.*;
 import com.minswap.hrms.response.EmployeeInfoResponse;
+import com.minswap.hrms.response.ListRolesResponse;
 import com.minswap.hrms.response.MasterDataResponse;
 import com.minswap.hrms.response.dto.EmployeeDetailDto;
 import com.minswap.hrms.response.dto.EmployeeListDto;
 import com.minswap.hrms.response.dto.MasterDataDto;
+import com.minswap.hrms.security.UserPrincipal;
 import com.minswap.hrms.service.email.EmailSenderService;
 import com.minswap.hrms.util.CommonUtil;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -51,8 +54,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
-import static com.minswap.hrms.constants.ErrorCode.INVALID_FILE;
-import static com.minswap.hrms.constants.ErrorCode.UPLOAD_EXCEL;
+import static com.minswap.hrms.constants.ErrorCode.*;
 
 @Service
 public class PersonServiceImpl implements PersonService {
@@ -315,10 +317,10 @@ public class PersonServiceImpl implements PersonService {
         if (!person.isPresent()) {
             throw new BaseException(ErrorCode.NO_DATA);
         }
-        if (!person.get().getPinCode().isEmpty()) {
-            return BaseResponse.ofSucceeded(true);
+        if (person.get().getPinCode() == null) {
+            return BaseResponse.ofSucceeded(false);
         }
-        return BaseResponse.ofSucceeded(false);
+        return BaseResponse.ofSucceeded(true);
     }
 
     @Override
@@ -569,6 +571,14 @@ public class PersonServiceImpl implements PersonService {
     public Person getPersonInforByEmail(String email) {
         Person person = personRepository.findPersonByEmail(email).orElse(null);
         return person;
+    }
+
+    @Override
+    public ResponseEntity<BaseResponse<ListRolesResponse, Void>> getRoles(UserPrincipal userPrincipal) {
+        List<Role> roles = userPrincipal.getRoles();
+        return roles == null
+                ? BaseResponse.ofFailedCustom(Meta.buildMeta(UNAUTHORIZE, null), null)
+                : BaseResponse.ofSucceeded(new ListRolesResponse(roles));
     }
 
     @Override

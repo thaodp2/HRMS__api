@@ -1,18 +1,23 @@
 package com.minswap.hrms.controller.hr;
 
 import com.minswap.hrms.constants.CommonConstant;
+import com.minswap.hrms.exception.annotation.ServiceProcessingValidateAnnotation;
 import com.minswap.hrms.model.BaseResponse;
+import com.minswap.hrms.request.CreateRequest;
+import com.minswap.hrms.request.EditRequest;
 import com.minswap.hrms.response.RequestResponse;
+import com.minswap.hrms.security.UserPrincipal;
+import com.minswap.hrms.security.oauth2.CurrentUser;
+import com.minswap.hrms.service.person.PersonService;
 import com.minswap.hrms.service.request.RequestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.Pattern;
 import java.text.ParseException;
@@ -23,6 +28,9 @@ import java.text.ParseException;
 public class HRRequestController {
     @Autowired
     private RequestService requestService;
+
+    @Autowired
+    private PersonService personService;
 
     @GetMapping("/request")
     public ResponseEntity<BaseResponse<RequestResponse.RequestListResponse, Pageable>> getAllRequest(
@@ -37,5 +45,43 @@ public class HRRequestController {
             @RequestParam (required = false) String dir) throws ParseException {
 
             return requestService.getAllRequest(page,limit,search,createDateFrom,createDateTo,requestTypeId, status, sort, dir);
+    }
+
+    @GetMapping("request/{id}")
+    public ResponseEntity<BaseResponse<RequestResponse, Void>> getRequestDetail(
+            @PathVariable
+            @Min(value = 1, message = "ID must be greater or equal 1")
+            Long id,
+            @CurrentUser UserPrincipal userPrincipal) {
+        Long personId = personService.getPersonInforByEmail(userPrincipal.getEmail()).getPersonId();
+        return requestService.getEmployeeRequestDetail(id, personId);
+    }
+
+    @PutMapping("request/{id}")
+    @ServiceProcessingValidateAnnotation
+    public ResponseEntity<BaseResponse<Void, Void>> editRequest(@RequestBody
+                                                                @Valid
+                                                                EditRequest editRequest,
+                                                                BindingResult bindingResult,
+                                                                @PathVariable Long id,
+                                                                @CurrentUser UserPrincipal userPrincipal) throws ParseException {
+        Long personId = personService.getPersonInforByEmail(userPrincipal.getEmail()).getPersonId();
+        return requestService.editRequest(editRequest, id, personId);
+    }
+
+    @PostMapping("/request")
+    @ServiceProcessingValidateAnnotation
+    public ResponseEntity<BaseResponse<Void, Void>> createRequest(@RequestBody @Valid CreateRequest createRequest,
+                                                                  BindingResult bindingResult,
+                                                                  @CurrentUser UserPrincipal userPrincipal) throws ParseException {
+        Long personId = personService.getPersonInforByEmail(userPrincipal.getEmail()).getPersonId();
+        return requestService.createRequest(createRequest, personId);
+    }
+
+    @PutMapping("/request/cancel-request/{id}")
+    public ResponseEntity<BaseResponse<Void, Void>> cancelRequest(@PathVariable Long id,
+                                                                  @CurrentUser UserPrincipal userPrincipal) {
+        Long personId = personService.getPersonInforByEmail(userPrincipal.getEmail()).getPersonId();
+        return requestService.cancelRequest(id, personId);
     }
 }
