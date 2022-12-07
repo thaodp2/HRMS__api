@@ -35,17 +35,10 @@ public class RequestController {
     public ResponseEntity<BaseResponse<RequestResponse, Void>> getRequestDetail(
             @PathVariable
             @Min(value = 1, message = "ID must be greater or equal 1")
-            Long id) {
-        return requestService.getEmployeeRequestDetail(id);
-    }
-
-    @PutMapping("request/status/{id}")
-    @ServiceProcessingValidateAnnotation
-    public ResponseEntity<BaseResponse<Void, Void>> updateRequestStatus(@RequestBody
-                                                                        @Valid UpdateStatusRequest updateStatusRequest,
-                                                                        BindingResult bindingResult,
-                                                                        @PathVariable Long id) throws ParseException {
-        return requestService.updateRequestStatus(updateStatusRequest.getStatus(), id);
+            Long id,
+            @CurrentUser UserPrincipal userPrincipal) {
+        Long personId = personService.getPersonInforByEmail(userPrincipal.getEmail()).getPersonId();
+        return requestService.getEmployeeRequestDetail(id, personId);
     }
 
     @PutMapping("request/{id}")
@@ -54,8 +47,10 @@ public class RequestController {
                                                                 @Valid
                                                                 EditRequest editRequest,
                                                                 BindingResult bindingResult,
-                                                                @PathVariable Long id) throws ParseException {
-        return requestService.editRequest(editRequest, id);
+                                                                @PathVariable Long id,
+                                                                @CurrentUser UserPrincipal userPrincipal) throws ParseException {
+        Long personId = personService.getPersonInforByEmail(userPrincipal.getEmail()).getPersonId();
+        return requestService.editRequest(editRequest, id, personId);
     }
 
     @GetMapping("/request")
@@ -77,12 +72,16 @@ public class RequestController {
     @PostMapping("/request")
     @ServiceProcessingValidateAnnotation
     public ResponseEntity<BaseResponse<Void, Void>> createRequest(@RequestBody @Valid CreateRequest createRequest,
-                                                                  BindingResult bindingResult) throws ParseException {
-        return requestService.createRequest(createRequest);
+                                                                  BindingResult bindingResult,
+                                                                  @CurrentUser UserPrincipal userPrincipal) throws ParseException {
+        Long personId = personService.getPersonInforByEmail(userPrincipal.getEmail()).getPersonId();
+        return requestService.createRequest(createRequest, personId);
     }
 
     @PutMapping("/request/cancel-request/{id}")
-    public ResponseEntity<BaseResponse<Void, Void>> cancelRequest(@PathVariable Long id) {
-        return requestService.cancelRequest(id);
+    public ResponseEntity<BaseResponse<Void, Void>> cancelRequest(@PathVariable Long id,
+                                                                  @CurrentUser UserPrincipal userPrincipal) {
+        Long personId = personService.getPersonInforByEmail(userPrincipal.getEmail()).getPersonId();
+        return requestService.cancelRequest(id, personId);
     }
 }
