@@ -817,7 +817,7 @@ public class RequestServiceImpl implements RequestService {
 
             if (startCalendar.get(Calendar.DAY_OF_MONTH) == endCalendar.get(Calendar.DAY_OF_MONTH)
                     && startCalendar.get(Calendar.MONTH) == endCalendar.get(Calendar.MONTH)) {
-                calculateNumOfHoursWorkedInADay(startTimeDate, endTimeDate);
+                numberOfDayOff = calculateNumOfHoursWorkedInADay(startTimeDate, endTimeDate) / workingTimeHoursInOneDay;
 //                startOfficeTime = formatTimeToKnownDate(startTimeDate, officeTimeDto.getTimeStart());
 //                finishOfficeTime = formatTimeToKnownDate(startTimeDate, officeTimeDto.getTimeEnd());
 //                if (startTimeDate.before(startOfficeTime) && endTimeDate.after(finishOfficeTime)) {
@@ -1369,7 +1369,7 @@ public class RequestServiceImpl implements RequestService {
     public double calculateNumOfHoursWorkedInADay(Date startTime, Date endTime) {
         OfficeTimeDto officeTimeDto = officeTimeRepository.getOfficeTime();
         Date startOfficeTime = formatTimeToKnownDate(startTime, officeTimeDto.getTimeStart());
-        Date endOfficeTime = formatTimeToKnownDate(startTime, officeTimeDto.getTimeStart());
+        Date endOfficeTime = formatTimeToKnownDate(startTime, officeTimeDto.getTimeEnd());
         Date lunchBreakStartTime = formatTimeToKnownDate(startTime, officeTimeDto.getLunchBreakStartTime());
         Date lunchBreakEndTime = formatTimeToKnownDate(startTime, officeTimeDto.getLunchBreakEndTime());
         double breakTimeHoursInOneDay = calculateHoursBetweenTwoDateTime(lunchBreakStartTime, lunchBreakEndTime);
