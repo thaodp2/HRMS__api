@@ -16,7 +16,7 @@ public class Request {
     public static final String TABLE_NAME = "request";
 
     public Request(Long requestTypeId, Long personId, Long deviceTypeId, Date startTime,
-                   Date endTime, String reason, Date createDate, String status) {
+                   Date endTime, String reason, Date createDate, String status, Integer isAssigned) {
         this.requestTypeId = requestTypeId;
         this.personId = personId;
         this.deviceTypeId = deviceTypeId;
@@ -25,6 +25,7 @@ public class Request {
         this.reason = reason;
         this.createDate = createDate;
         this.status = status;
+        this.isAssigned = isAssigned;
     }
 
     @Id

@@ -44,6 +44,8 @@ public class DepartmentServiceImpl implements DepartmentService{
     HttpStatus httpStatus;
     private static final String SORT_DESC = "desc";
     private static final String SORT_ASC = "asc";
+    private static final int NOT_ALLOW_DELETE = 0;
+    private static final int ALLOW_DELETE = 1;
     @Override
     public ResponseEntity<BaseResponse<ListDepartmentDto, Pageable>> getListDepartment(Integer page,
                                                                                        Integer limit,
@@ -176,6 +178,12 @@ public class DepartmentServiceImpl implements DepartmentService{
                     "Department ID not found!",
                     httpStatus.NOT_FOUND));
         }
+        else if (departmentRepository.getPersonIdByDepartmentId(id) == null
+                || departmentRepository.getPersonIdByDepartmentId(id).isEmpty()) {
+            throw new BaseException(ErrorCode.newErrorCode(404,
+                    "You can't delete this department because it is active",
+                    httpStatus.NOT_ACCEPTABLE));
+        }
         try {
             departmentRepository.deleteById(id);
             positionRepository.deletePositionByDepartmentId(id);
@@ -215,15 +223,31 @@ public class DepartmentServiceImpl implements DepartmentService{
                     httpStatus.NOT_FOUND));
         }
         Department department = departmentRepository.getDepartmentByDepartmentId(id);
-        List<String> listPosition = positionRepository.getListPosition(id);
+        List<Position> listPosition = positionRepository.getPositionsByDepartmentId(id);
         Integer numberOfEmployeeInDepartment = departmentRepository.getNumberOfEmployeeInDepartment(id);
         DepartmentDto departmentDto = new DepartmentDto(department.getDepartmentId(), department.getDepartmentName());
         departmentDto.setTotalEmployee(numberOfEmployeeInDepartment);
         departmentDto.setListPosition(listPosition);
+        List<Long> listPersonId = departmentRepository.getPersonIdByDepartmentId(id);
+        if (listPersonId.size() > 0) {
+            departmentDto.setIsAllowDelete(NOT_ALLOW_DELETE);
+        }
+        else {
+            departmentDto.setIsAllowDelete(ALLOW_DELETE);
+        }
         DepartmentResponse departmentResponse = new DepartmentResponse(departmentDto);
         ResponseEntity<BaseResponse<DepartmentResponse, Void>> responseEntity
                 = BaseResponse.ofSucceededOffset(departmentResponse, null);
         return responseEntity;
+    }
+
+    @Override
+    public boolean checkDepartmentExist(Long departmentId) {
+        Department d = departmentRepository.findById(departmentId).orElse(null);
+        if(d != null){
+            return true;
+        }
+        return false;
     }
 
     public boolean isDepartmentAlreadyExist(String departmentName) {

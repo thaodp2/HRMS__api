@@ -22,6 +22,7 @@ import java.util.Optional;
 @Repository
 public interface PersonRepository extends JpaRepository<Person, Long>{
 
+    Optional<Person> findPersonByEmail(String email);
     Optional<Person> findPersonByPersonId(Long id);
     Optional<Person> findPersonByRollNumberEquals(String rollNumber);
     List<Person> findByRankIdIsNot(Long rankId);
@@ -136,7 +137,7 @@ public interface PersonRepository extends JpaRepository<Person, Long>{
             "from Person p, PersonRole pr, Role r " +
             "where p.personId = pr.personId and pr.roleId = r.roleId and r.roleId = :roleId " +
             "AND (:search IS NULL OR p.fullName LIKE %:search%) ")
-    List<Person> getMasterDataAllManager(@Param("roleId") Long roleId,
+    List<Person> getMasterDataPersonByRole(@Param("roleId") Long roleId,
                                          @Param("search") String search);
 
     @Modifying
@@ -171,4 +172,10 @@ public interface PersonRepository extends JpaRepository<Person, Long>{
                                     @Param("rollNumber") String rollNumber);
     @Query("SELECT count(p.citizenIdentification) FROM Person p WHERE p.citizenIdentification = :citizenIdentification")
     Integer getUserByCitizenIdentification(@Param("citizenIdentification") String citizenIdentification);
+
+    @Query("select r.roleId from Person p " +
+            "left join PersonRole pr on p.personId = pr.personId " +
+            "left join Role r on r.roleId = pr.roleId " +
+            "where p.personId=:personId")
+    List<Long> getListRoleIdByPersonId(@Param("personId") Long personId);
 }

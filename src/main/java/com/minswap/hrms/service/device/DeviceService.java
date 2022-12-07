@@ -1,21 +1,24 @@
 package com.minswap.hrms.service.device;
 
+import com.minswap.hrms.entities.Device;
 import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.request.AssignRequest;
 import com.minswap.hrms.request.DeviceRequest;
 import com.minswap.hrms.request.UpdateDeviceRequest;
 import com.minswap.hrms.response.DeviceResponse;
 import com.minswap.hrms.response.MasterDataResponse;
+import com.minswap.hrms.security.UserPrincipal;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.text.ParseException;
+import java.util.List;
 
 public interface DeviceService {
     ResponseEntity<BaseResponse<MasterDataResponse, Pageable>> getMasterDataDeviceByDeviceType (Long deviceTypeId, Integer status, String deviceName);
 
-    ResponseEntity<BaseResponse<HttpStatus, Void>> assignDevice(AssignRequest assignRequest);
+    ResponseEntity<BaseResponse<HttpStatus, Void>> assignDevice(AssignRequest assignRequest, UserPrincipal userPrincipal);
 
     ResponseEntity<BaseResponse<HttpStatus, Void>> createDevice(DeviceRequest deviceRequest);
 
@@ -29,5 +32,5 @@ public interface DeviceService {
 
     ResponseEntity<BaseResponse<HttpStatus, Void>> isRemainDeviceByDeviceTye(Long deviceTypeId);
 
-    ResponseEntity<BaseResponse<HttpStatus, Void>> returnDevice(Long borrowHistoryId);
+    ResponseEntity<BaseResponse<HttpStatus, Void>> returnDevice(Long borrowHistoryId, UserPrincipal userPrincipal);
 }

@@ -28,6 +28,12 @@ public class ErrorCode {
     public static final BusinessCode UPDATE_FAIL = new BusinessCode(
             ErrorCodeEnum.UPDATE_FAIL.getValue(), "Update failed", HttpStatus.NOT_FOUND);
 
+    public static final BusinessCode INVALID_DATA = new BusinessCode(
+            ErrorCodeEnum.INVALID_DATA.getValue(), "Data invalid", HttpStatus.NOT_ACCEPTABLE);
+
+    public static final BusinessCode INVALID_FILE = new BusinessCode(
+            ErrorCodeEnum.INVALID_FILE.getValue(), "File invalid", HttpStatus.NOT_ACCEPTABLE);
+
     public static final BusinessCode UPDATE_DAY_OFF_FAIL = new BusinessCode(
             ErrorCodeEnum.UPDATE_DAY_OFF_FAIL.getValue(), "Your remaining days off are not enough", HttpStatus.NOT_ACCEPTABLE);
 
@@ -53,6 +59,9 @@ public class ErrorCode {
     public static final BusinessCode YEAR_INVALID = new BusinessCode(
             ErrorCodeEnum.YEAR_INVALID.getValue(), "Year can't be null", HttpStatus.NOT_FOUND);
 
+    public static final BusinessCode UPLOAD_EXCEL = new BusinessCode(
+            ErrorCodeEnum.UPLOAD_EXCEL.getValue(), "Please upload excel file!", HttpStatus.NOT_FOUND);
+
     public static final BusinessCode MONTH_INVALID = new BusinessCode(
             ErrorCodeEnum.MONTH_INVALID.getValue(), "Month can't be null", HttpStatus.NOT_FOUND);
 
@@ -76,7 +85,7 @@ public class ErrorCode {
             ErrorCodeEnum.DEVICE_NOT_EXIST.getValue(), "Device not exist", HttpStatus.BAD_REQUEST);
 
     public static final BusinessCode DEVICE_HAS_BEEN_BORROWED = new BusinessCode(
-            ErrorCodeEnum.DEVICE_HAS_BEEN_BORROWED.getValue(), "Device has been borrowed", HttpStatus.BAD_REQUEST);
+            ErrorCodeEnum.DEVICE_HAS_BEEN_BORROWED.getValue(), "Device has been borrowed, can not update device type", HttpStatus.BAD_REQUEST);
 
     public static final BusinessCode DEVICE_TYPE_NULL_OR_EMPTY = new BusinessCode(
             ErrorCodeEnum.DEVICE_TYPE_NULL_OR_EMPTY.getValue(), "Device type can't null or empty", HttpStatus.BAD_REQUEST);
@@ -128,4 +137,6 @@ public class ErrorCode {
             ErrorCodeEnum.CITIZEN_INDENTIFICATION_EXSIT.getValue(), "Citizen Identification exist!", HttpStatus.NOT_FOUND);
     public static final BusinessCode FINGERPRINT_INVALID = new BusinessCode(
             ErrorCodeEnum.FINGERPRINT_INVALID.getValue(), "Contact HR to register this fingerprint!", HttpStatus.NOT_FOUND);
+    public static final BusinessCode UNAUTHORIZE = new BusinessCode(
+            ErrorCodeEnum.UNAUTHORIZE.getValue(), "Sorry! We've got an Unauthorized Redirect URI and can't proceed with the authentication", HttpStatus.UNAUTHORIZED);
 }

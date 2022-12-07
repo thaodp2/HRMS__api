@@ -11,9 +11,6 @@ import java.util.Date;
 @AllArgsConstructor
 public class UpdateUserRequest {
 
-    @JsonProperty("personId")
-    private Long personId;
-
     @JsonProperty("fullName")
     private String fullName;
 
@@ -21,6 +18,7 @@ public class UpdateUserRequest {
     private String address;
 
     @JsonProperty("citizenIdentification")
+    @Pattern(regexp = "^[0-9]{9}$|^[0-9]{12}$", message = "617")
     private String citizenIdentification;
 
     @JsonProperty("phoneNumber")
@@ -34,7 +32,7 @@ public class UpdateUserRequest {
     @Pattern(regexp = "[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])", message = "Invalid dateOfBirth")
     private String dateOfBirth;
 
-    @JsonProperty("avatar")
+    @JsonProperty("avatarImg")
     private String avatarImg;
 
 }

@@ -7,4 +7,6 @@ import org.springframework.http.ResponseEntity;
 
 public interface PositionService {
     ResponseEntity<BaseResponse<MasterDataResponse, Pageable>> getMasterDataPositionByDepartmentId (Long departmentId,String search);
+
+    boolean checkPositionByDepartment(Long positionId,Long departmentId);
 }

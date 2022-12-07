@@ -35,11 +35,19 @@ public class OTBudgetServiceImpl implements OTBudgetService {
         }
         if (!personList.isEmpty()) {
             for (Person person : personList) {
-                if (java.time.LocalDateTime.now().getMonthValue() != 1) {
-                    OTBudget preOTBudget = otBudgetRepository.findByPersonIdAndMonthAndYear(person.getPersonId(), preMonth, Year.now());
-                    otBudgetList.add(new OTBudget(person.getPersonId(), preOTBudget.getTimeRemainingOfYear() < 40 ? preOTBudget.getTimeRemainingOfYear() : 40, 0, preOTBudget.getTimeRemainingOfYear() < 40 ? preOTBudget.getTimeRemainingOfYear() : 40,preOTBudget.getTimeRemainingOfYear(), java.time.LocalDateTime.now().getMonthValue(), Year.now()));
-                }else {
-                    otBudgetList.add(new OTBudget(person.getPersonId(), 40,0,40,200, java.time.LocalDateTime.now().getMonthValue(), Year.now()));
+                OTBudget otBudgetCheck = otBudgetRepository.findByPersonIdAndMonthAndYear(person.getPersonId(), java.time.LocalDateTime.now().getMonthValue(), Year.now()).orElse(null);
+                //if don't have ot -> create, if have -> don't create
+                if (otBudgetCheck == null) {
+                    if (java.time.LocalDateTime.now().getMonthValue() != 1) {
+                        OTBudget preOTBudget = otBudgetRepository.findByPersonIdAndMonthAndYear(person.getPersonId(), preMonth, Year.now()).orElse(null);
+                        if (preOTBudget != null) {
+                            otBudgetList.add(new OTBudget(person.getPersonId(), preOTBudget.getTimeRemainingOfYear() < 40 ? preOTBudget.getTimeRemainingOfYear() : 40, 0, preOTBudget.getTimeRemainingOfYear() < 40 ? preOTBudget.getTimeRemainingOfYear() : 40, preOTBudget.getTimeRemainingOfYear(), java.time.LocalDateTime.now().getMonthValue(), Year.now()));
+                        }else {
+                            otBudgetList.add(new OTBudget(person.getPersonId(), 40, 0, 40, 200, java.time.LocalDateTime.now().getMonthValue(), Year.now()));
+                        }
+                    } else {
+                        otBudgetList.add(new OTBudget(person.getPersonId(), 40, 0, 40, 200, java.time.LocalDateTime.now().getMonthValue(), Year.now()));
+                    }
                 }
             }
             otBudgetRepository.saveAll(otBudgetList);

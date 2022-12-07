@@ -1,6 +1,7 @@
 package com.minswap.hrms.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.minswap.hrms.response.dto.DeviceDetailDto;
 import com.minswap.hrms.response.dto.DeviceDto;
 import lombok.Data;
 
@@ -17,10 +18,11 @@ public class DeviceResponse {
 
     @Data
     public static class DetailDeviceResponse{
-      private DeviceDto deviceDto;
 
-        public DetailDeviceResponse(DeviceDto deviceDto) {
-            this.deviceDto = deviceDto;
+      private DeviceDetailDto deviceDetailDto;
+
+        public DetailDeviceResponse(DeviceDetailDto deviceDetailDto) {
+            this.deviceDetailDto = deviceDetailDto;
         }
     }
 }

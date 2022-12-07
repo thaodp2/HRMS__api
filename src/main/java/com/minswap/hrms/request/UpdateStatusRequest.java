@@ -15,7 +15,7 @@ import javax.validation.constraints.Pattern;
 public class UpdateStatusRequest extends BasicRequest{
 
     @NotNull(message = "409")
-    @Pattern(regexp = "(?:Approved|Rejected|Pending)", message = "410")
+    @Pattern(regexp = "(?:Approved|Rejected|Pending|Canceled)", message = "410")
     private String status;
     @JsonCreator
     public UpdateStatusRequest(String status) {

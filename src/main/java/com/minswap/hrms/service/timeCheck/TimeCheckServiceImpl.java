@@ -19,9 +19,12 @@ import com.minswap.hrms.response.TimeCheckResponse;
 import com.minswap.hrms.response.dto.DailyTimeCheckDto;
 import com.minswap.hrms.response.dto.TimeCheckDto;
 import com.minswap.hrms.response.dto.TimeCheckEachSubordinateDto;
+import com.minswap.hrms.util.CommonUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -152,16 +155,16 @@ public class TimeCheckServiceImpl implements TimeCheckService{
 
     @Override
     public ResponseEntity<BaseResponse<TimeCheckResponse.TimeCheckEachSubordinateResponse, Pageable>> getListTimeCheck(
-            String search, Long managerId, String startDate, String endDate, Integer page, Integer limit) throws Exception {
+            String search, Long managerId, String startDate, String endDate, Integer page, Integer limit, String sort, String dir) throws Exception {
 
         ResponseEntity<BaseResponse<TimeCheckResponse.TimeCheckEachSubordinateResponse, Pageable>> responseEntity = null;
         try {
-            Pagination pagination = new Pagination(page - 1, limit);
             Date startDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(startDate);
             Date endDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(endDate);
 
+            Sort.Direction dirSort = CommonUtil.getSortDirection(sort, dir);
             List<TimeCheckEachSubordinateDto> timeCheckSubordinateList = new ArrayList<>();
-            Page<Long> listPersonIdPage = personRepository.getListPersonIdByManagerId(managerId, search, pagination);
+            Page<Long> listPersonIdPage = personRepository.getListPersonIdByManagerId(managerId, search, PageRequest.of(page - 1, limit, dirSort == null ? Sort.unsorted() : Sort.by(dirSort, sort)));
             List<Long> listPersonId = listPersonIdPage.getContent();
 
             List<Date> listDate = getDatesInRange(startDateFormat, endDateFormat);
@@ -172,7 +175,7 @@ public class TimeCheckServiceImpl implements TimeCheckService{
                 }
                 TimeCheckEachSubordinateDto eachSubordinateDto = new TimeCheckEachSubordinateDto();
                 eachSubordinateDto.setId(personId);
-                eachSubordinateDto.setPersonName(personFromDB.get().getFullName());
+                eachSubordinateDto.setFullName(personFromDB.get().getFullName());
                 eachSubordinateDto.setRollNumber(personFromDB.get().getRollNumber());
                 int dateCount = 2;
                 for (Date item : listDate){
@@ -206,8 +209,8 @@ public class TimeCheckServiceImpl implements TimeCheckService{
 
                 timeCheckSubordinateList.add(eachSubordinateDto);
             }
-            pagination.setTotalRecords(timeCheckSubordinateList.size());
-            pagination.setPage(page);
+            Pagination pagination = new Pagination(page, limit);
+            pagination.setTotalRecords(listPersonIdPage);
             responseEntity = BaseResponse.ofSucceededOffset(TimeCheckResponse.TimeCheckEachSubordinateResponse.of(timeCheckSubordinateList), pagination);
         }catch(Exception ex){
             throw new Exception(ex.getMessage());
@@ -218,16 +221,18 @@ public class TimeCheckServiceImpl implements TimeCheckService{
 
     @Override
     public ResponseEntity<BaseResponse<TimeCheckResponse.TimeCheckEachSubordinateResponse, Pageable>> getListTimeCheckByHR(
-            String search, String startDate, String endDate, Integer page, Integer limit) throws Exception {
+            String search, String startDate, String endDate, Integer page, Integer limit, String sort, String dir) throws Exception {
 
         ResponseEntity<BaseResponse<TimeCheckResponse.TimeCheckEachSubordinateResponse, Pageable>> responseEntity = null;
         try {
-            Pagination pagination = new Pagination(page - 1, limit);
+
             Date startDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(startDate);
             Date endDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(endDate);
 
+            Sort.Direction dirSort = CommonUtil.getSortDirection(sort, dir);
+
             List<TimeCheckEachSubordinateDto> timeCheckSubordinateList = new ArrayList<>();
-            Page<Long> listPersonIdPage = personRepository.getListPersonIdByFullName(search, pagination);
+            Page<Long> listPersonIdPage = personRepository.getListPersonIdByFullName(search, PageRequest.of(page - 1, limit, dirSort == null ? Sort.unsorted() : Sort.by(dirSort, sort)));
             List<Long> listPersonId = listPersonIdPage.getContent();
 
             List<Date> listDate = getDatesInRange(startDateFormat, endDateFormat);
@@ -238,7 +243,7 @@ public class TimeCheckServiceImpl implements TimeCheckService{
                 }
                 TimeCheckEachSubordinateDto eachSubordinateDto = new TimeCheckEachSubordinateDto();
                 eachSubordinateDto.setId(personId);
-                eachSubordinateDto.setPersonName(personFromDB.get().getFullName());
+                eachSubordinateDto.setFullName(personFromDB.get().getFullName());
                 eachSubordinateDto.setRollNumber(personFromDB.get().getRollNumber());
                 int dateCount = 2;
                 for (Date item : listDate){
@@ -272,8 +277,8 @@ public class TimeCheckServiceImpl implements TimeCheckService{
 
                 timeCheckSubordinateList.add(eachSubordinateDto);
             }
-            pagination.setTotalRecords(timeCheckSubordinateList.size());
-            pagination.setPage(page);
+            Pagination pagination = new Pagination(page, limit);
+            pagination.setTotalRecords(listPersonIdPage);
             responseEntity = BaseResponse.ofSucceededOffset(TimeCheckResponse.TimeCheckEachSubordinateResponse.of(timeCheckSubordinateList), pagination);
         }catch(Exception ex){
             throw new Exception(ex.getMessage());
@@ -298,7 +303,7 @@ public class TimeCheckServiceImpl implements TimeCheckService{
             }
             TimeCheckEachSubordinateDto eachSubordinateDto = new TimeCheckEachSubordinateDto();
             eachSubordinateDto.setId(personId);
-            eachSubordinateDto.setPersonName(personFromDB.get().getFullName());
+            eachSubordinateDto.setFullName(personFromDB.get().getFullName());
             eachSubordinateDto.setRollNumber(personFromDB.get().getRollNumber());
             int dateCount = 2;
             for (Date item : listDate){

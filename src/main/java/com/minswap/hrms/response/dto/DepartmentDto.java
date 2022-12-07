@@ -1,5 +1,6 @@
 package com.minswap.hrms.response.dto;
 
+import com.minswap.hrms.entities.Position;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -20,5 +21,7 @@ public class DepartmentDto {
 
     private int totalEmployee;
 
-    private List<String> listPosition;
+    private List<Position> listPosition;
+
+    private int isAllowDelete;
 }

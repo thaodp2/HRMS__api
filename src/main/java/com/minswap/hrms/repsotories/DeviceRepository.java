@@ -1,6 +1,7 @@
 package com.minswap.hrms.repsotories;
 
 import com.minswap.hrms.entities.Device;
+import com.minswap.hrms.response.dto.DeviceDetailDto;
 import com.minswap.hrms.response.dto.DeviceDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,6 +18,8 @@ public interface DeviceRepository extends JpaRepository<Device, Long> {
 
     List<Device> findByDeviceTypeIdAndStatus(Long deviceTypeId, Integer status);
 
+    List<Device> findByDeviceTypeId(Long deviceTypeId);
+
     Optional<Device> findByDeviceCode(String deviceCode);
 
     Optional<Device> findByDeviceId(Long deviceId);
@@ -27,7 +30,7 @@ public interface DeviceRepository extends JpaRepository<Device, Long> {
             " d.deviceCode," +
             " d.description," +
             " d.status," +
-            " dt.deviceTypeName) " +
+            " dt.deviceTypeName, 0) " +
             " from Device d " +
             " join DeviceType dt on d.deviceTypeId = dt.deviceTypeId " +
             " WHERE 1 = 1 " +
@@ -36,15 +39,14 @@ public interface DeviceRepository extends JpaRepository<Device, Long> {
             " and (:search is null or d.deviceName like %:search% or d.deviceCode like %:search%  )")
     Page<DeviceDto> searchDeviceBy(String search, Integer status, Long deviceTypeId, Pageable pageable);
 
-    @Query("SELECT new com.minswap.hrms.response.dto.DeviceDto(" +
+    @Query("SELECT new com.minswap.hrms.response.dto.DeviceDetailDto(" +
             " d.deviceId," +
             " d.deviceName," +
             " d.deviceCode," +
             " d.description," +
             " d.status," +
-            " dt.deviceTypeName) " +
+            " d.deviceTypeId, 0) " +
             " from Device d " +
-            " join DeviceType dt on d.deviceTypeId = dt.deviceTypeId " +
             " WHERE d.deviceId = :deviceId ")
-    DeviceDto getDetailDeviceById(Long deviceId);
+    DeviceDetailDto getDetailDeviceById(Long deviceId);
 }

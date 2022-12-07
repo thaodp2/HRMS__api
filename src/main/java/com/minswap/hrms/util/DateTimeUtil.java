@@ -1,6 +1,7 @@
 package com.minswap.hrms.util;
 
-import static com.minswap.hrms.constants.CommonConstant.YYYY_MM_DD_HH_MM_SS;
+import com.minswap.hrms.constants.CommonConstant;
+import lombok.extern.slf4j.Slf4j;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -11,8 +12,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
-import com.minswap.hrms.constants.CommonConstant;
-import lombok.extern.slf4j.Slf4j;
+import static com.minswap.hrms.constants.CommonConstant.YYYY_MM_DD_HH_MM_SS;
 
 @Slf4j
 public class DateTimeUtil {
@@ -48,7 +48,7 @@ public class DateTimeUtil {
 
     public static Instant convertStringToInstant(String dateTime, String formatter) {
         try {
-        	LocalDateTime localDateTime = convertStringToLocalDateTime(dateTime, formatter);
+            LocalDateTime localDateTime = convertStringToLocalDateTime(dateTime, formatter);
             return localDateTime == null ? null : localDateTime.atZone(ZoneId.systemDefault()).toInstant();
         } catch (Exception e) {
             log.error("Getting error when parse String: {} to Instant", dateTime);
@@ -58,7 +58,7 @@ public class DateTimeUtil {
 
     public static String convertInstantToString(Instant instant, String formatter) {
         try {
-        	LocalDateTime localDateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
+            LocalDateTime localDateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
             return localDateTime.format(DateTimeFormatter.ofPattern(formatter));
         } catch (Exception e) {
             log.error("Getting error when convert Instant: {} to String", instant);

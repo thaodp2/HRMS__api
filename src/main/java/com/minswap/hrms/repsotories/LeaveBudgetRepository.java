@@ -16,11 +16,14 @@ import org.springframework.stereotype.Repository;
 import javax.transaction.Transactional;
 import java.time.Year;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface LeaveBudgetRepository extends JpaRepository<LeaveBudget, Long> {
 
-    LeaveBudget findByPersonIdAndYearAndRequestTypeId(Long personId, Year year, Long requestTypeId);
+    Optional<LeaveBudget> findByPersonIdAndYearAndRequestTypeId(Long personId, Year year, Long requestTypeId);
+
+    Optional<LeaveBudget> findByPersonIdAndYear(Long personId, Year year);
 
     @Query("SELECT new com.minswap.hrms.response.dto.LeaveBudgetDto(lb.leaveBudget, lb.numberOfDayOff, lb.remainDayOff) " +
             "from LeaveBudget lb " +
@@ -38,6 +41,20 @@ public interface LeaveBudgetRepository extends JpaRepository<LeaveBudget, Long> 
                               @Param("remainDayOff") double remainDayOff,
                               @Param("year") Year year,
                               @Param("requestTypeId") Long requestTypeId);
+
+    @Query("SELECT new com.minswap.hrms.response.dto.BenefitBudgetDto(lb.leaveBudgetId as id, p.rollNumber as rollNumber, p.fullName as fullName, " +
+            "lb.leaveBudget as budget, lb.numberOfDayOff as used, lb.remainDayOff as remainOfYear, rt.requestTypeName as requestTypeName) " +
+            "from LeaveBudget lb LEFT join Person p on lb.personId = p.personId " +
+            "left join RequestType rt on lb.requestTypeId = rt.requestTypeId " +
+            "where lb.year = :year and (:search IS NULL OR p.rollNumber like %:search% OR p.fullName like %:search%) " +
+            "and (:managerId IS NULL OR p.managerId = :managerId) " +
+            "and (:requestTypeId IS NULL OR lb.requestTypeId = :requestTypeId) " +
+            "and (:personId IS NULL OR p.personId = :personId)")
+    List<BenefitBudgetDto> getBenefitBudgetListWithoutPaging(@Param("year") Year year,
+                                                @Param("search") String search,
+                                                @Param("managerId") Long managerId,
+                                                @Param("requestTypeId") Long requestTypeId,
+                                                @Param("personId") Long personId, Sort sort);
 
     @Query("SELECT new com.minswap.hrms.response.dto.BenefitBudgetDto(lb.leaveBudgetId as id, p.rollNumber as rollNumber, p.fullName as fullName, " +
             "lb.leaveBudget as budget, lb.numberOfDayOff as used, lb.remainDayOff as remainOfYear, rt.requestTypeName as requestTypeName) " +

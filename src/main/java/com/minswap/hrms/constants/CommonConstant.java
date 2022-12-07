@@ -53,6 +53,7 @@ public class CommonConstant {
     };
 
     public static String[] LIST_HEADER_BENEFIT_BUDGET = {
+            "Roll Number",
             "Employee Name",
             "Budget",
             "Used",
@@ -70,6 +71,23 @@ public class CommonConstant {
             "Fri",
             "Sat",
             "Sun"
+    };
+
+    public static String[] TEMPLATE_HEADER_TO_IMPORT = {
+            "Full Name",
+            "Date Of Birth",
+            "Manager Id",
+            "Department Id",
+            "Position Id",
+            "Rank Id",
+            "On Board Date",
+            "Citizen Identification",
+            "Phone Number",
+            "Address",
+            "Gender",
+            "Salary Basic",
+            "Salary Bonus",
+            "Is Manager"
     };
 
     public static Long[] LIST_REQUEST_TYPE_ID_IN_LEAVE_BUDGET = {

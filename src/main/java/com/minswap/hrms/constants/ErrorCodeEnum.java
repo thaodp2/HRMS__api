@@ -1,5 +1,7 @@
 package com.minswap.hrms.constants;
 
+import org.springframework.http.HttpStatus;
+
 /** The Enum ErrorCodeEnum. */
 public enum ErrorCodeEnum {
 
@@ -65,10 +67,11 @@ public enum ErrorCodeEnum {
   SIGNATURE_NOT_EXIST(205),
   CREATE_FAIL(679),
   CITIZEN_INDENTIFICATION_EXSIT(206),
-
-  FINGERPRINT_INVALID(207)
-
-  ;
+  INVALID_DATA(680),
+  INVALID_FILE(681),
+  UPLOAD_EXCEL(682),
+  FINGERPRINT_INVALID(207),
+  UNAUTHORIZE(HttpStatus.UNAUTHORIZED.value());
 
   /** The value. */
   private int value;

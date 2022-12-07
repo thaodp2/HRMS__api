@@ -27,8 +27,6 @@ public class OfficeTimeRequest extends BasicRequest{
 
     private Date createDate;
 
-    private Long personId;
-
     @JsonCreator
     public OfficeTimeRequest(String timeStart, String timeFinish){
         this.timeStart = timeStart;

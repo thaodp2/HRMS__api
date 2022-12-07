@@ -29,7 +29,7 @@ public class ExportTimeCheck extends ExcelExporter{
                         cell.setCellValue(timeCheckList.get(j).getRollNumber());
                         break;
                     case 1:
-                        cell.setCellValue(timeCheckList.get(j).getPersonName());
+                        cell.setCellValue(timeCheckList.get(j).getFullName());
                         break;
                     case 2:
                         cell.setCellValue((timeCheckList.get(j).getMon() == null ? "" : timeCheckList.get(j).getMon().getTimeIn()) + " - " + (timeCheckList.get(j).getMon() == null ? "" : timeCheckList.get(j).getMon().getTimeOut()));
@@ -53,7 +53,7 @@ public class ExportTimeCheck extends ExcelExporter{
                         cell.setCellValue((timeCheckList.get(j).getSun() == null ? "" : timeCheckList.get(j).getSun().getTimeIn()) + " - " + (timeCheckList.get(j).getSun() == null ? "" : timeCheckList.get(j).getSun().getTimeOut()));
                         break;
                 }
-                getSheets().get(0).autoSizeColumn(i);
+//                getSheets().get(0).autoSizeColumn(i);
             }
         }
     }
