@@ -172,4 +172,10 @@ public interface PersonRepository extends JpaRepository<Person, Long>{
                                     @Param("rollNumber") String rollNumber);
     @Query("SELECT count(p.citizenIdentification) FROM Person p WHERE p.citizenIdentification = :citizenIdentification")
     Integer getUserByCitizenIdentification(@Param("citizenIdentification") String citizenIdentification);
+
+    @Query("select r.roleId from Person p " +
+            "left join PersonRole pr on p.personId = pr.personId " +
+            "left join Role r on r.roleId = pr.roleId " +
+            "where p.personId=:personId")
+    List<Long> getListRoleIdByPersonId(@Param("personId") Long personId);
 }

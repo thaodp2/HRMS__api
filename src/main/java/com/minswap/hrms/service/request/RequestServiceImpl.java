@@ -100,6 +100,8 @@ public class RequestServiceImpl implements RequestService {
     private static final String DEVICE_TYPE = "device";
     private static final String FORGOT_CHECK_IN_CHECK_OUT_TYPE = "forgotCheckInOut";
     private static final String OTHER_TYPE = "other";
+    private static final String MATERNITY_TYPE = "maternity";
+    private static final int MATERNITY_TYPE_ID = 5;
     private static final Integer BORROW_REQUEST_TYPE_ID = 11;
     private static final Integer MAX_TIME_TO_OT_PER_DAY = 4;
     private static final Integer FORGOT_CHECK_IN_OUT = 4;
@@ -122,6 +124,10 @@ public class RequestServiceImpl implements RequestService {
     private static final String UPDATE_REQUEST_STATUS_NOTIFICATION_TYPE = "UPDATE REQUEST STATUS";
     private static final String URL_REQUEST_TO_MANAGER = "subordinate";
     private static final String URL_REQUEST_TO_EMPLOYEE = "my-request";
+    private static final int ROLE_HR = 1;
+    private static final int ROLE_MANAGER = 2;
+    private static final int ROLE_EMPLOYEE = 3;
+    private static final int ROLE_IT_SUPPORT = 5;
 
     public List<RequestDto> getQueryForRequestList(String type, Long managerId, Long personId, Boolean isLimit, Integer limit, Integer page, String search, String createDateFrom, String createDateTo, Long requestTypeId, String status, String sort, String dir) throws ParseException {
         HashMap<String, Object> params = new HashMap<>();
@@ -275,7 +281,35 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
-    public ResponseEntity<BaseResponse<RequestResponse, Void>> getEmployeeRequestDetail(Long id) {
+    public ResponseEntity<BaseResponse<RequestResponse, Void>> getEmployeeRequestDetail(Long id, Long currentUserId) {
+        List<Long> listRoleOfPerson = personRepository.getListRoleIdByPersonId(currentUserId);
+        Long personIdByRequestId = requestRepository.getPersonIdByRequestId(id);
+        Long personId = null;
+        if (personIdByRequestId == currentUserId) {
+            personId = currentUserId;
+        }
+        else {
+            if (listRoleOfPerson.contains(Long.valueOf(ROLE_HR))) {
+                personId = personIdByRequestId;
+            }
+            else {
+                // current user là manager
+                if (listRoleOfPerson.contains(Long.valueOf(ROLE_MANAGER))) {
+                    // Kiểm tra xem thằng current user có phải manager của thằng gửi request hay không
+                    if (personRepository.getManagerIdByPersonId(personIdByRequestId) != currentUserId) {
+                        throw new BaseException(ErrorCode.newErrorCode(401,
+                                "You can't view request from employee you do not manage",
+                                httpStatus.UNAUTHORIZED));
+                    }
+                    personId = personIdByRequestId;
+                }
+                else {
+                    throw new BaseException(ErrorCode.newErrorCode(401,
+                            "You can't view requests from other employees",
+                            httpStatus.UNAUTHORIZED));
+                }
+            }
+        }
         try {
             Date currentTime = getCurrentTime();
             RequestDto requestDto = requestRepository.getEmployeeRequestDetail(id);
@@ -301,7 +335,7 @@ public class RequestServiceImpl implements RequestService {
                 calendar.setTime(dateDto.getStartTime());
                 Year year = Year.of(calendar.get(Calendar.YEAR));
                 int month = calendar.get(Calendar.MONTH) + 1;
-                Long personId = requestRepository.getPersonIdByRequestId(id);
+//                Long personId = requestRepository.getPersonIdByRequestId(id);
                 if (LEAVE_REQUEST_TYPE.contains(requestType)) {
                     LeaveBudgetDto leaveBudgetDto = leaveBudgetRepository.getLeaveBudget(personId, year, Long.valueOf(requestType));
                     requestDto.setTimeRemaining(leaveBudgetDto.getRemainDayOff());
@@ -315,7 +349,11 @@ public class RequestServiceImpl implements RequestService {
                 } else if (requestType == FORGOT_CHECK_IN_OUT) {
                     requestDto.setRequestTypeName(FORGOT_CHECK_IN_CHECK_OUT_TYPE);
                     requestDto.setIsAllowRollback(NOT_ALLOW_ROLLBACK);
-                } else {
+                }
+                else if (requestType.intValue() == MATERNITY_TYPE_ID) {
+                    requestDto.setRequestTypeName(MATERNITY_TYPE);
+                }
+                else {
                     requestDto.setRequestTypeName(OTHER_TYPE);
                 }
 
@@ -327,7 +365,7 @@ public class RequestServiceImpl implements RequestService {
                 }
             }
 
-            Long personId = requestRepository.getPersonIdByRequestId(id);
+//            Long personId = requestRepository.getPersonIdByRequestId(id);
             requestDto.setRollNumber(personRepository.getRollNumberByPersonId(personId));
             List<String> listImage = evidenceRepository.getListImageByRequest(id);
             requestDto.setListEvidence(listImage);
@@ -348,9 +386,8 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
-    public ResponseEntity<BaseResponse<Void, Void>> createRequest(CreateRequest createRequest) throws ParseException {
+    public ResponseEntity<BaseResponse<Void, Void>> createRequest(CreateRequest createRequest, Long personId) throws ParseException {
         Long requestTypeId = createRequest.getRequestTypeId();
-        Long personId = Long.valueOf(2);
         Long deviceTypeId = createRequest.getDeviceTypeId();
         Integer isAssigned = null;
         Date createDate = getCurrentTime();
@@ -406,14 +443,19 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
-    public ResponseEntity<BaseResponse<Void, Void>> editRequest(EditRequest editRequest, Long id) throws ParseException {
+    public ResponseEntity<BaseResponse<Void, Void>> editRequest(EditRequest editRequest, Long id, Long personId) throws ParseException {
         ResponseEntity<BaseResponse<Void, Void>> responseEntity = null;
-        Long personId = Long.valueOf(2);
-        Integer requestTypeId = requestTypeRepository.getRequestTypeByRequestId(id);
         if (!isRequestIdValid(id)) {
             throw new BaseException(ErrorCode.RESULT_NOT_FOUND);
         }
-        else if (!requestRepository.getStatusOfRequestById(id).equalsIgnoreCase(PENDING_STATUS)) {
+        Integer requestTypeId = requestTypeRepository.getRequestTypeByRequestId(id);
+        Long personIdByRequestId = requestRepository.getPersonIdByRequestId(id);
+        if (personId != personIdByRequestId) {
+            throw new BaseException(ErrorCode.newErrorCode(401,
+                    "You can't edit requests from other employees",
+                    httpStatus.UNAUTHORIZED));
+        }
+        if (!requestRepository.getStatusOfRequestById(id).equalsIgnoreCase(PENDING_STATUS)) {
             throw new BaseException(ErrorCode.newErrorCode(208,
                     "You can't edit requests that have been approved or rejected",
                     httpStatus.NOT_ACCEPTABLE));
@@ -449,7 +491,22 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
-    public ResponseEntity<BaseResponse<Void, Void>> updateRequestStatus(String status, Long id) throws ParseException {
+    public ResponseEntity<BaseResponse<Void, Void>> updateRequestStatus(String status, Long id, Long currentUserId) throws ParseException {
+        List<Long> listRoleOfPerson = personRepository.getListRoleIdByPersonId(currentUserId);
+        Long personIdByRequestId = requestRepository.getPersonIdByRequestId(id);
+        if (listRoleOfPerson.contains(Long.valueOf(ROLE_MANAGER))) {
+            // Kiểm tra xem thằng current user có phải manager của thằng gửi request hay không
+            if (personRepository.getManagerIdByPersonId(personIdByRequestId) != currentUserId) {
+                throw new BaseException(ErrorCode.newErrorCode(401,
+                        "You do not have the right to update the request status of employees other than your subordinates",
+                        httpStatus.UNAUTHORIZED));
+            }
+        }
+        else {
+            throw new BaseException(ErrorCode.newErrorCode(401,
+                    "You do not have the authority to update your request status or others",
+                    httpStatus.UNAUTHORIZED));
+        }
         ResponseEntity<BaseResponse<Void, Void>> responseEntity = null;
         // Check id valid or not
         boolean isReturnNumOfDayOff = false;
@@ -597,12 +654,19 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
-    public ResponseEntity<BaseResponse<Void, Void>> cancelRequest(Long id) {
+    public ResponseEntity<BaseResponse<Void, Void>> cancelRequest(Long id, Long personId) {
         if (!isRequestIdValid(id)) {
             throw new BaseException(ErrorCode.RESULT_NOT_FOUND);
-        } else if (!requestRepository.getStatusOfRequestById(id).equalsIgnoreCase(PENDING_STATUS)) {
+        }
+        Long personIdByRequestId = requestRepository.getPersonIdByRequestId(id);
+        if (!requestRepository.getStatusOfRequestById(id).equalsIgnoreCase(PENDING_STATUS)) {
             throw new BaseException(ErrorCode.newErrorCode(208,
                     "You can't cancel an request that has already been processed",
+                    httpStatus.NOT_ACCEPTABLE));
+        }
+        else if (personIdByRequestId != personId) {
+            throw new BaseException(ErrorCode.newErrorCode(208,
+                    "You can't cancel someone else's request",
                     httpStatus.NOT_ACCEPTABLE));
         }
         Integer isUpdatedSuccess = requestRepository.updateStatusRequest(CANCELED_STATUS,
@@ -620,34 +684,6 @@ public class RequestServiceImpl implements RequestService {
             return false;
         } else {
             return true;
-        }
-    }
-
-    public void updateNumOfDayOff(Long id, boolean isReturnNumOfDayOff, Date startTime, Date endTime) {
-        // Get request type id
-        Integer requestTypeId = requestTypeRepository.getRequestTypeByRequestId(id);
-        // Get person id
-        Long personId = requestRepository.getPersonIdByRequestId(id);
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(startTime);
-        Year year = Year.of(calendar.get(Calendar.YEAR));
-        int month = calendar.get(Calendar.MONTH) + 1;
-        // calculate the number of days off
-        double numOfDayOff = calculateNumOfDayOff(startTime, endTime);
-        if (LEAVE_REQUEST_TYPE.contains(requestTypeId)) {
-            updateLeaveBenefitBudget(Long.valueOf(requestTypeId),
-                    personId,
-                    year,
-                    numOfDayOff,
-                    isReturnNumOfDayOff
-            );
-        } else if (requestTypeId == OT_TYPE_ID) {
-            updateOTBudget(personId,
-                    month,
-                    year,
-                    startTime,
-                    endTime,
-                    isReturnNumOfDayOff);
         }
     }
 
@@ -1157,9 +1193,11 @@ public class RequestServiceImpl implements RequestService {
             // Validate 4: Không tạo sang năm sau
             if (calendarCreate.get(Calendar.YEAR) != calendarStart.get(Calendar.YEAR)
                     || calendarCreate.get(Calendar.YEAR) != calendarEnd.get(Calendar.YEAR)) {
-                throw new BaseException(ErrorCode.newErrorCode(208,
-                        "You can only make requests that are valid this year",
-                        httpStatus.NOT_ACCEPTABLE));
+                if (requestTypeId.intValue() != MATERNITY_TYPE_ID) {
+                    throw new BaseException(ErrorCode.newErrorCode(208,
+                            "You can only make requests that are valid this year",
+                            httpStatus.NOT_ACCEPTABLE));
+                }
             }
             if (requestTypeId.intValue() != FORGOT_CHECK_IN_OUT.intValue()
                     && requestTypeId.intValue() != OT_TYPE_ID.intValue()) {
