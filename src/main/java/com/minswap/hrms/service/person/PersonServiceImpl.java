@@ -2,6 +2,8 @@ package com.minswap.hrms.service.person;
 
 import com.minswap.hrms.constants.CommonConstant;
 import com.minswap.hrms.constants.ErrorCode;
+import com.minswap.hrms.entities.LeaveBudget;
+import com.minswap.hrms.entities.OTBudget;
 import com.minswap.hrms.entities.Person;
 import com.minswap.hrms.entities.PersonRole;
 import com.minswap.hrms.entities.Role;
@@ -9,6 +11,8 @@ import com.minswap.hrms.exception.model.BaseException;
 import com.minswap.hrms.exception.model.Pagination;
 import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.model.Meta;
+import com.minswap.hrms.repsotories.LeaveBudgetRepository;
+import com.minswap.hrms.repsotories.OTBudgetRepository;
 import com.minswap.hrms.repsotories.PersonRepository;
 import com.minswap.hrms.repsotories.PersonRoleRepository;
 import com.minswap.hrms.request.*;
@@ -48,6 +52,7 @@ import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.text.Normalizer;
 import java.text.SimpleDateFormat;
+import java.time.Year;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -76,6 +81,12 @@ public class PersonServiceImpl implements PersonService {
 
     @Autowired
     RankService rankService;
+    
+    @Autowired
+    LeaveBudgetRepository leaveBudgetRepository;
+    
+    @Autowired
+    OTBudgetRepository otBudgetRepository;
 
     private final Long MANAGER_ROLE = 2L;
     private final Long EMPLOYEE_ROLE = 3L;
@@ -282,7 +293,23 @@ public class PersonServiceImpl implements PersonService {
         } catch (Exception e) {
             throw new BaseException(ErrorCode.newErrorCode(500, e.getMessage()));
         }
-
+        //update leave budget
+        if(person.getRankId() != 1) {
+        	List<LeaveBudget> leaveBudgetList = new ArrayList<>();
+        	 leaveBudgetList.add(new LeaveBudget(person.getPersonId(), person.getAnnualLeaveBudget()/12, 0, 0, Year.now(), CommonConstant.LIST_REQUEST_TYPE_ID_IN_LEAVE_BUDGET[0]));
+             leaveBudgetList.add(new LeaveBudget(person.getPersonId(), 180, 0, 0, Year.now(), CommonConstant.LIST_REQUEST_TYPE_ID_IN_LEAVE_BUDGET[1]));
+             leaveBudgetList.add(new LeaveBudget(person.getPersonId(), 20, 0, 0, Year.now(), CommonConstant.LIST_REQUEST_TYPE_ID_IN_LEAVE_BUDGET[2]));
+             leaveBudgetList.add(new LeaveBudget(person.getPersonId(), 70, 0, 0, Year.now(), CommonConstant.LIST_REQUEST_TYPE_ID_IN_LEAVE_BUDGET[3]));
+             leaveBudgetList.add(new LeaveBudget(person.getPersonId(), 3, 0, 0, Year.now(), CommonConstant.LIST_REQUEST_TYPE_ID_IN_LEAVE_BUDGET[4]));
+             try {
+                 leaveBudgetRepository.saveAll(leaveBudgetList);
+             }catch (Exception e) {
+            	 throw new BaseException(ErrorCode.newErrorCode(500, e.getMessage()));
+			}
+             List<OTBudget> otBudgetList = new ArrayList<>();
+             otBudgetList.add(new OTBudget(person.getPersonId(), 40, 0, 40, 200, java.time.LocalDateTime.now().getMonthValue(), Year.now()));
+             otBudgetRepository.saveAll(otBudgetList);
+        }
         ResponseEntity<BaseResponse<Void, Void>> responseEntity = BaseResponse.ofSucceeded(null);
         return responseEntity;
     }
