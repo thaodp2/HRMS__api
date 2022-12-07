@@ -10,7 +10,7 @@ public class TimeCheckEachSubordinateDto {
 
     private String rollNumber;
 
-    private String personName;
+    private String fullName;
 
     private DailyTimeCheckDto mon;
 
