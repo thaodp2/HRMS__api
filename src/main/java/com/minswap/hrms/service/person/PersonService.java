@@ -57,6 +57,8 @@ public interface PersonService {
 
     boolean checkCCCDValid(String cccd);
 
+    boolean checkSalaryValid(Double salary);
+
     ResponseEntity<BaseResponse<HttpStatus, Void>> importExcel(MultipartFile file);
 
     Person getPersonInforByEmail(String email);

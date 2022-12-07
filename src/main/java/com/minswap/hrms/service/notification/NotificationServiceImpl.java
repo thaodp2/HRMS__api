@@ -60,6 +60,19 @@ public class NotificationServiceImpl implements NotificationService {
         return response;
     }
 
+    @Override
+    public ResponseEntity<BaseResponse<NotificationResponse, Pagination>> getTotalUnreadNotifs(Long userID) {
+        NotificationDto notificationDto = new NotificationDto();
+        Long total = getTotal(userID);
+        notificationDto.setTotalNotificationNotRead(total);
+        List<NotificationDto> list = new ArrayList<>();
+        list.add(notificationDto);
+        NotificationResponse response = new NotificationResponse(list);
+        ResponseEntity<BaseResponse<NotificationResponse, Pagination>> responseEntity
+                = BaseResponse.ofSucceededOffset(response, null);
+        return responseEntity;
+    }
+
     public Long getTotal(Long userID) {
         List<Notification> notifs = notificationRepository.findByUserToAndIsRead(userID,0);
         if (notifs != null && !notifs.isEmpty()) {
