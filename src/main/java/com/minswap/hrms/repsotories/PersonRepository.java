@@ -69,8 +69,8 @@ public interface PersonRepository extends JpaRepository<Person, Long>{
             "    LEFT JOIN Position p2 ON " +
             "    p.positionId = p2.positionId  " +
             "     where  1 = 1  "+
-            " and ( :fullName IS NULL OR p.fullName LIKE  %:fullName%)" +
-            " and (:rollNumber IS NULL OR p.rollNumber LIKE %:rollNumber%)" +
+            " and ((:fullName IS NULL OR p.fullName LIKE  %:fullName%)" +
+            " or (:rollNumber IS NULL OR p.rollNumber LIKE %:rollNumber%))" +
             " and (:email IS NULL OR p.email LIKE %:email%) " +
             " and (:departmentId IS NULL OR p.departmentId = :departmentId) " +
             " and (:positionId IS NULL OR p.positionId = :positionId)"+
