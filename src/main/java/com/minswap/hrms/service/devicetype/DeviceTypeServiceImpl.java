@@ -89,7 +89,7 @@ public class DeviceTypeServiceImpl implements DeviceTypeService {
 
     public boolean checkItemEmpty(List<String> deviceTypeName) {
         for (String item : deviceTypeName) {
-            if (item.trim().isEmpty()) {
+            if (item == null || item.trim().isEmpty()) {
                 return true;
             }
         }

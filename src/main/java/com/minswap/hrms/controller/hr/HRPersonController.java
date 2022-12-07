@@ -92,7 +92,7 @@ public class HRPersonController {
     }
 
     @GetMapping("/employee/export")
-    public ResponseEntity<BaseResponse<Void, Void>> exportToExcel(
+    public ResponseEntity<BaseResponse<HttpStatus, Void>> exportToExcel(
             HttpServletResponse response,
             @RequestParam(name = "search", required = false) String fullName,
             @RequestParam(name = "email", required = false) String email,
@@ -100,14 +100,18 @@ public class HRPersonController {
             @RequestParam(name = "rollNumber", required = false) String rollNumber,
             @RequestParam(name = "positionId", required = false) Long positionId
     ) throws IOException, ParseException {
+        ResponseEntity<BaseResponse<HttpStatus, Void>> responseEntity = null;
         List<EmployeeListDto> employeeListDtos = personService.exportEmployee(fullName, email, departmentId, rollNumber, positionId);
         if (!employeeListDtos.isEmpty()) {
             String fileName = "employee";
             ExportEmployee excelExporter = new ExportEmployee(employeeListDtos);
             excelExporter.init(response, fileName);
             excelExporter.exportEmployee(response);
+            responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.OK, null);
+        }else {
+            responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.OK, null, "Don't have data to download!");
         }
-        return null;
+        return responseEntity;
     }
 
     @GetMapping("/template/export")

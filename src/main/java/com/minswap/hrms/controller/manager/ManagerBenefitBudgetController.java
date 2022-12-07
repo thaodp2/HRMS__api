@@ -42,8 +42,7 @@ public class ManagerBenefitBudgetController {
             @RequestParam(required = false) String sort,
             @RequestParam(required = false) String dir,
             @CurrentUser UserPrincipal userPrincipal
-    ) throws ParseException {
-//        Long managerId = Long.valueOf(6);
+    ){
         Long managerId = personService.getPersonInforByEmail(userPrincipal.getEmail()).getPersonId();
         return benefitBudgetService.getBenefitBudget(managerId, null, page, limit, requestTypeId, search, month, year, sort, dir);
     }

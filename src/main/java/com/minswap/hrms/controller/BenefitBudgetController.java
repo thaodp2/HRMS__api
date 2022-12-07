@@ -37,8 +37,7 @@ public class BenefitBudgetController {
             @RequestParam(required = false) String sort,
             @RequestParam(required = false) String dir,
             @CurrentUser UserPrincipal userPrincipal
-    ) throws ParseException {
-//        Long personId = Long.valueOf(24);
+    ){
         Long personId = personService.getPersonInforByEmail(userPrincipal.getEmail()).getPersonId();
         return benefitBudgetService.getBenefitBudget(null, personId, null, null, requestTypeId != CommonConstant.REQUEST_TYPE_ID_OF_OT ? null:CommonConstant.REQUEST_TYPE_ID_OF_OT, null, month, year, sort, dir);
     }

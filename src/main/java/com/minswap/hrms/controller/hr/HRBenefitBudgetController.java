@@ -45,7 +45,7 @@ public class HRBenefitBudgetController {
             @RequestParam(required = false) Year year,
             @RequestParam(required = false) String sort,
             @RequestParam(required = false) String dir
-    ) throws ParseException {
+    ){
         return benefitBudgetService.getBenefitBudget(null, null, page, limit, requestTypeId, search, month, year, sort, dir);
     }
 
@@ -57,6 +57,7 @@ public class HRBenefitBudgetController {
             @RequestParam(required = false) @Min(1) @Max(12) Integer month,
             @RequestParam(required = false) Year year
     ) throws IOException{
+        ResponseEntity<BaseResponse<HttpStatus, Void>> responseEntity = null;
         List<BenefitBudgetDto> benefitBudgetDtoList = benefitBudgetService.getBenefitBudgetList(null, null, null, null, requestTypeId, search, month, year, null, null);
         if (benefitBudgetDtoList != null && benefitBudgetDtoList.size() > 0) {
             String monthString = "";
@@ -67,7 +68,10 @@ public class HRBenefitBudgetController {
             ExportBenefitBudget excelExporter = new ExportBenefitBudget(benefitBudgetDtoList);
             excelExporter.init(response, fileName);
             excelExporter.exportBenefitBudget(response);
+            responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.OK, null);
+        }else {
+            responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.OK, null, "Don't have data to download!");
         }
-        return null;
+        return responseEntity;
     }
 }

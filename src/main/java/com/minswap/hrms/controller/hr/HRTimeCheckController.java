@@ -10,6 +10,7 @@ import com.minswap.hrms.util.ExportEmployee;
 import com.minswap.hrms.util.ExportTimeCheck;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,7 +35,7 @@ public class HRTimeCheckController {
     public ResponseEntity<BaseResponse<TimeCheckResponse.TimeCheckEachPersonResponse, Pageable>> getDetailSubordinateTimeCheck(@RequestParam Long personId,
                                                                                                                                @RequestParam @Pattern(regexp = "[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1]) (2[0-3]|[01][0-9]):[0-5][0-9]:[0-5][0-9]", message = "Invalid createDateFrom") String startDate,
                                                                                                                                @RequestParam @Pattern(regexp = "[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1]) (2[0-3]|[01][0-9]):[0-5][0-9]:[0-5][0-9]", message = "Invalid createDateTo") String endDate,
-                                                                                                                               @RequestParam @Min(1)Integer page,
+                                                                                                                               @RequestParam @Min(1) Integer page,
                                                                                                                                @RequestParam @Min(0) Integer limit) throws Exception {
         return timeCheckService.getMyTimeCheck(personId, startDate, endDate, page, limit);
     }
@@ -52,19 +53,23 @@ public class HRTimeCheckController {
     }
 
     @GetMapping("/export")
-    public ResponseEntity<BaseResponse<Void, Void>> exportToExcel(
+    public ResponseEntity<BaseResponse<HttpStatus, Void>> exportToExcel(
             HttpServletResponse response,
             @RequestParam(required = false) String search,
             @RequestParam @Pattern(regexp = "[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1]) (2[0-3]|[01][0-9]):[0-5][0-9]:[0-5][0-9]", message = "Invalid createDateFrom") String startDate,
             @RequestParam @Pattern(regexp = "[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1]) (2[0-3]|[01][0-9]):[0-5][0-9]:[0-5][0-9]", message = "Invalid createDateTo") String endDate) throws Exception {
+        ResponseEntity<BaseResponse<HttpStatus, Void>> responseEntity = null;
         List<TimeCheckEachSubordinateDto> timeCheckList = timeCheckService.listTimeCheckToExport(search, startDate, endDate);
         if (!timeCheckList.isEmpty()) {
             String fileName = "time_check";
             ExportTimeCheck excelExporter = new ExportTimeCheck(timeCheckList);
             excelExporter.init(response, fileName);
             excelExporter.exportTimeCheck(response);
+            responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.OK, null);
+        }else {
+            responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.OK, null, "Don't have data to download!");
         }
-        return null;
+        return responseEntity;
     }
 
 }
