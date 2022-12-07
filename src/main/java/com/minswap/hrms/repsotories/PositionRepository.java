@@ -29,4 +29,10 @@ public interface PositionRepository extends JpaRepository<Position, Long> {
     Integer deletePositionByDepartmentId(@Param("departmentId") Long departmentId);
 
     List<Position> getPositionsByDepartmentId(Long id);
+
+    @Query("select p.positionId from Position p where p.departmentId=:id")
+    List<Long> getPositionIdsByDepartmentId(@Param("id") Long id);
+
+    @Query("select p.positionName from Position p where p.positionId=:id")
+    String getPositionNameByPositionId(@Param("id") Long id);
 }

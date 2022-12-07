@@ -1,6 +1,7 @@
 package com.minswap.hrms.request;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.minswap.hrms.entities.Position;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -19,11 +20,11 @@ public class DepartmentRequest extends BasicRequest{
     private String departmentName;
 
     @NotNull(message = "420")
-    private List<String> listPosition;
+    private List<Position> listPosition;
 
     @JsonCreator
     public DepartmentRequest(String departmentName,
-                         List<String> listPosition) {
+                         List<Position> listPosition) {
         this.departmentName = departmentName;
         this.listPosition = listPosition;
     }
