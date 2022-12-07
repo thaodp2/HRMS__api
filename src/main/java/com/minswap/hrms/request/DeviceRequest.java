@@ -33,4 +33,8 @@ public class DeviceRequest extends BasicRequest {
         this.description = description;
         this.deviceTypeId = deviceTypeId;
     }
+
+    public DeviceRequest() {
+
+    }
 }
