@@ -236,14 +236,14 @@ public class PersonServiceImpl implements PersonService {
             employeeRequest.setActive(employeeDetailDto.getStatus() + "");
         }
         personRepository.updateEmployee(
-                employeeRequest.getFullName(),
+                employeeRequest.getFullName().trim(),
                 employeeRequest.getManagerId(),
                 employeeRequest.getDepartmentId(),
                 employeeRequest.getPositionId(),
                 employeeRequest.getRankId(),
                 employeeRequest.getCitizenIdentification(),
-                employeeRequest.getPhoneNumber(),
-                employeeRequest.getAddress(),
+                employeeRequest.getPhoneNumber().trim(),
+                employeeRequest.getAddress().trim(),
                 employeeRequest.getGender(),
                 rollNumber,
                 employeeRequest.getSalaryBasic(),
@@ -258,15 +258,15 @@ public class PersonServiceImpl implements PersonService {
     @Override
     public ResponseEntity<BaseResponse<Void, Void>> createEmployee(EmployeeRequest employeeRequest) {
         Person person = new Person();
-        person.setFullName(employeeRequest.getFullName());
-        person.setAddress(employeeRequest.getAddress());
+        person.setFullName(employeeRequest.getFullName().trim());
+        person.setAddress(employeeRequest.getAddress().trim());
         Integer personCheckCitizen = personRepository.getUserByCitizenIdentification(employeeRequest.getCitizenIdentification());
         if (personCheckCitizen != null && personCheckCitizen > 0) {
             throw new BaseException(ErrorCode.CITIZEN_INDENTIFICATION_EXSIT);
         } else {
             person.setCitizenIdentification(employeeRequest.getCitizenIdentification());
         }
-        person.setPhoneNumber(employeeRequest.getPhoneNumber());
+        person.setPhoneNumber(employeeRequest.getPhoneNumber().trim());
         person.setRollNumber(convertRollNumber());
         person.setRankId(employeeRequest.getRankId());
         person.setDepartmentId(employeeRequest.getDepartmentId());
