@@ -81,10 +81,10 @@ public class PersonServiceImpl implements PersonService {
 
     @Autowired
     RankService rankService;
-    
+
     @Autowired
     LeaveBudgetRepository leaveBudgetRepository;
-    
+
     @Autowired
     OTBudgetRepository otBudgetRepository;
 
@@ -126,8 +126,8 @@ public class PersonServiceImpl implements PersonService {
     }
 
     @Override
-    public ResponseEntity<BaseResponse<MasterDataResponse, Pageable>> getMasterDataAllManager(String search) {
-        List<Person> personList = personRepository.getMasterDataPersonByRole(CommonConstant.ROLE_ID_OF_MANAGER, search == null ? null : search.trim());
+    public ResponseEntity<BaseResponse<MasterDataResponse, Pageable>> getMasterDataAllManager(Long departmentId, String search) {
+        List<Person> personList = personRepository.getMasterDataManagerByDepartment(CommonConstant.ROLE_ID_OF_MANAGER, search == null ? null : search.trim(), departmentId);
         List<MasterDataDto> masterDataDtos = new ArrayList<>();
         for (int i = 0; i < personList.size(); i++) {
             MasterDataDto masterDataDto = new MasterDataDto(personList.get(i).getFullName(), personList.get(i).getPersonId());
@@ -166,7 +166,7 @@ public class PersonServiceImpl implements PersonService {
             managerRoll = person.getPersonId().toString();
             managerId = Long.parseLong(managerRoll);
         }
-        Page<EmployeeListDto> pageInfo = personRepository.getSearchListPerson((fullName == null || fullName.trim().isEmpty()) ? null : fullName.trim(),(email == null || email.trim().isEmpty()) ? null : email.trim(), departmentId, (rollNumber == null || rollNumber.trim().isEmpty()) ? null : rollNumber.trim(), positionId, managerId, status == null ? null : status, PageRequest.of(page - 1, limit, dirSort == null ? Sort.unsorted() : Sort.by(dirSort, sort)));
+        Page<EmployeeListDto> pageInfo = personRepository.getSearchListPerson((fullName == null || fullName.trim().isEmpty()) ? null : fullName.trim(), (email == null || email.trim().isEmpty()) ? null : email.trim(), departmentId, (rollNumber == null || rollNumber.trim().isEmpty()) ? null : rollNumber.trim(), positionId, managerId, status == null ? null : status, PageRequest.of(page - 1, limit, dirSort == null ? Sort.unsorted() : Sort.by(dirSort, sort)));
         List<EmployeeListDto> employeeListDtos = pageInfo.getContent();
         pagination.setTotalRecords(pageInfo);
         ResponseEntity<BaseResponse<EmployeeInfoResponse, Pageable>> responseEntity = BaseResponse
@@ -294,21 +294,21 @@ public class PersonServiceImpl implements PersonService {
             throw new BaseException(ErrorCode.newErrorCode(500, e.getMessage()));
         }
         //update leave budget
-        if(person.getRankId() != 1) {
-        	List<LeaveBudget> leaveBudgetList = new ArrayList<>();
-        	 leaveBudgetList.add(new LeaveBudget(person.getPersonId(), person.getAnnualLeaveBudget()/12, 0, 0, Year.now(), CommonConstant.LIST_REQUEST_TYPE_ID_IN_LEAVE_BUDGET[0]));
-             leaveBudgetList.add(new LeaveBudget(person.getPersonId(), 180, 0, 0, Year.now(), CommonConstant.LIST_REQUEST_TYPE_ID_IN_LEAVE_BUDGET[1]));
-             leaveBudgetList.add(new LeaveBudget(person.getPersonId(), 20, 0, 0, Year.now(), CommonConstant.LIST_REQUEST_TYPE_ID_IN_LEAVE_BUDGET[2]));
-             leaveBudgetList.add(new LeaveBudget(person.getPersonId(), 70, 0, 0, Year.now(), CommonConstant.LIST_REQUEST_TYPE_ID_IN_LEAVE_BUDGET[3]));
-             leaveBudgetList.add(new LeaveBudget(person.getPersonId(), 3, 0, 0, Year.now(), CommonConstant.LIST_REQUEST_TYPE_ID_IN_LEAVE_BUDGET[4]));
-             try {
-                 leaveBudgetRepository.saveAll(leaveBudgetList);
-             }catch (Exception e) {
-            	 throw new BaseException(ErrorCode.newErrorCode(500, e.getMessage()));
-			}
-             List<OTBudget> otBudgetList = new ArrayList<>();
-             otBudgetList.add(new OTBudget(person.getPersonId(), 40, 0, 40, 200, java.time.LocalDateTime.now().getMonthValue(), Year.now()));
-             otBudgetRepository.saveAll(otBudgetList);
+        if (person.getRankId() != 1) {
+            List<LeaveBudget> leaveBudgetList = new ArrayList<>();
+            leaveBudgetList.add(new LeaveBudget(person.getPersonId(), person.getAnnualLeaveBudget() / 12, 0, 0, Year.now(), CommonConstant.LIST_REQUEST_TYPE_ID_IN_LEAVE_BUDGET[0]));
+            leaveBudgetList.add(new LeaveBudget(person.getPersonId(), 180, 0, 0, Year.now(), CommonConstant.LIST_REQUEST_TYPE_ID_IN_LEAVE_BUDGET[1]));
+            leaveBudgetList.add(new LeaveBudget(person.getPersonId(), 20, 0, 0, Year.now(), CommonConstant.LIST_REQUEST_TYPE_ID_IN_LEAVE_BUDGET[2]));
+            leaveBudgetList.add(new LeaveBudget(person.getPersonId(), 70, 0, 0, Year.now(), CommonConstant.LIST_REQUEST_TYPE_ID_IN_LEAVE_BUDGET[3]));
+            leaveBudgetList.add(new LeaveBudget(person.getPersonId(), 3, 0, 0, Year.now(), CommonConstant.LIST_REQUEST_TYPE_ID_IN_LEAVE_BUDGET[4]));
+            try {
+                leaveBudgetRepository.saveAll(leaveBudgetList);
+            } catch (Exception e) {
+                throw new BaseException(ErrorCode.newErrorCode(500, e.getMessage()));
+            }
+            List<OTBudget> otBudgetList = new ArrayList<>();
+            otBudgetList.add(new OTBudget(person.getPersonId(), 40, 0, 40, 200, java.time.LocalDateTime.now().getMonthValue(), Year.now()));
+            otBudgetRepository.saveAll(otBudgetList);
         }
         ResponseEntity<BaseResponse<Void, Void>> responseEntity = BaseResponse.ofSucceeded(null);
         return responseEntity;

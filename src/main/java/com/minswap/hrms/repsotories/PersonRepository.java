@@ -20,16 +20,20 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface PersonRepository extends JpaRepository<Person, Long>{
+public interface PersonRepository extends JpaRepository<Person, Long> {
 
     Optional<Person> findPersonByEmail(String email);
+
     Optional<Person> findPersonByPersonId(Long id);
+
     Optional<Person> findPersonByRollNumberEquals(String rollNumber);
+
     List<Person> findByRankIdIsNot(Long rankId);
 
     @Query("select p.personId from Person p")
     List<Long> getAllPersonId();
-    @Query("select new com.minswap.hrms.response.dto.EmployeeDetailDto("+
+
+    @Query("select new com.minswap.hrms.response.dto.EmployeeDetailDto(" +
             " p.personId as personId," +
             " p.fullName as fullName," +
             " p.dateOfBirth as dateOfBirth," +
@@ -68,22 +72,23 @@ public interface PersonRepository extends JpaRepository<Person, Long>{
             "    p.departmentId = d.departmentId " +
             "    LEFT JOIN Position p2 ON " +
             "    p.positionId = p2.positionId  " +
-            "     where  1 = 1  "+
+            "     where  1 = 1  " +
             " and ((:fullName IS NULL OR p.fullName LIKE  %:fullName%)" +
             " or (:rollNumber IS NULL OR p.rollNumber LIKE %:rollNumber%))" +
             " and (:email IS NULL OR p.email LIKE %:email%) " +
             " and (:departmentId IS NULL OR p.departmentId = :departmentId) " +
-            " and (:positionId IS NULL OR p.positionId = :positionId)"+
-            " and (:status IS NULL OR p.status = :status)"+
+            " and (:positionId IS NULL OR p.positionId = :positionId)" +
+            " and (:status IS NULL OR p.status = :status)" +
             " and (:managerRoll IS NULL OR p.managerId = :managerRoll)")
-    Page<EmployeeListDto> getSearchListPerson(@Param("fullName")String fullName,
-                                              @Param("email")String email,
-                                              @Param("departmentId")Long departmentId,
-                                              @Param("rollNumber")String rollNumber,
-                                              @Param("positionId")Long positionId,
-                                              @Param(("managerRoll"))Long managerRoll,
-                                              @Param(("status" ))String status,
+    Page<EmployeeListDto> getSearchListPerson(@Param("fullName") String fullName,
+                                              @Param("email") String email,
+                                              @Param("departmentId") Long departmentId,
+                                              @Param("rollNumber") String rollNumber,
+                                              @Param("positionId") Long positionId,
+                                              @Param(("managerRoll")) Long managerRoll,
+                                              @Param(("status")) String status,
                                               Pageable pageable);
+
     @Modifying
     @Transactional
     @Query("UPDATE Person p set " +
@@ -103,27 +108,27 @@ public interface PersonRepository extends JpaRepository<Person, Long>{
             "p.status = :status" +
             " where p.rollNumber = :rollNumber")
     Integer updateEmployee(
-                                 @Param("fullName") String fullName,
+            @Param("fullName") String fullName,
 //                                 @Param("dateOfBirth") String dateOfBirth,
-                                 @Param("managerId") Long managerId,
-                                 @Param("departmentId") Long departmentId,
-                                 @Param("positionId") Long positionId,
-                                 @Param("rankId") Long rankId,
-                                 @Param("citizenIdentification") String citizenIdentification,
-                                 @Param("phoneNumber") String phoneNumber,
-                                 @Param("address") String address,
-                                 @Param("gender") int gender,
-                                 @Param("rollNumber") String rollNumber,
-                                 @Param("salaryBasic") Double salaryBasic,
-                                 @Param("salaryBonus") Double salaryBonus,
-                                 @Param("onBoardDate") Date onBoardDate,
-                                 @Param("status") String status
-                                 );
+            @Param("managerId") Long managerId,
+            @Param("departmentId") Long departmentId,
+            @Param("positionId") Long positionId,
+            @Param("rankId") Long rankId,
+            @Param("citizenIdentification") String citizenIdentification,
+            @Param("phoneNumber") String phoneNumber,
+            @Param("address") String address,
+            @Param("gender") int gender,
+            @Param("rollNumber") String rollNumber,
+            @Param("salaryBasic") Double salaryBasic,
+            @Param("salaryBonus") Double salaryBonus,
+            @Param("onBoardDate") Date onBoardDate,
+            @Param("status") String status
+    );
 
     @Query(" SELECT p.personId " +
-           " from Person p " +
-           " WHERE p.managerId = :managerId" +
-           " AND (:search IS NULL OR p.fullName LIKE %:search%) ")
+            " from Person p " +
+            " WHERE p.managerId = :managerId" +
+            " AND (:search IS NULL OR p.fullName LIKE %:search%) ")
     Page<Long> getListPersonIdByManagerId(@Param("managerId") Long managerId,
                                           @Param("search") String search,
                                           Pageable pageable);
@@ -133,14 +138,23 @@ public interface PersonRepository extends JpaRepository<Person, Long>{
             " WHERE 1 = 1 " +
             " AND (:search IS NULL OR p.fullName LIKE %:search%) ")
     Page<Long> getListPersonIdByFullName(@Param("search") String search,
-                                          Pageable pageable);
+                                         Pageable pageable);
 
     @Query("select new com.minswap.hrms.entities.Person(p.personId as personId, p.fullName as fullName) " +
             "from Person p, PersonRole pr, Role r " +
             "where p.personId = pr.personId and pr.roleId = r.roleId and r.roleId = :roleId " +
             "AND (:search IS NULL OR p.fullName LIKE %:search%) ")
     List<Person> getMasterDataPersonByRole(@Param("roleId") Long roleId,
-                                         @Param("search") String search);
+                                           @Param("search") String search);
+
+    @Query("select new com.minswap.hrms.entities.Person(p.personId as personId, p.fullName as fullName) " +
+            "from Person p, PersonRole pr, Role r " +
+            "where p.personId = pr.personId and pr.roleId = r.roleId and r.roleId = :roleId " +
+            "AND (:search IS NULL OR p.fullName LIKE %:search%) " +
+            "AND (:departmentId IS NULL OR p.departmentId =:departmentId)")
+    List<Person> getMasterDataManagerByDepartment(@Param("roleId") Long roleId,
+                                                  @Param("search") String search,
+                                                  @Param("departmentId") Long departmentId);
 
     @Modifying
     @Transactional
@@ -148,7 +162,7 @@ public interface PersonRepository extends JpaRepository<Person, Long>{
             "p.status = :status " +
             " where p.rollNumber = :rollNumber")
     Integer updateStatusEmployee(@Param("status") String status,
-                           @Param("rollNumber") String rollNumber
+                                 @Param("rollNumber") String rollNumber
     );
 
     @Query("select count(p.personId) from Person p where p.departmentId=:departmentId")
@@ -161,10 +175,11 @@ public interface PersonRepository extends JpaRepository<Person, Long>{
     String getRollNumberByPersonId(@Param("personId") Long personId);
 
     @Query("select p.fullName from Person p where p.personId=:personId")
-    String getPersonNameByPersonId (@Param("personId") Long personId);
+    String getPersonNameByPersonId(@Param("personId") Long personId);
 
     @Query("select p.managerId from Person p where p.personId=:personId")
-    Long getManagerIdByPersonId (@Param("personId") Long personId);
+    Long getManagerIdByPersonId(@Param("personId") Long personId);
+
     @Modifying
     @Transactional
     @Query("UPDATE Person p set " +
@@ -172,6 +187,7 @@ public interface PersonRepository extends JpaRepository<Person, Long>{
             " where p.rollNumber = :rollNumber")
     Integer updateAnnualLeaveBudget(@Param("annualLeaveBudget") Double annualLeaveBudget,
                                     @Param("rollNumber") String rollNumber);
+
     @Query("SELECT count(p.citizenIdentification) FROM Person p WHERE p.citizenIdentification = :citizenIdentification")
     Integer getUserByCitizenIdentification(@Param("citizenIdentification") String citizenIdentification);
 

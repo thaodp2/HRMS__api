@@ -39,8 +39,8 @@ public class PersonController {
     }
 
     @GetMapping("/all-manager-master-data")
-    public ResponseEntity<BaseResponse<MasterDataResponse, Pageable>> getMasterDataAllManager(@RequestParam (required = false) String search) {
-        return personService.getMasterDataAllManager(search);
+    public ResponseEntity<BaseResponse<MasterDataResponse, Pageable>> getMasterDataAllManager(@RequestParam Long departmentId,@RequestParam (required = false) String search) {
+        return personService.getMasterDataAllManager(departmentId,search);
     }
 
 }
