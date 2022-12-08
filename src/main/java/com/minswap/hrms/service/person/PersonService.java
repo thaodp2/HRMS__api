@@ -47,7 +47,7 @@ public interface PersonService {
 
     boolean isValidHeaderTemplate(Row row);
 
-    boolean checkManagerIdValid(Long managerId);
+    boolean checkManagerByDepartmentValid(Long managerId, Long departmentId);
 
     boolean checkGenderValid(Integer gender);
 

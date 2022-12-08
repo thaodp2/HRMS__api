@@ -343,7 +343,7 @@ public class PersonServiceImpl implements PersonService {
         if (!person.isPresent()) {
             throw new BaseException(ErrorCode.NO_DATA);
         }
-        if (person.get().getPinCode() == null) {
+        if (person.get().getPinCode() == null || person.get().getPinCode().equals("")) {
             return BaseResponse.ofSucceeded(false);
         }
         return BaseResponse.ofSucceeded(true);
@@ -444,11 +444,11 @@ public class PersonServiceImpl implements PersonService {
     }
 
     @Override
-    public boolean checkManagerIdValid(Long managerId) {
+    public boolean checkManagerByDepartmentValid(Long managerId, Long departmentId) {
         Person p = personRepository.findById(managerId).orElse(null);
         if (p != null) {
             PersonRole pr = personRoleRepository.findByPersonIdAndAndRoleId(managerId, CommonConstant.ROLE_ID_OF_MANAGER).orElse(null);
-            if (pr != null) {
+            if (pr != null && p.getDepartmentId() == departmentId) {
                 return true;
             }
         }
@@ -541,7 +541,7 @@ public class PersonServiceImpl implements PersonService {
                                         double salaryBonus = row.getCell(12).getNumericCellValue();
                                         int isManager = (int) row.getCell(13).getNumericCellValue();
 
-                                        if (checkManagerIdValid(managerId) &&
+                                        if (checkManagerByDepartmentValid(managerId, departmentId) &&
                                                 departmentService.checkDepartmentExist(departmentId) &&
                                                 positionService.checkPositionByDepartment(positionId, departmentId) &&
                                                 rankService.checkRankExist(rankId) &&
