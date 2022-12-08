@@ -610,7 +610,10 @@ public class PersonServiceImpl implements PersonService {
     @Override
     public List<EmployeeListDto> exportEmployee(String fullName, String email, Long departmentId, String rollNumber, Long positionId) {
         Page<EmployeeListDto> pageInfo = personRepository.getSearchListPerson(fullName, email, departmentId, rollNumber, positionId, null, null, null);
-        List<EmployeeListDto> employeeListDtos = pageInfo.getContent();
+        List<EmployeeListDto> employeeListDtos = null;
+        if(pageInfo!= null) {
+            employeeListDtos = pageInfo.getContent();
+        }
         return employeeListDtos;
     }
 
