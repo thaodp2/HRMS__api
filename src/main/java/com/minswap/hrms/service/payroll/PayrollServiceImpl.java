@@ -98,13 +98,13 @@ public class PayrollServiceImpl implements PayrollService{
             payrollDisplayDto.setRollNumber(person.get().getRollNumber());
             payrollDisplayDto.setActualWork(salary.getActualWork());
             payrollDisplayDto.setTotalWork(salary.getTotalWork());
-            payrollDisplayDto.setBasicSalary(String.format("%.0f",Double.valueOf(salary.getBasicSalary())));
-            payrollDisplayDto.setOtSalary(String.format("%.0f",Double.valueOf(salary.getOtSalary())));
-            payrollDisplayDto.setFineAmount(String.format("%.0f",Double.valueOf(salary.getFineAmount())));
-            payrollDisplayDto.setSalaryBonus(String.format("%.0f",Double.valueOf(salary.getBonus())));
-            payrollDisplayDto.setTax(String.format("%.0f",Double.valueOf(salary.getTax())));
-            payrollDisplayDto.setSocialInsurance(String.format("%.0f",Double.valueOf(salary.getSocialInsurance())));
-            payrollDisplayDto.setActuallyReceived(String.format("%.0f",Double.valueOf(salary.getActuallyReceived())));
+            payrollDisplayDto.setBasicSalary(String.format("%,.0f",Double.valueOf(salary.getBasicSalary())));
+            payrollDisplayDto.setOtSalary(String.format("%,.0f",Double.valueOf(salary.getOtSalary())));
+            payrollDisplayDto.setFineAmount(String.format("%,.0f",Double.valueOf(salary.getFineAmount())));
+            payrollDisplayDto.setSalaryBonus(String.format("%,.0f",Double.valueOf(salary.getBonus())));
+            payrollDisplayDto.setTax(String.format("%,.0f",Double.valueOf(salary.getTax())));
+            payrollDisplayDto.setSocialInsurance(String.format("%,.0f",Double.valueOf(salary.getSocialInsurance())));
+            payrollDisplayDto.setActuallyReceived(String.format("%,.0f",Double.valueOf(salary.getActuallyReceived())));
 
             String body = "Total work day: " + payrollDisplayDto.getTotalWork() + "\n";
             body += "Actual work day: " + payrollDisplayDto.getActualWork() + "\n";
