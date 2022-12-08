@@ -361,12 +361,14 @@ public class RequestServiceImpl implements RequestService {
                 else {
                     requestDto.setRequestTypeName(OTHER_TYPE);
                 }
-
-                if (requestType != FORGOT_CHECK_IN_OUT
-                        && currentTime.after(requestDto.getMaximumTimeToRollback())) {
-                    requestDto.setIsAllowRollback(NOT_ALLOW_ROLLBACK);
-                } else {
-                    requestDto.setIsAllowRollback(ALLOW_ROLLBACK);
+                Date maximumTimeToRollback = requestDto.getMaximumTimeToRollback();
+                if (maximumTimeToRollback != null) {
+                    if (requestType != FORGOT_CHECK_IN_OUT
+                            && currentTime.after(maximumTimeToRollback)) {
+                        requestDto.setIsAllowRollback(NOT_ALLOW_ROLLBACK);
+                    } else {
+                        requestDto.setIsAllowRollback(ALLOW_ROLLBACK);
+                    }
                 }
             }
             requestDto.setRollNumber(personRepository.getRollNumberByPersonId(personId));
