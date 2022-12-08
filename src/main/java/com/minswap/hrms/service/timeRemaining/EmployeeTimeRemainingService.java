@@ -9,6 +9,7 @@ public interface EmployeeTimeRemainingService {
     ResponseEntity<BaseResponse<EmployeeTimeRemainingResponse, Void>> getEmployeeRemainingTime
                                                                 (Long requestTypeId,
                                                                  int month,
-                                                                 int year);
+                                                                 int year,
+                                                                 Long personId);
 
 }
