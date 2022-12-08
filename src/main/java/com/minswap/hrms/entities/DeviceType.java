@@ -1,10 +1,7 @@
 package com.minswap.hrms.entities;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
 
@@ -12,6 +9,7 @@ import javax.persistence.*;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
 @Table(name = DeviceType.TABLE_NAME)
 public class DeviceType {
     public static final String TABLE_NAME = "device_type";

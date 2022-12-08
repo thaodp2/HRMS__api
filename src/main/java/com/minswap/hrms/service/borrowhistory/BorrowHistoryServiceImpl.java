@@ -30,6 +30,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.Year;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -60,13 +61,17 @@ public class BorrowHistoryServiceImpl implements BorrowHistoryService {
     @Override
     public ResponseEntity<BaseResponse<BorrowHistoryResponse.BorrowHistoryListResponse, Pageable>> getBorrowHistoryList(Long managerId, Long personId, Integer page, Integer limit, Long deviceTypeId, String search, String sort, String dir, Integer isReturned) {
         Sort.Direction dirSort = CommonUtil.getSortDirection(sort, dir);
+        List<BorrowHistoryDto> borrowHistoryDtos =new ArrayList<>();
+        ResponseEntity<BaseResponse<BorrowHistoryResponse.BorrowHistoryListResponse, Pageable>> responseEntity = null;
         Page<BorrowHistoryDto> pageInfor = borrowHistoryRepository.getBorrowHistoryList(search != null ? search.trim() : null, deviceTypeId, managerId, personId, isReturned, PageRequest.of(page - 1, limit, dirSort == null ? Sort.unsorted() : Sort.by(dirSort, sort)));
-        List<BorrowHistoryDto> borrowHistoryDtos = pageInfor.getContent();
-        Pagination pagination = new Pagination(page, limit);
-        pagination.setTotalRecords(pageInfor);
-        BorrowHistoryResponse.BorrowHistoryListResponse response = new BorrowHistoryResponse.BorrowHistoryListResponse(borrowHistoryDtos);
-        ResponseEntity<BaseResponse<BorrowHistoryResponse.BorrowHistoryListResponse, Pageable>> responseEntity
-                = BaseResponse.ofSucceededOffset(response, pagination);
+        if(pageInfor != null && pageInfor.hasContent()) {
+            borrowHistoryDtos = pageInfor.getContent();
+            Pagination pagination = new Pagination(page, limit);
+            pagination.setTotalRecords(pageInfor);
+            BorrowHistoryResponse.BorrowHistoryListResponse response = new BorrowHistoryResponse.BorrowHistoryListResponse(borrowHistoryDtos);
+             responseEntity
+                    = BaseResponse.ofSucceededOffset(response, pagination);
+        }
         return responseEntity;
     }
 

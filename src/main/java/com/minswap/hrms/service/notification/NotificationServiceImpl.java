@@ -30,13 +30,16 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public ResponseEntity<BaseResponse<NotificationResponse, Pagination>> getNotificationsByUserID(Integer page, Integer limit, Long userID) {
         //List<Notification> list = notificationRepository.findByUserTo(userID);
+        ResponseEntity<BaseResponse<NotificationResponse, Pagination>> responseEntity = null;
         Page<NotificationDto> pageInfo = notificationRepository.getMyNotifications(userID, PageRequest.of(page - 1, limit));
-        Pagination pagination = new Pagination(page, limit);
-        pagination.setTotalRecords(pageInfo);
+        if(pageInfo!=null) {
+            Pagination pagination = new Pagination(page, limit);
+            pagination.setTotalRecords(pageInfo);
 
-        NotificationResponse response = new NotificationResponse(pageInfo.getContent());
-        ResponseEntity<BaseResponse<NotificationResponse, Pagination>> responseEntity
-                = BaseResponse.ofSucceededOffset(response, pagination);
+            NotificationResponse response = new NotificationResponse(pageInfo.getContent());
+            responseEntity
+                    = BaseResponse.ofSucceededOffset(response, pagination);
+        }
         return responseEntity;
     }
 
