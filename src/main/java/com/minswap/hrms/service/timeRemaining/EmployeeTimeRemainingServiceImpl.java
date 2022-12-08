@@ -50,7 +50,8 @@ public class EmployeeTimeRemainingServiceImpl implements EmployeeTimeRemainingSe
     @Override
     public ResponseEntity<BaseResponse<EmployeeTimeRemainingResponse, Void>> getEmployeeRemainingTime(Long requestTypeId,
                                                                                                       int month,
-                                                                                                      int yearOfRequest) {
+                                                                                                      int yearOfRequest,
+                                                                                                      Long personId) {
         ResponseEntity<BaseResponse<EmployeeTimeRemainingResponse, Void>> responseEntity = null;
         List<Long> listRequestTypesId = requestTypeRepository.getAllRequestTypeId();
         if (!listRequestTypesId.contains(requestTypeId)) {
@@ -65,7 +66,7 @@ public class EmployeeTimeRemainingServiceImpl implements EmployeeTimeRemainingSe
             else if (year == null) {
                 throw new BaseException(ErrorCode.YEAR_INVALID);
             }
-            OTBudgetDto otBudgetDto = otBudgetRepository.getOTBudgetByPersonId(Long.valueOf(2),
+            OTBudgetDto otBudgetDto = otBudgetRepository.getOTBudgetByPersonId(personId,
                                                                                year,
                                                                                month);
             if (otBudgetDto == null) {
@@ -83,7 +84,7 @@ public class EmployeeTimeRemainingServiceImpl implements EmployeeTimeRemainingSe
                 throw new BaseException(ErrorCode.YEAR_INVALID);
             }
             EmployeeTimeRemainingDto employeeTimeRemainingDto =
-                    employeeTimeRemainingRepository.getLeaveBudgetTimeRemaining(Long.valueOf(2),
+                    employeeTimeRemainingRepository.getLeaveBudgetTimeRemaining(personId,
                                                                                 requestTypeId,
                                                                                 year);
             if (employeeTimeRemainingDto == null) {
