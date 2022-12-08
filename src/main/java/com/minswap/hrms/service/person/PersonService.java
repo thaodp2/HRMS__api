@@ -22,7 +22,7 @@ import java.util.List;
 public interface PersonService {
     ResponseEntity<BaseResponse<HttpStatus, Void>> updateUserInformation(UpdateUserRequest persondto, Long personId) throws Exception;
 
-    ResponseEntity<BaseResponse<MasterDataResponse, Pageable>> getMasterDataAllManager (String search);
+    ResponseEntity<BaseResponse<MasterDataResponse, Pageable>> getMasterDataAllManager (Long departmentId,String search);
 
     ResponseEntity<BaseResponse<EmployeeInfoResponse, Void>> getDetailEmployee(String rollNumber);
 
