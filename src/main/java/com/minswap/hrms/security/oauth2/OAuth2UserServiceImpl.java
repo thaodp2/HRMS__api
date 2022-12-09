@@ -34,6 +34,8 @@ public class OAuth2UserServiceImpl extends DefaultOAuth2UserService {
         }
         List<PersonRole> personRoles = person == null? null : personRoleRepository.findByPersonId(person.getPersonId());
         List<Role> roles = personRoles == null? null : roleRepository.findByRoleIdIn(personRoles.stream().map(PersonRole::getRoleId).collect(Collectors.toList()));
-        return UserPrincipal.create(person, roles);
+        return person == null
+                ? UserPrincipal.create(oAuth2User)
+                : UserPrincipal.create(person, roles);
     }
 }
