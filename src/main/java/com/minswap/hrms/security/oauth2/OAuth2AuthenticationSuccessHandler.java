@@ -1,15 +1,12 @@
 package com.minswap.hrms.security.oauth2;
 
 import com.minswap.hrms.configuration.AppConfig;
-import com.minswap.hrms.constants.ErrorCode;
-import com.minswap.hrms.exception.model.BaseException;
 import com.minswap.hrms.security.TokenProvider;
 import com.minswap.hrms.util.CookieUtils;
 import com.nimbusds.oauth2.sdk.util.CollectionUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -21,7 +18,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URI;
-import java.util.Collection;
 import java.util.Optional;
 
 @Slf4j
@@ -39,11 +35,6 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 	public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
 
 		OAuth2User user = (OAuth2User) authentication.getPrincipal();
-		Collection<? extends GrantedAuthority> authorities = user.getAuthorities();
-		if (CollectionUtils.isEmpty(authorities)) {
-			authentication.setAuthenticated(false);
-			throw new BaseException(ErrorCode.UNAUTHORIZE);
-		}
 		String targetUrl = determineTargetUrl(request, response, authentication);
 
 		if (response.isCommitted()) {
@@ -59,13 +50,18 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 		Optional<String> redirectUri = CookieUtils.getCookie(request, HttpCookieOAuth2AuthorizationRequestRepository.REDIRECT_URI_PARAM_COOKIE_NAME)
 				.map(Cookie::getValue);
 
-		if(redirectUri.isPresent() && !isAuthorizedRedirectUri(redirectUri.get())) {
-			throw new BaseException(ErrorCode.UNAUTHORIZE);
-		}
-
 		String targetUrl = redirectUri.orElse(getDefaultTargetUrl());
 
 		String token = tokenProvider.createToken(authentication);
+
+		if (CollectionUtils.isEmpty(authentication.getAuthorities())) {
+			authentication.setAuthenticated(false);
+			token = null;
+		}
+
+		if (redirectUri.isPresent() && !isAuthorizedRedirectUri(redirectUri.get())) {
+			token = null;
+		}
 
 		return UriComponentsBuilder.fromUriString(targetUrl)
 				.queryParam("token", token)
