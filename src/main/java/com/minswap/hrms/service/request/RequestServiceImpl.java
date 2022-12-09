@@ -128,6 +128,10 @@ public class RequestServiceImpl implements RequestService {
     private static final int ROLE_MANAGER = 2;
     private static final int ROLE_EMPLOYEE = 3;
     private static final int ROLE_IT_SUPPORT = 5;
+    private static final int FOUR_MONTH = 4;
+    private static final int DAYS_OF_FOUR_MONTH = 124;
+    private static final int SIX_MONTH = 6;
+    private static final int DAYS_OF_SIX_MONTH = 186;
 
     public List<RequestDto> getQueryForRequestList(String type, Long managerId, Long personId, Boolean isLimit, Integer limit, Integer page, String search, String createDateFrom, String createDateTo, Long requestTypeId, String status, String sort, String dir) throws ParseException {
         HashMap<String, Object> params = new HashMap<>();
@@ -358,7 +362,13 @@ public class RequestServiceImpl implements RequestService {
                     requestDto.setRequestTypeName(MATERNITY_TYPE);
                     long timeBetween = requestDto.getEndTime().getTime() - requestDto.getStartTime().getTime();
                     long numOfDaysOffBetweenStartAndEnd = TimeUnit.DAYS.convert(timeBetween, TimeUnit.MILLISECONDS);
-                    requestDto.setPeriodTime((int) numOfDaysOffBetweenStartAndEnd);
+                    if (numOfDaysOffBetweenStartAndEnd <= DAYS_OF_FOUR_MONTH) {
+                        requestDto.setPeriodTime(FOUR_MONTH);
+                    }
+                    else {
+                        requestDto.setPeriodTime(SIX_MONTH);
+                    }
+
                 }
                 else {
                     requestDto.setRequestTypeName(OTHER_TYPE);
