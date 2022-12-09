@@ -58,7 +58,10 @@ public class SignatureProfileServiceImpl implements SignatureProfileService{
     }
     @Override
     public ResponseEntity<BaseResponse<Void, Void>> deleteSignatureRegister(SignatureProfileRequest signatureProfileRequest) {
-        signatureProfileRepository.deleteAll(signatureProfileRepository.findSignatureProfilesByPersonId(Long.parseLong(signatureProfileRequest.getPersonId())));
+        signatureProfileRepository.findSignatureProfileByRegisteredDate(
+                convertDateInput(signatureProfileRequest.getRegisteredDate())
+                ).filter(sp -> sp.getPersonId() == Long.parseLong(signatureProfileRequest.getPersonId()))
+                .ifPresent(signatureProfileRepository::delete);
         return BaseResponse.ofSucceeded(null);
     }
 
