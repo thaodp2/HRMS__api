@@ -21,10 +21,11 @@ public class HRSignatureProfileController {
     @GetMapping("/signature_register")
     public ResponseEntity<BaseResponse<SignatureProfileResponse, Pageable>> registerSignatureEmployee(
             @RequestParam(required = false) Integer isRegistered,
+            @RequestParam(required = false) String search,
             @RequestParam int page,
             @RequestParam int limit) {
 
-        return signatureProfileService.listSignatureRegister(isRegistered, page, limit);
+        return signatureProfileService.listSignatureRegister(isRegistered, search, page, limit);
     }
 
     @PostMapping("/signature_register")

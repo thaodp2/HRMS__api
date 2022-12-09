@@ -23,6 +23,7 @@ public class SignatureProfileDto {
     private String privateKeySignature;
 
     private Long personId;
+    private String employeeName;
 
     @JsonFormat(pattern = CommonConstant.YYYY_MM_DD_HH_MM_SS, shape = JsonFormat.Shape.STRING)
     private Date registeredDate;

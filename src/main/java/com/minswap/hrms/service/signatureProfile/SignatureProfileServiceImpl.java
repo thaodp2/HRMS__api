@@ -1,12 +1,15 @@
 package com.minswap.hrms.service.signatureProfile;
 
+import com.minswap.hrms.entities.Person;
 import com.minswap.hrms.entities.SignatureProfile;
 import com.minswap.hrms.exception.model.Pagination;
 import com.minswap.hrms.model.BaseResponse;
+import com.minswap.hrms.repsotories.PersonRepository;
 import com.minswap.hrms.repsotories.SignatureProfileRepository;
 import com.minswap.hrms.request.SignatureProfileRequest;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.minswap.hrms.response.SignatureProfileResponse;
@@ -21,6 +24,9 @@ import org.springframework.stereotype.Service;
 public class SignatureProfileServiceImpl implements SignatureProfileService{
     @Autowired
     private SignatureProfileRepository signatureProfileRepository;
+
+    @Autowired
+    private PersonRepository personRepository;
 
     @Override
     public ResponseEntity<BaseResponse<Void, Void>> updateSignatureRegister(SignatureProfileRequest signatureProfileRequest) {
@@ -39,18 +45,33 @@ public class SignatureProfileServiceImpl implements SignatureProfileService{
     }
 
     @Override
-    public ResponseEntity<BaseResponse<SignatureProfileResponse, Pageable>> listSignatureRegister(Integer isRegistered, int page,int limit) {
+    public ResponseEntity<BaseResponse<SignatureProfileResponse, Pageable>> listSignatureRegister(Integer isRegistered, String search, int page,int limit) {
         List<SignatureProfile> list = signatureProfileRepository.findAll(Sort.by(Sort.Direction.DESC, "registeredDate"));
+        if (isRegistered != null) {
+            list = list.stream()
+                    .filter(sp -> (isRegistered == 1) == (sp.getPersonId() != -1))
+                    .collect(Collectors.toList());
+        }
         List<SignatureProfileDto> items = list.stream()
-                .filter(sp -> (isRegistered == 1) == (sp.getPersonId() != -1))
                 .map(this::SignatureProfileToDTO)
                 .collect(Collectors.toList());
+        if (search != null) {
+            items = items.stream()
+                    .filter(sp -> sp.getEmployeeName().toLowerCase().contains(search.toLowerCase()))
+                    .collect(Collectors.toList());
+        }
         Pagination pagination = new Pagination(page, limit, list.size());
         return BaseResponse.ofSucceededOffset(new SignatureProfileResponse(items), pagination);
     }
 
     private SignatureProfileDto SignatureProfileToDTO(SignatureProfile signatureProfile) {
-        return new SignatureProfileDto(signatureProfile.getPrivateKeySignature(), signatureProfile.getPersonId(), signatureProfile.getRegisteredDate());
+        Optional<Person> personByPersonId = personRepository.findPersonByPersonId(signatureProfile.getPersonId());
+        return personByPersonId.map(person -> new SignatureProfileDto(
+                signatureProfile.getPrivateKeySignature(),
+                signatureProfile.getPersonId(),
+                person.getFullName(),
+                signatureProfile.getRegisteredDate())
+        ).orElse(null);
     }
 
 }
