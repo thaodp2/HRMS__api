@@ -71,7 +71,12 @@ public class SignatureProfileServiceImpl implements SignatureProfileService{
                 signatureProfile.getPersonId(),
                 person.getFullName(),
                 signatureProfile.getRegisteredDate())
-        ).orElse(null);
+        ).orElse(new SignatureProfileDto(
+                signatureProfile.getPrivateKeySignature(),
+                signatureProfile.getPersonId(),
+                "",
+                signatureProfile.getRegisteredDate())
+        );
     }
 
 }
