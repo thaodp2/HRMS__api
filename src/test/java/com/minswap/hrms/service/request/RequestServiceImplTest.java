@@ -119,7 +119,7 @@ public class RequestServiceImplTest {
         when(officeTimeRepository.getOfficeTime()).thenReturn(new OfficeTimeDto("08:30:00", "17:30:00", "12:30:00", "13:30:00"));
         when(personRepository.getManagerIdByPersonId(anyLong())).thenReturn(Long.valueOf(1));
 
-        ResponseEntity<BaseResponse<Void, Void>> result = requestServiceImpl.createRequest(new CreateRequest(Long.valueOf(1), Long.valueOf(1), "2022-12-09 08:04:00", "2022-12-09 17:07:00", "reason", List.of("String")), Long.valueOf(1));
+        ResponseEntity<BaseResponse<Void, Void>> result = requestServiceImpl.createRequest(new CreateRequest(Long.valueOf(1), Long.valueOf(1), "2022-12-28 08:04:00", "2022-12-28 17:07:00", "reason", List.of("String")), Long.valueOf(1));
         Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
     }
 
@@ -138,7 +138,7 @@ public class RequestServiceImplTest {
         when(evidenceRepository.deleteImageByRequestId(anyLong())).thenReturn(Integer.valueOf(0));
         when(officeTimeRepository.getOfficeTime()).thenReturn(new OfficeTimeDto("08:30:00", "17:30:00", "12:30:00", "13:30:00"));
 
-        ResponseEntity<BaseResponse<Void, Void>> result = requestServiceImpl.editRequest(new EditRequest(Long.valueOf(1), "2022-12-09 08:04:00", "2022-12-09 17:07:00", "reason", List.of("String")), Long.valueOf(100), Long.valueOf(100));
+        ResponseEntity<BaseResponse<Void, Void>> result = requestServiceImpl.editRequest(new EditRequest(Long.valueOf(1), "2022-12-28 08:04:00", "2022-12-28 17:07:00", "reason", List.of("String")), Long.valueOf(100), Long.valueOf(100));
         Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
     }
 
