@@ -11,7 +11,7 @@ import org.springframework.http.ResponseEntity;
 public interface SignatureProfileService {
 
     public ResponseEntity<BaseResponse<Void, Void>> updateSignatureRegister(SignatureProfileRequest signatureProfileRequest);
-    public ResponseEntity<BaseResponse<SignatureProfileResponse, Pageable>> listSignatureRegister(int page,int limit);
+    public ResponseEntity<BaseResponse<SignatureProfileResponse, Pageable>> listSignatureRegister(int isRegistered, String sort, String dir, int page, int limit);
 
     ResponseEntity<BaseResponse<MasterDataResponse, Pageable>> getMasterDataAllEmployee (String search);
 

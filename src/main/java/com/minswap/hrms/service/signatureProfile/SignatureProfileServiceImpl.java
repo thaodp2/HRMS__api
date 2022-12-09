@@ -37,25 +37,8 @@ public class SignatureProfileServiceImpl implements SignatureProfileService{
     }
 
     @Override
-    public ResponseEntity<BaseResponse<SignatureProfileResponse, Pageable>> listSignatureRegister(int page,int limit) {
-//        Pagination pagination = new Pagination(page, limit);
-//        Page<SignatureProfileDto> pageInfo = signatureProfileRepository.getSearchListPerson(pagination);
-//        List<SignatureProfileDto> signatureProfileDtos = pageInfo.getContent();
-//        SignatureProfileResponse signatureProfileResponse = new SignatureProfileResponse();
-//        signatureProfileResponse.setSignatureProfileDto(signatureProfileDtos);
-//        signatureProfile.setRollNumber(signatureProfileRequest.getRollNumber());
-//        signatureProfile.setPrivateKeySignature(signatureProfileRequest.getIdSignature());
-//        EmployeeDetailDto employeeDetailDto = personRepository.getDetailEmployee(signatureProfile.getRollNumber());
-//        if(employeeDetailDto == null){
-//            throw new BaseException(ErrorCode.PERSON_NOT_EXIST);
-//        }
-//        signatureProfile.setPersonId(employeeDetailDto.getPersonId());
-//        signatureProfileRepository.save(signatureProfile);
-//        ResponseEntity<BaseResponse<Void, Void>> responseEntity = BaseResponse.ofSucceeded(null);
-//        return responseEntity;
-//        ResponseEntity<BaseResponse<SignatureProfileResponse, Pageable>> responseEntity = BaseResponse
-//                .ofSucceededOffset(signatureProfileResponse, pagination);
-//          return responseEntity;
+    public ResponseEntity<BaseResponse<SignatureProfileResponse, Pageable>> listSignatureRegister(int isRegistered, String sort, String dir, int page,int limit) {
+        List<SignatureProfile> list = signatureProfileRepository.findByRegistered(isRegistered, sort, dir);
         return null;
     }
 

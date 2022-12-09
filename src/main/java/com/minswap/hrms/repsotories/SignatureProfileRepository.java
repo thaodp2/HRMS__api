@@ -22,6 +22,18 @@ public interface SignatureProfileRepository extends JpaRepository<SignatureProfi
 
     Optional<SignatureProfile> findSignatureProfileByPrivateKeySignature(String privateKeySignature);
 
+
+	@Query("select new com.minswap.hrms.response.dto.SignatureProfileDto(" +
+			" s.signatureProfileId as signatureProfileId," +
+			" s.privateKeySignature as privateKeySignature," +
+			" s.personId as personId," +
+			" s.status as status," +
+			" s.registeredDate as registeredDate)" +
+			"FROM SignatureProfile s " +
+			"WHERE s.status = 1" +
+			"AND ")
+	List<SignatureProfile> findByRegistered(int isRegistered, String sort, String dir);
+
 //    @Query("select new com.minswap.hrms.response.dto.SignatureProfileDto(" +
 //            "  s.privateKeySignature as privateKeySignature, s.personId as personId, s.registeredDate as registeredDate)" +
 //            "  FROM SignatureProfile s " +
