@@ -7,6 +7,7 @@ import lombok.Setter;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import java.util.Date;
 
 @Getter
 @Setter
@@ -18,8 +19,8 @@ public class SignatureProfileRequest extends BasicRequest {
     @NotEmpty(message = "613")
     private String personId;
 
-    @JsonProperty("privateKeySignature")
+    @JsonProperty("registeredDate")
     @NotNull(message = "614")
     @NotEmpty(message = "614")
-    private String privateKeySignature;
+    private Date registeredDate;
 }

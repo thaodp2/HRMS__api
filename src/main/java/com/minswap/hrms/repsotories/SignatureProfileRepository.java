@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,6 +16,6 @@ public interface SignatureProfileRepository extends JpaRepository<SignatureProfi
 
 	List<SignatureProfile> findSignatureProfilesByPersonId(Long personId);
 
-	Optional<SignatureProfile> findSignatureProfileByPrivateKeySignature(String privateKeySignature);
+	Optional<SignatureProfile> findSignatureProfileByRegisteredDate(Date registeredDate);
 
 }

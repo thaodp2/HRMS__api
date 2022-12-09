@@ -1,7 +1,9 @@
 package com.minswap.hrms.service.signatureProfile;
 
+import com.minswap.hrms.constants.ErrorCode;
 import com.minswap.hrms.entities.Person;
 import com.minswap.hrms.entities.SignatureProfile;
+import com.minswap.hrms.exception.model.BaseException;
 import com.minswap.hrms.exception.model.Pagination;
 import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.repsotories.PersonRepository;
@@ -17,6 +19,7 @@ import com.minswap.hrms.response.dto.SignatureProfileDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -30,8 +33,11 @@ public class SignatureProfileServiceImpl implements SignatureProfileService{
 
     @Override
     public ResponseEntity<BaseResponse<Void, Void>> updateSignatureRegister(SignatureProfileRequest signatureProfileRequest) {
-        signatureProfileRepository.findSignatureProfileByPrivateKeySignature(signatureProfileRequest.getPrivateKeySignature())
+        signatureProfileRepository.findSignatureProfileByRegisteredDate(signatureProfileRequest.getRegisteredDate())
                 .ifPresent(signatureProfile -> {
+                    if (signatureProfile.getPersonId() != -1) {
+                        throw new BaseException(ErrorCode.newErrorCode(HttpStatus.NOT_FOUND.value(), "Signature is registered"));
+                    }
                     signatureProfile.setPersonId(Long.parseLong(signatureProfileRequest.getPersonId()));
                     signatureProfileRepository.save(signatureProfile);
                 });
@@ -67,12 +73,12 @@ public class SignatureProfileServiceImpl implements SignatureProfileService{
     private SignatureProfileDto SignatureProfileToDTO(SignatureProfile signatureProfile) {
         Optional<Person> personByPersonId = personRepository.findPersonByPersonId(signatureProfile.getPersonId());
         return personByPersonId.map(person -> new SignatureProfileDto(
-                signatureProfile.getPrivateKeySignature(),
+                1,
                 signatureProfile.getPersonId(),
                 person.getFullName(),
                 signatureProfile.getRegisteredDate())
         ).orElse(new SignatureProfileDto(
-                signatureProfile.getPrivateKeySignature(),
+                0,
                 signatureProfile.getPersonId(),
                 "",
                 signatureProfile.getRegisteredDate())

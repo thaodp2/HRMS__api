@@ -20,7 +20,7 @@ import java.util.List;
 @AllArgsConstructor
 public class SignatureProfileDto {
 
-    private String privateKeySignature;
+    private Integer isRegistered;
 
     private Long personId;
     private String employeeName;
