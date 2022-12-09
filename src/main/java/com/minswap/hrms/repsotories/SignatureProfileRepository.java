@@ -18,4 +18,5 @@ public interface SignatureProfileRepository extends JpaRepository<SignatureProfi
 
 	Optional<SignatureProfile> findSignatureProfileByRegisteredDate(Date registeredDate);
 
+	Optional<SignatureProfile> findSignatureProfileByPrivateKeySignature(String privateKeySignature);
 }
