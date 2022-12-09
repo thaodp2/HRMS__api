@@ -66,7 +66,7 @@ public class UserPrincipal implements OAuth2User {
 
 	public static UserPrincipal create(Person user, List<Role> roles) {
 		return user == null
-				? null
+				? new UserPrincipal()
 				: new UserPrincipal(
 				user.getEmail(),
 				user.getFullName(),
