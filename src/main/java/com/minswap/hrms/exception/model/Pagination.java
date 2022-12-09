@@ -38,8 +38,15 @@ public class Pagination extends PageRequest {
   
 	  @JsonProperty("totalRecords")
 	  private long totalRecords;
-	  
-	  public void setTotalRecords(Page pageInfo) {
+
+    public Pagination(int page, int limit, int size) {
+		super(page, limit, Sort.unsorted());
+		this.page = page;
+		this.limit = limit;
+		this.totalRecords = size;
+	}
+
+    public void setTotalRecords(Page pageInfo) {
 		  this.totalRecords = pageInfo.getTotalElements();
 	  }
 

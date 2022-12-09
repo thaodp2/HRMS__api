@@ -1,49 +1,56 @@
 package com.minswap.hrms.service.signatureProfile;
 
-import com.minswap.hrms.constants.ErrorCode;
-import com.minswap.hrms.entities.Person;
 import com.minswap.hrms.entities.SignatureProfile;
-import com.minswap.hrms.exception.model.BaseException;
 import com.minswap.hrms.exception.model.Pagination;
 import com.minswap.hrms.model.BaseResponse;
-import com.minswap.hrms.repsotories.PersonRepository;
 import com.minswap.hrms.repsotories.SignatureProfileRepository;
 import com.minswap.hrms.request.SignatureProfileRequest;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
-import com.minswap.hrms.response.EmployeeInfoResponse;
-import com.minswap.hrms.response.MasterDataResponse;
 import com.minswap.hrms.response.SignatureProfileResponse;
-import com.minswap.hrms.response.dto.EmployeeDetailDto;
 import com.minswap.hrms.response.dto.SignatureProfileDto;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 @Service
 public class SignatureProfileServiceImpl implements SignatureProfileService{
     @Autowired
-    private PersonRepository personRepository;
-    @Autowired
     private SignatureProfileRepository signatureProfileRepository;
 
     @Override
     public ResponseEntity<BaseResponse<Void, Void>> updateSignatureRegister(SignatureProfileRequest signatureProfileRequest) {
-        return null;
+        signatureProfileRepository.findSignatureProfileByPrivateKeySignature(signatureProfileRequest.getPrivateKeySignature())
+                .ifPresent(signatureProfile -> {
+                    signatureProfile.setPersonId(Long.parseLong(signatureProfileRequest.getPersonId()));
+                    signatureProfileRepository.save(signatureProfile);
+                });
+        return BaseResponse.ofSucceeded(null);
     }
 
     @Override
-    public ResponseEntity<BaseResponse<SignatureProfileResponse, Pageable>> listSignatureRegister(int isRegistered, String sort, String dir, int page,int limit) {
-        List<SignatureProfile> list = signatureProfileRepository.findByRegistered(isRegistered, sort, dir);
-        return null;
+    public ResponseEntity<BaseResponse<Void, Void>> deleteSignatureRegister(SignatureProfileRequest signatureProfileRequest) {
+        signatureProfileRepository.deleteAll(signatureProfileRepository.findSignatureProfilesByPersonId(Long.parseLong(signatureProfileRequest.getPersonId())));
+        return BaseResponse.ofSucceeded(null);
     }
 
     @Override
-    public ResponseEntity<BaseResponse<MasterDataResponse, Pageable>> getMasterDataAllEmployee(String search) {
-        return null;
+    public ResponseEntity<BaseResponse<SignatureProfileResponse, Pageable>> listSignatureRegister(Integer isRegistered, int page,int limit) {
+        List<SignatureProfile> list = signatureProfileRepository.findAll(Sort.by(Sort.Direction.DESC, "registeredDate"));
+        List<SignatureProfileDto> items = list.stream()
+                .filter(sp -> (isRegistered == 1) == (sp.getPersonId() != -1))
+                .map(this::SignatureProfileToDTO)
+                .collect(Collectors.toList());
+        Pagination pagination = new Pagination(page, limit, list.size());
+        return BaseResponse.ofSucceededOffset(new SignatureProfileResponse(items), pagination);
     }
+
+    private SignatureProfileDto SignatureProfileToDTO(SignatureProfile signatureProfile) {
+        return new SignatureProfileDto(signatureProfile.getPrivateKeySignature(), signatureProfile.getPersonId(), signatureProfile.getRegisteredDate());
+    }
+
 }
