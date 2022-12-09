@@ -48,7 +48,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private static final String[] MANAGER_URL_PATTERNS = {MANAGER + "/**"};
     private static final String[] HR_URL_PATTERNS = {HR + "/**"};
     private static final String[] IT_SUPPORT_URL_PATTERNS = {ITSUPPORT + "/**"};
-    private static final String[] WHITE_LIST_URL_PATTERNS = {"/oauth2/**", TimeCheckController.TIME_CHECK + "/**", "push-notifications/**"};
+    private static final String[] WHITE_LIST_URL_PATTERNS = {"/oauth2/**", TimeCheckController.TIME_CHECK + "/**", "/push-notifications/**"};
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
