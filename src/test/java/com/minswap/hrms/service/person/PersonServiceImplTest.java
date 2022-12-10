@@ -149,7 +149,7 @@ public class PersonServiceImplTest {
 
     @Test
     public void testGetRoles() throws Exception {
-        ResponseEntity<BaseResponse<ListRolesResponse, Void>> result = personServiceImpl.getRoles(new UserPrincipal("email", "name", Map.of("String", "attributes"), List.of(new Role(Long.valueOf(1), "roleName"))));
+        ResponseEntity<BaseResponse<ListRolesResponse, Void>> result = personServiceImpl.getRoles(new UserPrincipal("email", "name", List.of(new Role(Long.valueOf(1), "roleName"))));
         Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
     }
 
