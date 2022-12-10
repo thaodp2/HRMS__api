@@ -19,7 +19,7 @@ public class HRSignatureProfileController {
     SignatureProfileService signatureProfileService;
 
     @GetMapping("/signature_register")
-    public ResponseEntity<BaseResponse<SignatureProfileResponse, Pageable>> registerSignatureEmployee(
+    public ResponseEntity<BaseResponse<SignatureProfileResponse, Pageable>> getListSignatureEmployee(
             @RequestParam(required = false) Integer isRegistered,
             @RequestParam(required = false) String search,
             @RequestParam int page,
@@ -29,7 +29,7 @@ public class HRSignatureProfileController {
     }
 
     @PostMapping("/signature_register")
-    public ResponseEntity<BaseResponse<Void, Void>> updateSignatureRegister(@RequestBody SignatureProfileRequest request) {
+    public ResponseEntity<BaseResponse<Void, Void>> registerSignature(@RequestBody SignatureProfileRequest request) {
         return signatureProfileService.updateSignatureRegister(request);
     }
 

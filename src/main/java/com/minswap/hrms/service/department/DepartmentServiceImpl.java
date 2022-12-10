@@ -16,6 +16,7 @@ import com.minswap.hrms.response.MasterDataResponse;
 import com.minswap.hrms.response.dto.DepartmentDto;
 import com.minswap.hrms.response.dto.ListDepartmentDto;
 import com.minswap.hrms.response.dto.MasterDataDto;
+import com.minswap.hrms.response.dto.PositionDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -57,6 +58,13 @@ public class DepartmentServiceImpl implements DepartmentService{
         List<DepartmentDto> departmentDtos = listDepartmentDto.getContent();
         for (DepartmentDto departmentDto : departmentDtos) {
             departmentDto.setTotalEmployee(personRepository.getNumberOfEmplInDepartment(departmentDto.getId()));
+            List<Long> listPersonId = departmentRepository.getPersonIdByDepartmentId(departmentDto.getId());
+            if (listPersonId.size() > 0) {
+                departmentDto.setIsAllowDelete(NOT_ALLOW_DELETE);
+            }
+            else {
+                departmentDto.setIsAllowDelete(ALLOW_DELETE);
+            }
         }
         if (sort != null && (sort.equalsIgnoreCase(SORT_ASC) || sort.equalsIgnoreCase(SORT_DESC))) {
             departmentDtos = listDepartmentDto.getContent()
@@ -149,6 +157,7 @@ public class DepartmentServiceImpl implements DepartmentService{
                                                         "In the same department can't have the same position!",
                                                                 httpStatus.ALREADY_REPORTED));
         }
+
         List<Long> listPosition = positionRepository.getPositionIdsByDepartmentId(id);
         List<Long> listPositionIdAfterEdit = new ArrayList<>();
         for (Position position : departmentRequest.getListPosition()) {
@@ -245,10 +254,18 @@ public class DepartmentServiceImpl implements DepartmentService{
         }
         Department department = departmentRepository.getDepartmentByDepartmentId(id);
         List<Position> listPosition = positionRepository.getPositionsByDepartmentId(id);
+        List<PositionDto> listPositionDto = new ArrayList<>();
+        for (Position position : listPosition) {
+            int isAllowDelete = 1;
+            if (personRepository.getListPersonIdByPositionId(position.getPositionId(), "1").size() > 0) {
+                isAllowDelete = 0;
+            }
+            listPositionDto.add(new PositionDto(position.getPositionId(), position.getPositionName(), isAllowDelete));
+        }
         Integer numberOfEmployeeInDepartment = departmentRepository.getNumberOfEmployeeInDepartment(id);
         DepartmentDto departmentDto = new DepartmentDto(department.getDepartmentId(), department.getDepartmentName());
         departmentDto.setTotalEmployee(numberOfEmployeeInDepartment);
-        departmentDto.setListPosition(listPosition);
+        departmentDto.setListPosition(listPositionDto);
         List<Long> listPersonId = departmentRepository.getPersonIdByDepartmentId(id);
         if (listPersonId.size() > 0) {
             departmentDto.setIsAllowDelete(NOT_ALLOW_DELETE);

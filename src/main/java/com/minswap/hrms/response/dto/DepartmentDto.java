@@ -21,7 +21,7 @@ public class DepartmentDto {
 
     private int totalEmployee;
 
-    private List<Position> listPosition;
+    private List<PositionDto> listPosition;
 
     private int isAllowDelete;
 }
