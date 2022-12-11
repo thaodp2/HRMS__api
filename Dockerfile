@@ -1,4 +1,4 @@
-FROM maven:3.5-jdk-8-alpine as builder
+FROM maven:3.8.6-openjdk-11 as builder
 ENV HOME=/app
 RUN mkdir -p $HOME
 RUN mkdir -p /root/.m2 \
@@ -8,11 +8,11 @@ WORKDIR $HOME
 ADD pom.xml $HOME
 RUN mvn verify --fail-never
 ADD . $HOME
-RUN mvn -X clean package
+RUN mvn -X -Dmaven.test.skip=true clean package
 
-FROM openjdk:8-jre-alpine as runner
+FROM openjdk:11-jre as runner
 
-RUN apk add --update \
+RUN apt install \
     curl \
     openssl \
     tzdata \
@@ -22,6 +22,7 @@ WORKDIR /app
 
 RUN chmod -R 755 /app/
 
+COPY --from=builder /app/src/main/resources/templateexcel /app/templateexcel
 COPY --from=builder /app/target/HRMS__api-0.0.1-SNAPSHOT.jar /app/HRMS__api.jar
 ENTRYPOINT ["java", "-Dlog4j2.formatMsgNoLookups=false", "-Dspring.profiles.active=prod", "-Xdebug", "-Xrunjdwp:server=y,transport=dt_socket,address=6699,suspend=n", "-jar", "HRMS__api.jar"]
 # Launch the verticle
