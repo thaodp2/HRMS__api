@@ -442,7 +442,7 @@ public class RequestServiceImpl implements RequestService {
             startTime.setTime(startTime.getTime() + appConfig.getMillisecondSevenHours());
             endTime.setTime(endTime.getTime() + appConfig.getMillisecondSevenHours());
         }
-        createDate.setTime(createDate.getTime() + appConfig.getMillisecondSevenHours());
+        createDate.setTime(createDate.getTime() + CommonConstant.MILLISECOND_7_HOURS);
         Request request = new Request(requestTypeId,
                 personId,
                 deviceTypeId,
@@ -578,7 +578,7 @@ public class RequestServiceImpl implements RequestService {
             }
         } else if (!currentStatus.equalsIgnoreCase(PENDING_STATUS)) {
             // Lấy time rollback từ db ra cần trừ đi 7 tiếng để về thời gian chuẩn
-            maximumTimeToRollback.setTime(maximumTimeToRollback.getTime() - appConfig.getMillisecondSevenHours());
+            maximumTimeToRollback.setTime(maximumTimeToRollback.getTime() - CommonConstant.MILLISECOND_7_HOURS);
             if (currentTime.after(maximumTimeToRollback)) {
                 throw new BaseException(ErrorCode.newErrorCode(208,
                         "You can only rollback within " + TIME_ALLOW_TO_ROLLBACK +
@@ -610,7 +610,7 @@ public class RequestServiceImpl implements RequestService {
                     rollbackTimeCheck(startTime, endTime);
                 }
                 if (status.equalsIgnoreCase(REJECTED_STATUS)) {
-                    currentTime.setTime(currentTime.getTime() + appConfig.getMillisecondSevenHours());
+                    currentTime.setTime(currentTime.getTime() + CommonConstant.MILLISECOND_7_HOURS);
                     requestRepository.updateStatusRequest(status, id, currentTime);
                 } else {
                     requestRepository.updateStatusRequest(status, id, null);
@@ -637,7 +637,7 @@ public class RequestServiceImpl implements RequestService {
             Date endTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
                     parse(end);
             Date currentDate = getCurrentTime();
-            currentDate.setTime(currentDate.getTime() + appConfig.getMillisecondSevenHours());
+            currentDate.setTime(currentDate.getTime() + CommonConstant.MILLISECOND_7_HOURS);
             startTime.setTime(startTime.getTime() + appConfig.getMillisecondSevenHours());
             endTime.setTime(endTime.getTime() + appConfig.getMillisecondSevenHours());
             requestRepository.autoRejectRequestNotProcessed(startTime, endTime, REJECTED_STATUS,
@@ -1450,11 +1450,11 @@ public class RequestServiceImpl implements RequestService {
         endTime.setTime(endTime.getTime() - appConfig.getMillisecondSevenHours());
     }
 
-    public void updateMaximumTimeToRollback(Date currentTime, Long id) {
-        currentTime.setTime(currentTime.getTime() + appConfig.getMillisecondSevenHours());
-        currentTime.setTime(currentTime.getTime() + CommonConstant.MILLISECOND_2_HOURS);
-        requestRepository.updateMaximumTimeToRollback(id, currentTime);
-        currentTime.setTime(currentTime.getTime() - CommonConstant.MILLISECOND_2_HOURS);
+    public void updateMaximumTimeToRollback(Date approvalTime, Long id) {
+        approvalTime.setTime(approvalTime.getTime() + CommonConstant.MILLISECOND_7_HOURS);
+        approvalTime.setTime(approvalTime.getTime() + CommonConstant.MILLISECOND_2_HOURS);
+        requestRepository.updateMaximumTimeToRollback(id, approvalTime);
+        approvalTime.setTime(approvalTime.getTime() - CommonConstant.MILLISECOND_2_HOURS);
     }
 
     public void updateStatusWhenManagerApproved(int requestTypeId, Long personId, Date startTime, Date endTime,
