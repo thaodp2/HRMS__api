@@ -384,9 +384,9 @@ public class TimeCheckServiceImpl implements TimeCheckService{
         long timein = timeIn.getTime();
         long timeOffice = dateOfficeStr.getTime();
         if(timeIn.getTime() > dateOfficeStr.getTime() && isInTime == 0){
-            return ((timeIn.getTime() - MILLISECOND_7_HOURS - dateOfficeStr.getTime()) / (60*60*1000));
+            return ((timeIn.getTime() - dateOfficeStr.getTime()) / (60*60*1000));
         }else if(timeIn.getTime() < dateOfficeStr.getTime() && isInTime == 1){
-            return ((dateOfficeStr.getTime() - MILLISECOND_7_HOURS  - timeIn.getTime()) / (60*60*1000));
+            return ((dateOfficeStr.getTime() - timeIn.getTime()) / (60*60*1000));
         }
         return 0;
     }
@@ -399,7 +399,7 @@ public class TimeCheckServiceImpl implements TimeCheckService{
         try{
             SimpleDateFormat sm = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS);
             Date date = sm.parse(dateStr);
-            date.setTime(date.getTime() + MILLISECOND_7_HOURS);
+            date.setTime(date.getTime());
             return date;
         }catch (Exception e) {
             throw new BaseException(ErrorCode.DATE_FAIL_FOMART);
