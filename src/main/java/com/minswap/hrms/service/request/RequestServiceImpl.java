@@ -381,6 +381,7 @@ public class RequestServiceImpl implements RequestService {
                     requestDto.setRequestTypeName(OTHER_TYPE);
                 }
                 Date maximumTimeToRollback = requestDto.getMaximumTimeToRollback();
+                maximumTimeToRollback.setTime(maximumTimeToRollback.getTime() - appConfig.getMillisecondSevenHours());
                 if (maximumTimeToRollback != null) {
                     if (requestType != FORGOT_CHECK_IN_OUT
                             && currentTime.after(maximumTimeToRollback)) {
