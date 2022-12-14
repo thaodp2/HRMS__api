@@ -3,6 +3,7 @@ package com.minswap.hrms.controller.hr;
 import com.minswap.hrms.constants.CommonConstant;
 import com.minswap.hrms.exception.annotation.ServiceProcessingValidateAnnotation;
 import com.minswap.hrms.model.BaseResponse;
+import com.minswap.hrms.request.CreateDepartmentRequest;
 import com.minswap.hrms.request.DepartmentRequest;
 import com.minswap.hrms.response.DepartmentResponse;
 import com.minswap.hrms.response.dto.ListDepartmentDto;
@@ -35,9 +36,9 @@ public class HRDepartmentController {
     @ServiceProcessingValidateAnnotation
     public ResponseEntity<BaseResponse<Void, Void>> createDepartment(@RequestBody
                                                                      @Valid
-                                                                     DepartmentRequest departmentRequest,
+                                                                     CreateDepartmentRequest createDepartmentRequest,
                                                                      BindingResult bindingResult) {
-        return departmentService.createDepartment(departmentRequest);
+        return departmentService.createDepartment(createDepartmentRequest);
     }
 
     @PutMapping("/department/{id}")

@@ -755,10 +755,10 @@ public class PersonServiceImpl implements PersonService {
             personRole.setRoleId(MANAGER_ROLE);
             personRoleRepository.save(personRole);
         }
-        if (employeeRequest.getDepartmentId() == 1) {
+        if (employeeRequest.getDepartmentId() == 35) {
             personRole.setRoleId(IT_SUPPORT_ROLE);
             personRoleRepository.save(personRole);
-        } else if (employeeRequest.getDepartmentId() == 13) {
+        } else if (employeeRequest.getDepartmentId() == 2) {
             personRole.setRoleId(HR_ROLE);
             personRoleRepository.save(personRole);
         }
@@ -778,10 +778,10 @@ public class PersonServiceImpl implements PersonService {
             }
         }
         if (employeeRequest.getDepartmentId() != null) {
-            if (employeeRequest.getDepartmentId() == 1) {
+            if (employeeRequest.getDepartmentId() == 35) {
                 personRole.setRoleId(IT_SUPPORT_ROLE);
                 personRoleRepository.save(personRole);
-            } else if (employeeRequest.getDepartmentId() == 13) {
+            } else if (employeeRequest.getDepartmentId() == 2) {
                 personRole.setRoleId(HR_ROLE);
                 personRoleRepository.save(personRole);
             } else {
