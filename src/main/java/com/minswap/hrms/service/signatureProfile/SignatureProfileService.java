@@ -10,9 +10,8 @@ import org.springframework.http.ResponseEntity;
 
 public interface SignatureProfileService {
 
-    public ResponseEntity<BaseResponse<Void, Void>> updateSignatureRegister(SignatureProfileRequest signatureProfileRequest);
-    public ResponseEntity<BaseResponse<SignatureProfileResponse, Pageable>> listSignatureRegister(int page,int limit);
-
-    ResponseEntity<BaseResponse<MasterDataResponse, Pageable>> getMasterDataAllEmployee (String search);
+    ResponseEntity<BaseResponse<Void, Void>> updateSignatureRegister(SignatureProfileRequest signatureProfileRequest);
+    ResponseEntity<BaseResponse<Void, Void>> deleteSignatureRegister(SignatureProfileRequest signatureProfileRequest);
+    ResponseEntity<BaseResponse<SignatureProfileResponse, Pageable>> listSignatureRegister(Integer isRegistered, String search, int page, int limit);
 
 }

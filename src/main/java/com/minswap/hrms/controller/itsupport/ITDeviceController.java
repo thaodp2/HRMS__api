@@ -34,6 +34,7 @@ public class ITDeviceController {
     @ServiceProcessingValidateAnnotation
     public ResponseEntity<BaseResponse<HttpStatus, Void>> assignDevice(@RequestBody
                                                                        @Valid AssignRequest assignRequest,
+                                                                       BindingResult bindingResult,
                                                                        @CurrentUser UserPrincipal userPrincipal) throws ParseException {
         return deviceService.assignDevice(assignRequest, userPrincipal);
     }

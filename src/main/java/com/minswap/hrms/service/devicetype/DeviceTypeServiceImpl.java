@@ -100,11 +100,11 @@ public class DeviceTypeServiceImpl implements DeviceTypeService {
     public ResponseEntity<BaseResponse<HttpStatus, Void>> createDeviceType(List<String> deviceTypeName) {
         ResponseEntity<BaseResponse<HttpStatus, Void>> responseEntity = null;
         if (deviceTypeName != null && !deviceTypeName.isEmpty()) {
-            if (checkDuplicateDeviceType(deviceTypeName)) {
-                throw new BaseException(ErrorCode.DUPLICATE_DEVICE_TYPE);
-            }
             if (checkItemEmpty(deviceTypeName)) {
                 throw new BaseException(ErrorCode.DEVICE_TYPE_NULL_OR_EMPTY);
+            }
+            if (checkDuplicateDeviceType(deviceTypeName)) {
+                throw new BaseException(ErrorCode.DUPLICATE_DEVICE_TYPE);
             }
             for (String item : deviceTypeName) {
                 DeviceType deviceType = new DeviceType(item.trim());

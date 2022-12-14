@@ -108,10 +108,10 @@ public class DeviceServiceImpl implements DeviceService {
 
                 responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.OK, null);
             } else {
-                responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.EXPECTATION_FAILED, null);
+                throw new BaseException(ErrorCode.INVALID_DATA);
             }
         } catch (ParseException p) {
-            responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.EXPECTATION_FAILED, null);
+            throw new BaseException(ErrorCode.INVALID_DATA);
         }
         return responseEntity;
     }
@@ -277,13 +277,13 @@ public class DeviceServiceImpl implements DeviceService {
                     }
                     responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.OK, null);
                 }else {
-                    responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.EXPECTATION_FAILED, null);
+                    throw new BaseException(ErrorCode.INVALID_DATA);
                 }
             } else {
-                responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.EXPECTATION_FAILED, null);
+                throw new BaseException(ErrorCode.INVALID_DATA);
             }
         } catch (Exception e) {
-            responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.EXPECTATION_FAILED, null);
+            throw new BaseException(ErrorCode.INVALID_DATA);
         }
         return responseEntity;
     }

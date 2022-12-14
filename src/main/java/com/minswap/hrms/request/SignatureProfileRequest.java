@@ -1,6 +1,5 @@
 package com.minswap.hrms.request;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -8,20 +7,20 @@ import lombok.Setter;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-import java.util.List;
+import java.sql.Date;
 
 @Getter
 @Setter
 @NoArgsConstructor
 public class SignatureProfileRequest extends BasicRequest {
 
-    @JsonProperty("roll_number")
+    @JsonProperty("personId")
     @NotNull(message = "613")
     @NotEmpty(message = "613")
-    private String rollNumber;
+    private String personId;
 
-    @JsonProperty("id_signature")
+    @JsonProperty("registeredDate")
     @NotNull(message = "614")
     @NotEmpty(message = "614")
-    private String idSignature;
+    private String registeredDate;
 }

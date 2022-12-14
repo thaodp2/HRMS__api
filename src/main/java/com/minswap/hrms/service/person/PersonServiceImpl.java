@@ -58,6 +58,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static com.minswap.hrms.constants.ErrorCode.*;
 
@@ -172,6 +173,22 @@ public class PersonServiceImpl implements PersonService {
         ResponseEntity<BaseResponse<EmployeeInfoResponse, Pageable>> responseEntity = BaseResponse
                 .ofSucceededOffset(EmployeeInfoResponse.of(employeeListDtos), pagination);
         return responseEntity;
+    }
+
+    @Override
+    public ResponseEntity<BaseResponse<MasterDataResponse, Pageable>> getEmployeeMasterData(String search) {
+        List<Person> people;
+        people = personRepository.findAll();
+        List<MasterDataDto> masterDataDtos = new ArrayList<>();
+        if (search != null) {
+            people = people.stream().filter(person -> person.getFullName().toLowerCase().contains(search.toLowerCase())).collect(Collectors.toList());
+        }
+        people.forEach(person -> {
+            MasterDataDto masterDataDto = new MasterDataDto(person.getFullName(), person.getPersonId());
+            masterDataDtos.add(masterDataDto);
+        });
+        MasterDataResponse response = new MasterDataResponse(masterDataDtos);
+        return BaseResponse.ofSucceededOffset(response, null);
     }
 
     @Override

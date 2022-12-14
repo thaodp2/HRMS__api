@@ -3,16 +3,14 @@ package com.minswap.hrms.controller.hr;
 import com.minswap.hrms.constants.CommonConstant;
 import com.minswap.hrms.exception.annotation.ServiceProcessingValidateAnnotation;
 import com.minswap.hrms.model.BaseResponse;
-import com.minswap.hrms.repsotories.DeviceTypeRepository;
 import com.minswap.hrms.request.ChangeStatusEmployeeRequest;
 import com.minswap.hrms.request.EmployeeRequest;
 import com.minswap.hrms.request.EmployeeUpdateRequest;
 import com.minswap.hrms.response.EmployeeInfoResponse;
+import com.minswap.hrms.response.MasterDataResponse;
 import com.minswap.hrms.response.dto.EmployeeListDto;
 import com.minswap.hrms.service.person.PersonService;
-import com.minswap.hrms.util.ExcelExporter;
 import com.minswap.hrms.util.ExportEmployee;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
@@ -23,14 +21,12 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
-import java.util.Properties;
 
 @RestController
 @RequestMapping(CommonConstant.HR + "/")
@@ -61,6 +57,13 @@ public class HRPersonController {
 
     ) {
         return personService.getSearchListEmployee(page, limit, fullName, email, departmentId, fullName, active, positionId, "", sort, dir);
+    }
+
+    @GetMapping("/employee/master-data")
+    public ResponseEntity<BaseResponse<MasterDataResponse, Pageable>> getEmployeeMasterData(
+            @RequestParam(name = "search", required = false) String search
+    ) {
+        return personService.getEmployeeMasterData(search);
     }
 
 

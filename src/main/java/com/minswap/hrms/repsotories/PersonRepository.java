@@ -1,15 +1,12 @@
 package com.minswap.hrms.repsotories;
 
-import com.minswap.hrms.exception.model.Pagination;
+import com.minswap.hrms.entities.Person;
 import com.minswap.hrms.response.dto.EmployeeDetailDto;
 import com.minswap.hrms.response.dto.EmployeeListDto;
 import io.lettuce.core.dynamic.annotation.Param;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-
-import com.minswap.hrms.entities.Person;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -168,7 +165,7 @@ public interface PersonRepository extends JpaRepository<Person, Long> {
     @Query("select count(p.personId) from Person p where p.departmentId=:departmentId")
     Integer getNumberOfEmplInDepartment(@Param("departmentId") Long departmentId);
 
-    @Query("SELECT p FROM Person p WHERE p.email = :email")
+    @Query("SELECT p FROM Person p WHERE p.email = :email AND p.status = 1")
     Person getUserByEmail(@Param("email") String email);
 
     @Query("select p.rollNumber from Person p where p.personId=:personId")
