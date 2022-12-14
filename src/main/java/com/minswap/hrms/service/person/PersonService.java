@@ -20,7 +20,7 @@ import javax.validation.Valid;
 import java.util.List;
 
 public interface PersonService {
-    ResponseEntity<BaseResponse<HttpStatus, Void>> updateUserInformation(UpdateUserRequest persondto, Long personId) throws Exception;
+    ResponseEntity<BaseResponse<EmployeeInfoResponse, Void>> updateUserInformation(UpdateUserRequest persondto, Long personId) throws Exception;
 
     ResponseEntity<BaseResponse<MasterDataResponse, Pageable>> getMasterDataAllManager (Long departmentId,String search);
 
