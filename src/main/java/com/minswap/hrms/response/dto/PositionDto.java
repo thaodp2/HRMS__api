@@ -13,6 +13,10 @@ public class PositionDto {
         this.isAllowDelete = isAllowDelete;
     }
 
+    public PositionDto(String positionName) {
+        this.positionName = positionName;
+    }
+
     private Long positionId;
 
     private String positionName;
