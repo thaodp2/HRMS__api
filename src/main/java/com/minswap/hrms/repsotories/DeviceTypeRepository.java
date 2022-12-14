@@ -17,6 +17,10 @@ public interface DeviceTypeRepository extends JpaRepository<DeviceType,Long> {
     List<Long> getAllDeviceTypeId();
 
     List<DeviceType> findByDeviceTypeNameContainsIgnoreCase(String deviceTypeName);
+
+    List<DeviceType> findByDeviceTypeNameContainsIgnoreCaseAndStatus(String deviceTypeName, Integer status);
+
+    List<DeviceType> findByStatus(Integer status);
     List<DeviceType> findByDeviceTypeNameContainsIgnoreCase(String deviceTypeName, Pageable pageable);
 
     List<DeviceType> findByDeviceTypeNameIgnoreCase(String deviceTypeName);
