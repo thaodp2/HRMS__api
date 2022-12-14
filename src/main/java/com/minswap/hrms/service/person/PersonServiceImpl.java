@@ -97,7 +97,7 @@ public class PersonServiceImpl implements PersonService {
     HttpStatus httpStatus;
 
     @Override
-    public ResponseEntity<BaseResponse<HttpStatus, Void>> updateUserInformation(UpdateUserRequest updateUserDto, Long personId) throws Exception {
+    public ResponseEntity<BaseResponse<EmployeeInfoResponse, Void>> updateUserInformation(UpdateUserRequest updateUserDto, Long personId) throws Exception {
 
         Integer personCheckCitizen = personRepository.getUserByCitizenIdentification(updateUserDto.getCitizenIdentification());
         Optional<Person> personFromDB = personRepository.findPersonByPersonId(personId);
@@ -121,8 +121,10 @@ public class PersonServiceImpl implements PersonService {
         } catch (Exception ex) {
             throw new Exception(ex.getMessage());
         }
-        ResponseEntity<BaseResponse<HttpStatus, Void>> responseEntity
-                = BaseResponse.ofSucceededOffset(HttpStatus.OK, null);
+        EmployeeDetailDto employeeDetailDto = personRepository.getDetailEmployee(person.getRollNumber());
+        EmployeeInfoResponse employeeListDtos = new EmployeeInfoResponse(null, employeeDetailDto);
+        ResponseEntity<BaseResponse<EmployeeInfoResponse, Void>> responseEntity = BaseResponse
+                .ofSucceeded(employeeListDtos);
         return responseEntity;
     }
 
