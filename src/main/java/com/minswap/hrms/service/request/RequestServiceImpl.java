@@ -1215,16 +1215,6 @@ public class RequestServiceImpl implements RequestService {
                     }
                 }
             }
-            if (requestTypeId.intValue() != FORGOT_CHECK_IN_OUT.intValue()) {
-                // Validate 2: Tạo trước 1 ngày
-
-                if (calendarCreate.get(Calendar.DAY_OF_MONTH) == calendarStart.get(Calendar.DAY_OF_MONTH)
-                        && calendarCreate.get(Calendar.MONTH) == calendarStart.get(Calendar.MONTH)) {
-                    throw new BaseException(ErrorCode.newErrorCode(208,
-                            "You must make request 1 day before start date",
-                            httpStatus.NOT_ACCEPTABLE));
-                }
-            }
             // Validate 4: Không tạo sang năm sau
             if (calendarCreate.get(Calendar.YEAR) != calendarStart.get(Calendar.YEAR)
                     || calendarCreate.get(Calendar.YEAR) != calendarEnd.get(Calendar.YEAR)) {
@@ -1236,6 +1226,13 @@ public class RequestServiceImpl implements RequestService {
             }
             if (requestTypeId.intValue() != FORGOT_CHECK_IN_OUT.intValue()
                     && requestTypeId.intValue() != OT_TYPE_ID.intValue()) {
+                // Validate 2: Tạo trước 1 ngày
+                if (calendarCreate.get(Calendar.DAY_OF_MONTH) == calendarStart.get(Calendar.DAY_OF_MONTH)
+                        && calendarCreate.get(Calendar.MONTH) == calendarStart.get(Calendar.MONTH)) {
+                    throw new BaseException(ErrorCode.newErrorCode(208,
+                            "You must make request 1 day before start date",
+                            httpStatus.NOT_ACCEPTABLE));
+                }
                 // Validate 1: CreateDate < StartTime < EndTime (ngoại trừ OT request và forgot check in/out request)
                 if ((startTime.before(createDate)
                         || endTime.before(createDate)
