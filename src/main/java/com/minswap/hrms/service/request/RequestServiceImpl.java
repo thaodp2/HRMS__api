@@ -765,6 +765,9 @@ public class RequestServiceImpl implements RequestService {
         } else {
             if (getDayOfDate(startTime) == getDayOfDate(endTime)) {
                 Double otTimeWorkedInThisDay = timeCheckRepository.getOTTimeByDay(getDayOfDate(startTime), personId);
+                if (otTimeWorkedInThisDay == null) {
+                    otTimeWorkedInThisDay = Double.valueOf(0);
+                }
                 otHoursInRequest = calculateHoursBetweenTwoDateTime(startTime, endTime);
                 sumOTHoursInDay = otTimeWorkedInThisDay + otHoursInRequest;
                 validateOTTime(otHoursInRequest, otHoursRemainOfMonth, otHoursRemainOfYear, sumOTHoursInDay);
@@ -1204,8 +1207,8 @@ public class RequestServiceImpl implements RequestService {
                         && calendarStart.get(Calendar.MONTH) == calendarEnd.get(Calendar.MONTH)) {
                     start = formatTimeToKnownDate(startTime, officeTimeDto.getTimeStart());
                     end = formatTimeToKnownDate(startTime, officeTimeDto.getTimeEnd());
-                    if ((startTime.before(start) && endTime.before(start))
-                            || (startTime.after(end) && endTime.after(end))) {
+                    if ((startTime.getTime() <= start.getTime() && endTime.getTime() <= start.getTime())
+                            || (startTime.getTime() >= end.getTime() && endTime.getTime() >= end.getTime())) {
                         throw new BaseException(ErrorCode.newErrorCode(208,
                                 "You can't make a leave request outside of office hours",
                                 httpStatus.NOT_ACCEPTABLE));
