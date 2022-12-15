@@ -186,7 +186,7 @@ public class PersonServiceImpl implements PersonService {
             people = people.stream().filter(person -> person.getFullName().toLowerCase().contains(search.toLowerCase())).collect(Collectors.toList());
         }
         people.forEach(person -> {
-            MasterDataDto masterDataDto = new MasterDataDto(person.getFullName(), person.getPersonId());
+            MasterDataDto masterDataDto = new MasterDataDto(person.getFullName()+" - "+person.getRollNumber(), person.getPersonId());
             masterDataDtos.add(masterDataDto);
         });
         MasterDataResponse response = new MasterDataResponse(masterDataDtos);
@@ -675,15 +675,18 @@ public class PersonServiceImpl implements PersonService {
         personRole.setPersonId(personByRollNumber.getPersonId());
         personRoleRepository.save(personRole);
         if (employeeRequest.getIsManager() == 1) {
-            personRole.setRoleId(MANAGER_ROLE);
-            personRoleRepository.save(personRole);
+        	PersonRole personRole1 = new PersonRole();
+        	personRole1.setRoleId(MANAGER_ROLE);
+            personRoleRepository.save(personRole1);
         }
         if (employeeRequest.getDepartmentId() == 35) {
-            personRole.setRoleId(IT_SUPPORT_ROLE);
-            personRoleRepository.save(personRole);
+        	PersonRole personRole2 = new PersonRole();
+        	personRole2.setRoleId(IT_SUPPORT_ROLE);
+            personRoleRepository.save(personRole2);
         } else if (employeeRequest.getDepartmentId() == 2) {
-            personRole.setRoleId(HR_ROLE);
-            personRoleRepository.save(personRole);
+        	PersonRole personRole3 = new PersonRole();
+        	personRole3.setRoleId(HR_ROLE);
+            personRoleRepository.save(personRole3);
         }
     }
 
@@ -702,16 +705,19 @@ public class PersonServiceImpl implements PersonService {
         }
         if (employeeRequest.getDepartmentId() != null) {
             if (employeeRequest.getDepartmentId() == 35) {
-                personRole.setRoleId(IT_SUPPORT_ROLE);
-                personRoleRepository.save(personRole);
+            	 PersonRole personRole1 = new PersonRole();
+            	 personRole1.setRoleId(IT_SUPPORT_ROLE);
+                personRoleRepository.save(personRole1);
             } else if (employeeRequest.getDepartmentId() == 2) {
-                personRole.setRoleId(HR_ROLE);
-                personRoleRepository.save(personRole);
+            	PersonRole personRole2 = new PersonRole();
+            	personRole2.setRoleId(HR_ROLE);
+                personRoleRepository.save(personRole2);
             } else {
-                personRole.setRoleId(IT_SUPPORT_ROLE);
-                personRoleRepository.delete(personRole);
-                personRole.setRoleId(HR_ROLE);
-                personRoleRepository.delete(personRole);
+            	PersonRole personRole3 = new PersonRole();
+            	personRole3.setRoleId(IT_SUPPORT_ROLE);
+                personRoleRepository.delete(personRole3);
+                personRole3.setRoleId(HR_ROLE);
+                personRoleRepository.delete(personRole3);
             }
         }
     }
