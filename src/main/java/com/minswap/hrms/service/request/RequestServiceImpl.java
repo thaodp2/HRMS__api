@@ -573,6 +573,9 @@ public class RequestServiceImpl implements RequestService {
             if (maximumTimeToRollback == null) {
                 updateMaximumTimeToRollback(currentTime, id);
             }
+            else {
+                currentTime.setTime(currentTime.getTime() + CommonConstant.MILLISECOND_7_HOURS);
+            }
             Integer isUpdatedSuccess = requestRepository.updateStatusRequest(status, id, currentTime);
             if (isUpdatedSuccess == CommonConstant.UPDATE_FAIL) {
                 throw new BaseException(ErrorCode.UPDATE_FAIL);
@@ -1476,6 +1479,9 @@ public class RequestServiceImpl implements RequestService {
         }
         if (maximumTimeToRollback == null) {
             updateMaximumTimeToRollback(currentTime, requestId);
+        }
+        else {
+            currentTime.setTime(currentTime.getTime() + CommonConstant.MILLISECOND_7_HOURS);
         }
         Integer isUpdatedSuccess = requestRepository.updateStatusRequest(status, requestId, currentTime);
         if (isUpdatedSuccess == CommonConstant.UPDATE_FAIL) {
