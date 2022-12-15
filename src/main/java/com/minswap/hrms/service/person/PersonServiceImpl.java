@@ -227,8 +227,12 @@ public class PersonServiceImpl implements PersonService {
     @Override
     public ResponseEntity<BaseResponse<EmployeeInfoResponse, Pageable>> getSearchListEmployee(int page,
                                                                                               int limit, String fullName, String email, Long departmentId, String rollNumber, String status, Long
-                                                                                                      positionId, String managerRoll, String sort, String dir) {
-        Sort.Direction dirSort = CommonUtil.getSortDirection(sort, dir);
+                                                                                                   positionId, String managerRoll, String sort, String dir) {
+        if(StringUtils.isEmpty(sort) && StringUtils.isEmpty(dir)) {
+        	sort = "rollNumber";
+        	dir = "DESC";
+        }
+    	Sort.Direction dirSort = CommonUtil.getSortDirection(sort, dir);
         Pagination pagination = new Pagination(page, limit);
         Long managerId = null;
         if (!StringUtils.isEmpty(managerRoll)) {
