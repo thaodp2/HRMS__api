@@ -772,7 +772,7 @@ public class RequestServiceImpl implements RequestService {
                 otHoursInRequest = calculateHoursBetweenTwoDateTime(startTime, endTime);
                 sumOTHoursInDay = otTimeWorkedInThisDay + otHoursInRequest;
                 validateOTTime(otHoursInRequest, otHoursRemainOfMonth, otHoursRemainOfYear, sumOTHoursInDay);
-                timeCheckRepository.updateOTTime(getDayOfDate(startTime), personId, sumOTHoursInDay);
+                timeCheckRepository.updateOTTime(getDayOfDate(startTime), personId, sumOTHoursInDay, getMonthOfDate(startTime));
             } else {
                 otTimeOfStartDay = calculateHoursBetweenTwoDateTime(startTime,
                         formatTimeToKnownDate(startTime, TIME_END_OF_DAY));
@@ -790,8 +790,10 @@ public class RequestServiceImpl implements RequestService {
                 }
                 validateOTTime(otHoursInRequest, otHoursRemainOfMonth,
                         otHoursRemainOfYear, otTimeWorkedInEndDay + otTimeOfEndDay);
-                timeCheckRepository.updateOTTime(getDayOfDate(startTime), personId, otTimeWorkedInStartDay + otTimeOfStartDay);
-                timeCheckRepository.updateOTTime(getDayOfDate(endTime), personId, otTimeWorkedInEndDay + otTimeOfEndDay);
+                timeCheckRepository.updateOTTime(getDayOfDate(startTime), personId,
+                        otTimeWorkedInStartDay + otTimeOfStartDay, getMonthOfDate(startTime));
+                timeCheckRepository.updateOTTime(getDayOfDate(endTime), personId,
+                        otTimeWorkedInEndDay + otTimeOfEndDay, getMonthOfDate(endTime));
             }
             newHoursWorked = otBudgetDto.getHoursWorked() + otHoursInRequest;
             remainHoursWorkOfYear = otBudgetDto.getOtHoursRemainOfYear() - otHoursInRequest;
@@ -920,6 +922,11 @@ public class RequestServiceImpl implements RequestService {
     public int getDayOfDate(Date date) {
         Calendar calendar = getCalendarByDate(date);
         return calendar.get(Calendar.DAY_OF_MONTH);
+    }
+
+    public int getMonthOfDate(Date date) {
+        Calendar calendar = getCalendarByDate(date);
+        return calendar.get(Calendar.MONTH) + 1;
     }
 
     public void validateOTTime(double otHoursRequest,
@@ -1125,6 +1132,7 @@ public class RequestServiceImpl implements RequestService {
         OfficeTimeDto officeTimeDto = officeTimeRepository.getOfficeTime();
         Date startOfficeTime = formatTimeToKnownDate(startTime, officeTimeDto.getTimeStart());
         Date finishOfficeTime = formatTimeToKnownDate(startTime, officeTimeDto.getTimeEnd());
+
         double workingTime = 0;
         double inLate = 0;
         double outEarly = 0;
@@ -1153,18 +1161,21 @@ public class RequestServiceImpl implements RequestService {
             }
             workingTimeInLastDay = calculateNumOfHoursWorkedInADay(startOfficeTime, endTime);
 
-            saveTimeCheck(startTime, finishOfficeTime, personId, inLate, outEarly, workingTimeInFirstDay);
-            saveTimeCheck(startOfficeTime, endTime, personId, inLate, outEarly, workingTimeInLastDay);
+            saveTimeCheck(startTime, finishOfficeTime, personId, inLate, 0, workingTimeInFirstDay);
+            saveTimeCheck(startOfficeTime, endTime, personId, 0, outEarly, workingTimeInLastDay);
 
-            String startDateStr = getStringDateFromDateTime(startTime);
-            String endDateStr = getStringDateFromDateTime(endTime);
+            Date newStartTime = new Date(startTime.getTime() - appConfig.getMillisecondSevenHours());
+            Date newEndTime = new Date(endTime.getTime() - appConfig.getMillisecondSevenHours());
+
+            String startDateStr = getStringDateFromDateTime(newStartTime);
+            String endDateStr = getStringDateFromDateTime(newEndTime);
             LocalDate startDate = LocalDate.parse(startDateStr);
             LocalDate endDate = LocalDate.parse(endDateStr);
             for (LocalDate date = startDate.plusDays(1); date.isBefore(endDate); date = date.plusDays(1)) {
                 startOfficeTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
-                        parse(date.toString() + officeTimeDto.getTimeStart());
+                        parse(date.toString() + " " +  officeTimeDto.getTimeStart());
                 finishOfficeTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
-                        parse(date.toString() + officeTimeDto.getTimeEnd());
+                        parse(date.toString() + " " + officeTimeDto.getTimeEnd());
                 saveTimeCheck(startOfficeTime, finishOfficeTime, personId, 0, 0, calculateNumOfHoursWorkedInADay(startOfficeTime, finishOfficeTime));
             }
         }
@@ -1454,8 +1465,6 @@ public class RequestServiceImpl implements RequestService {
         TimeCheck timeCheck = new TimeCheck(personId, inLate, outEarly, startTime,
                 endTime, 0.0, workingTime);
         timeCheckRepository.save(timeCheck);
-        startTime.setTime(startTime.getTime() - appConfig.getMillisecondSevenHours());
-        endTime.setTime(endTime.getTime() - appConfig.getMillisecondSevenHours());
     }
 
     public void updateMaximumTimeToRollback(Date approvalTime, Long id) {

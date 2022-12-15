@@ -125,10 +125,12 @@ public interface TimeCheckRepository extends JpaRepository<TimeCheck, Long> {
 
     @Modifying
     @Transactional
-    @Query("update TimeCheck tc set tc.ot=:otTime where tc.personId=:personId and DAY(tc.timeIn) =:dayOfTimeIn")
+    @Query("update TimeCheck tc set tc.ot=:otTime where tc.personId=:personId and DAY(tc.timeIn) =:dayOfTimeIn " +
+            "and MONTH(tc.timeIn)=:monthOfTimeIn")
     Integer updateOTTime(@Param("dayOfTimeIn") int dayOfTimeIn,
                          @Param("personId") Long personId,
-                         @Param("otTime") double otTime);
+                         @Param("otTime") double otTime,
+                         @Param("monthOfTimeIn") int monthOfTimeIn);
     @Modifying
     @Transactional
     @Query("UPDATE TimeCheck t set " +
