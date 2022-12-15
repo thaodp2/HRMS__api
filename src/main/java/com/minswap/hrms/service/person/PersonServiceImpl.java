@@ -76,7 +76,10 @@ public class PersonServiceImpl implements PersonService {
     @Autowired
     private PersonRepository personRepository;
 
+    private static final long MILLISECOND_PER_8H = 8 * 60 * 60 * 1000;
+
     private static final long MILLISECOND_PER_DAY = 24 * 60 * 60 * 1000;
+
     @Autowired
     private PersonRoleRepository personRoleRepository;
 
@@ -119,12 +122,14 @@ public class PersonServiceImpl implements PersonService {
         if (personCheckCitizen != null && personCheckCitizen > 0 && !person.getCitizenIdentification().equals(updateUserDto.getCitizenIdentification())) {
             throw new BaseException(ErrorCode.CITIZEN_INDENTIFICATION_EXSIT);
         }
+        if(updateUserDto.getAvatarImg() == null){
+            updateUserDto.setAvatarImg(person.getAvatarImg());
+        }
         try {
             ModelMapper modelMapper = new ModelMapper();
-
             modelMapper.map(updateUserDto, person);
             Date dateOfBirth = new Date();
-            dateOfBirth.setTime(person.getDateOfBirth().getTime() + MILLISECOND_PER_DAY); // go to the next day
+            dateOfBirth.setTime(person.getDateOfBirth().getTime() + MILLISECOND_PER_8H); // go to the next day
             person.setDateOfBirth(dateOfBirth);
             personRepository.save(person);
         } catch (Exception ex) {
@@ -227,8 +232,12 @@ public class PersonServiceImpl implements PersonService {
     @Override
     public ResponseEntity<BaseResponse<EmployeeInfoResponse, Pageable>> getSearchListEmployee(int page,
                                                                                               int limit, String fullName, String email, Long departmentId, String rollNumber, String status, Long
-                                                                                                      positionId, String managerRoll, String sort, String dir) {
-        Sort.Direction dirSort = CommonUtil.getSortDirection(sort, dir);
+                                                                                                   positionId, String managerRoll, String sort, String dir) {
+        if(StringUtils.isEmpty(sort) && StringUtils.isEmpty(dir)) {
+        	sort = "personId";
+        	dir = "DESC";
+        }
+    	Sort.Direction dirSort = CommonUtil.getSortDirection(sort, dir);
         Pagination pagination = new Pagination(page, limit);
         Long managerId = null;
         if (!StringUtils.isEmpty(managerRoll)) {
@@ -387,11 +396,11 @@ public class PersonServiceImpl implements PersonService {
         //update leave budget
         if (person.getRankId() != 1) {
             List<LeaveBudget> leaveBudgetList = new ArrayList<>();
-            leaveBudgetList.add(new LeaveBudget(person.getPersonId(), person.getAnnualLeaveBudget() / 12, 0, 0, Year.now(), CommonConstant.LIST_REQUEST_TYPE_ID_IN_LEAVE_BUDGET[0]));
-            leaveBudgetList.add(new LeaveBudget(person.getPersonId(), 180, 0, 0, Year.now(), CommonConstant.LIST_REQUEST_TYPE_ID_IN_LEAVE_BUDGET[1]));
-            leaveBudgetList.add(new LeaveBudget(person.getPersonId(), 20, 0, 0, Year.now(), CommonConstant.LIST_REQUEST_TYPE_ID_IN_LEAVE_BUDGET[2]));
-            leaveBudgetList.add(new LeaveBudget(person.getPersonId(), 70, 0, 0, Year.now(), CommonConstant.LIST_REQUEST_TYPE_ID_IN_LEAVE_BUDGET[3]));
-            leaveBudgetList.add(new LeaveBudget(person.getPersonId(), 3, 0, 0, Year.now(), CommonConstant.LIST_REQUEST_TYPE_ID_IN_LEAVE_BUDGET[4]));
+            leaveBudgetList.add(new LeaveBudget(person.getPersonId(), person.getAnnualLeaveBudget() / 12, 0, person.getAnnualLeaveBudget() / 12, Year.now(), CommonConstant.LIST_REQUEST_TYPE_ID_IN_LEAVE_BUDGET[0]));
+            leaveBudgetList.add(new LeaveBudget(person.getPersonId(), 180, 0, 180, Year.now(), CommonConstant.LIST_REQUEST_TYPE_ID_IN_LEAVE_BUDGET[1]));
+            leaveBudgetList.add(new LeaveBudget(person.getPersonId(), 20, 0, 20, Year.now(), CommonConstant.LIST_REQUEST_TYPE_ID_IN_LEAVE_BUDGET[2]));
+            leaveBudgetList.add(new LeaveBudget(person.getPersonId(), 70, 0, 70, Year.now(), CommonConstant.LIST_REQUEST_TYPE_ID_IN_LEAVE_BUDGET[3]));
+            leaveBudgetList.add(new LeaveBudget(person.getPersonId(), 3, 0, 3, Year.now(), CommonConstant.LIST_REQUEST_TYPE_ID_IN_LEAVE_BUDGET[4]));
             try {
                 leaveBudgetRepository.saveAll(leaveBudgetList);
             } catch (Exception e) {
@@ -754,14 +763,17 @@ public class PersonServiceImpl implements PersonService {
         if (employeeRequest.getIsManager() == 1) {
         	PersonRole personRole1 = new PersonRole();
         	personRole1.setRoleId(MANAGER_ROLE);
+        	personRole1.setPersonId(personByRollNumber.getPersonId());
             personRoleRepository.save(personRole1);
         }
         if (employeeRequest.getDepartmentId() == 35) {
         	PersonRole personRole2 = new PersonRole();
         	personRole2.setRoleId(IT_SUPPORT_ROLE);
+        	personRole2.setPersonId(personByRollNumber.getPersonId());
             personRoleRepository.save(personRole2);
         } else if (employeeRequest.getDepartmentId() == 2) {
         	PersonRole personRole3 = new PersonRole();
+        	personRole3.setPersonId(personByRollNumber.getPersonId());
         	personRole3.setRoleId(HR_ROLE);
             personRoleRepository.save(personRole3);
         }
@@ -783,14 +795,17 @@ public class PersonServiceImpl implements PersonService {
         if (employeeRequest.getDepartmentId() != null) {
             if (employeeRequest.getDepartmentId() == 35) {
             	 PersonRole personRole1 = new PersonRole();
+            	 personRole1.setPersonId(employeeDetailDto.getPersonId());
             	 personRole1.setRoleId(IT_SUPPORT_ROLE);
                 personRoleRepository.save(personRole1);
             } else if (employeeRequest.getDepartmentId() == 2) {
             	PersonRole personRole2 = new PersonRole();
+            	personRole2.setPersonId(employeeDetailDto.getPersonId());
             	personRole2.setRoleId(HR_ROLE);
                 personRoleRepository.save(personRole2);
             } else {
             	PersonRole personRole3 = new PersonRole();
+            	personRole3.setPersonId(employeeDetailDto.getPersonId());
             	personRole3.setRoleId(IT_SUPPORT_ROLE);
                 personRoleRepository.delete(personRole3);
                 personRole3.setRoleId(HR_ROLE);

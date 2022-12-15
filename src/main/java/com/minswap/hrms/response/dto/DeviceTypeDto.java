@@ -16,6 +16,7 @@ public class DeviceTypeDto {
     private Long deviceTypeId;
 
     private String deviceTypeName;
+    @JsonProperty("isDeleted")
     private Integer status;
     private Integer isAllowDelete;
 

@@ -239,12 +239,14 @@ public class RequestServiceImpl implements RequestService {
                 .addScalar("status", StringType.INSTANCE)
                 .addScalar("isAssigned", IntegerType.INSTANCE)
                 .addScalar("requestTypeId", LongType.INSTANCE)
+                .addScalar("maximumTimeToRollback", new TimestampType())
                 .setResultTransformer(Transformers.aliasToBean(RequestDto.class));
 
         params.forEach(query::setParameter);
         List<RequestDto> dtos = query.getResultList();
 
         Date currentTime = getCurrentTime();
+        Date max = new Date();
         for (int i = 0; i < dtos.size(); i++) {
             if(dtos.get(i).getRequestTypeId() == (long) FORGOT_CHECK_IN_OUT){
                 dtos.get(i).setIsAllowRollback(NOT_ALLOW_ROLLBACK);
@@ -255,10 +257,15 @@ public class RequestServiceImpl implements RequestService {
                     dtos.get(i).setIsAllowRollback(NOT_ALLOW_ROLLBACK);
                 }
             }else{
-                if (dtos.get(i).getMaximumTimeToRollback() == null || currentTime.after(dtos.get(i).getMaximumTimeToRollback())) {
+                if (dtos.get(i).getMaximumTimeToRollback() == null) {
                     dtos.get(i).setIsAllowRollback(NOT_ALLOW_ROLLBACK);
                 } else {
-                    dtos.get(i).setIsAllowRollback(ALLOW_ROLLBACK);
+                    max.setTime(dtos.get(i).getMaximumTimeToRollback().getTime() - CommonConstant.MILLISECOND_7_HOURS);
+                    if(currentTime.after(max)) {
+                        dtos.get(i).setIsAllowRollback(NOT_ALLOW_ROLLBACK);
+                    }else {
+                        dtos.get(i).setIsAllowRollback(ALLOW_ROLLBACK);
+                    }
                 }
             }
         }

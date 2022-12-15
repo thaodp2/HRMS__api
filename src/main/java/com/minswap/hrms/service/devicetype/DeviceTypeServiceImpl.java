@@ -15,7 +15,9 @@ import com.minswap.hrms.response.dto.DeviceTypeDto;
 import com.minswap.hrms.response.dto.MasterDataDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -41,11 +43,11 @@ public class DeviceTypeServiceImpl implements DeviceTypeService {
         List<DeviceType> deviceTypes = null;
         List<DeviceTypeDto> deviceTypeDtos = new ArrayList<>();
         if (deviceTypeName != null) {
-            pagination.setTotalRecords(deviceTypeRepository.findByDeviceTypeNameContainsIgnoreCase(deviceTypeName.trim()).size());
-            deviceTypes = deviceTypeRepository.findByDeviceTypeNameContainsIgnoreCase(deviceTypeName.trim(), new Pagination(page - 1, limit));
+            pagination.setTotalRecords(deviceTypeRepository.findByDeviceTypeNameContainsIgnoreCaseAndStatus(deviceTypeName.trim(),0).size());
+            deviceTypes = deviceTypeRepository.findByDeviceTypeNameContainsIgnoreCaseAndStatus(deviceTypeName.trim(),0, PageRequest.of(page - 1, limit, Sort.by(Sort.Direction.DESC, "deviceTypeId")));
         } else {
-            pagination.setTotalRecords(deviceTypeRepository.findAll().size());
-            deviceTypes = deviceTypeRepository.findAll(new Pagination(page - 1, limit)).getContent();
+            pagination.setTotalRecords(deviceTypeRepository.findByStatus(0).size());
+            deviceTypes = deviceTypeRepository.findByStatus(0,PageRequest.of(page - 1, limit, Sort.by(Sort.Direction.DESC, "deviceTypeId")));
         }
         if (deviceTypes != null && !deviceTypes.isEmpty()) {
             for (DeviceType deviceType : deviceTypes) {
@@ -147,12 +149,12 @@ public class DeviceTypeServiceImpl implements DeviceTypeService {
         DeviceType deviceType = deviceTypeRepository.findById(id).orElse(null);
         if (deviceType != null) {
             deviceType.setStatus(1);
-            //deviceTypeRepository.deleteById(id);
+            deviceTypeRepository.save(deviceType);
             List<Device> deviceList = deviceRepository.findByDeviceTypeId(id);
-            //deviceRepository.deleteAll(deviceList);
             if(deviceList != null && !deviceList.isEmpty()){
                 for (Device device: deviceList) {
                     device.setStatus(2);
+                    deviceRepository.save(device);
                 }
             }
             responseEntity = BaseResponse.ofSucceeded(null);
@@ -167,10 +169,8 @@ public class DeviceTypeServiceImpl implements DeviceTypeService {
         List<DeviceType> deviceTypes = new ArrayList<>();
         if (search != null) {
             deviceTypes = deviceTypeRepository.findByDeviceTypeNameContainsIgnoreCaseAndStatus(search.trim(), 0);
-//            deviceTypes = deviceTypeRepository.findByDeviceTypeNameContainsIgnoreCase(search.trim());
         } else {
             deviceTypes = deviceTypeRepository.findByStatus(0);
-//            deviceTypes = deviceTypeRepository.findAll();
         }
         List<MasterDataDto> masterDataDtos = new ArrayList<>();
         for (int i = 0; i < deviceTypes.size(); i++) {
