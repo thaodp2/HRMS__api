@@ -229,7 +229,7 @@ public class PersonServiceImpl implements PersonService {
                                                                                               int limit, String fullName, String email, Long departmentId, String rollNumber, String status, Long
                                                                                                    positionId, String managerRoll, String sort, String dir) {
         if(StringUtils.isEmpty(sort) && StringUtils.isEmpty(dir)) {
-        	sort = "rollNumber";
+        	sort = "personId";
         	dir = "DESC";
         }
     	Sort.Direction dirSort = CommonUtil.getSortDirection(sort, dir);
