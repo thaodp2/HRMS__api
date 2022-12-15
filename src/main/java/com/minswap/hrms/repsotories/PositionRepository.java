@@ -42,4 +42,9 @@ public interface PositionRepository extends JpaRepository<Position, Long> {
     @Query("update Position p set p.positionName=:positionName where p.positionId=:positionId")
     Integer updatePosition(@Param("positionName") String positionName,
                            @Param("positionId") Long positionId);
+
+    @Modifying
+    @Transactional
+    @Query("delete from Position p where p.positionId=:positionId")
+    Integer deletePositionByPositionId(@Param("positionId") Long positionId);
 }

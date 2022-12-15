@@ -94,10 +94,7 @@ public class DepartmentServiceImpl implements DepartmentService{
     @Override
     public ResponseEntity<BaseResponse<Void, Void>> createDepartment(CreateDepartmentRequest createDepartmentRequest) {
         String departmentName = getFormattedName(createDepartmentRequest.getDepartmentName());
-        List<String> listPositionName = new ArrayList<>();
-        for (PositionDto positionDto : createDepartmentRequest.getListPosition()) {
-            listPositionName.add(positionDto.getPositionName());
-        }
+        List<String> listPositionName = createDepartmentRequest.getListPosition();
         List<String> listFormattedPositionName = getListPositionNameAfterFormat(listPositionName);
         if(isDepartmentAlreadyExist(departmentName)) {
             throw new BaseException(ErrorCode.INVALID_DEPARTMENT);
@@ -139,7 +136,7 @@ public class DepartmentServiceImpl implements DepartmentService{
                     httpStatus.NOT_FOUND));
         }
         List<String> listPositionName = new ArrayList<>();
-        for (Position position : departmentRequest.getListPosition()) {
+        for (PositionDto position : departmentRequest.getListPosition()) {
             listPositionName.add(position.getPositionName());
         }
         List<String> listDepartmentName = departmentRepository.getOtherDepartmentName(id);
@@ -168,7 +165,7 @@ public class DepartmentServiceImpl implements DepartmentService{
 
         List<Long> listPosition = positionRepository.getPositionIdsByDepartmentId(id);
         List<Long> listPositionIdAfterEdit = new ArrayList<>();
-        for (Position position : departmentRequest.getListPosition()) {
+        for (PositionDto position : departmentRequest.getListPosition()) {
             if (position.getPositionName().trim().isEmpty()) {
                 throw new BaseException(ErrorCode.newErrorCode(406,
                         "Position can't be empty!",
@@ -185,12 +182,15 @@ public class DepartmentServiceImpl implements DepartmentService{
                                     " because it's active",
                             httpStatus.NOT_ACCEPTABLE));
                 }
+                else {
+                    positionRepository.deletePositionByPositionId(positionId);
+                }
             }
         }
 
         Integer isUpdateSucceeded = departmentRepository.updateDepartment(formattedDepartName, id);
         if (isUpdateSucceeded == CommonConstant.UPDATE_SUCCESS) {
-            for (Position position : departmentRequest.getListPosition()) {
+            for (PositionDto position : departmentRequest.getListPosition()) {
                 if (position.getPositionId() == null) {
                     Position savingPosition = new Position(getFormattedName(position.getPositionName()),
                                                            id);
@@ -268,7 +268,7 @@ public class DepartmentServiceImpl implements DepartmentService{
             if (personRepository.getListPersonIdByPositionId(position.getPositionId(), "1").size() > 0) {
                 isAllowDelete = 0;
             }
-            listPositionDto.add(new PositionDto(position.getPositionId(), position.getPositionName(), isAllowDelete));
+            listPositionDto.add(new PositionDto(isAllowDelete, position.getPositionId(), position.getPositionName()));
         }
         Integer numberOfEmployeeInDepartment = departmentRepository.getNumberOfEmployeeInDepartment(id);
         DepartmentDto departmentDto = new DepartmentDto(department.getDepartmentId(), department.getDepartmentName());
