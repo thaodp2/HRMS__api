@@ -3,10 +3,7 @@ package com.minswap.hrms.service.request;
 import com.minswap.hrms.configuration.AppConfig;
 import com.minswap.hrms.constants.CommonConstant;
 import com.minswap.hrms.constants.ErrorCode;
-import com.minswap.hrms.entities.Evidence;
-import com.minswap.hrms.entities.Notification;
-import com.minswap.hrms.entities.Request;
-import com.minswap.hrms.entities.TimeCheck;
+import com.minswap.hrms.entities.*;
 import com.minswap.hrms.exception.model.BaseException;
 import com.minswap.hrms.exception.model.Pagination;
 import com.minswap.hrms.model.BaseResponse;
@@ -580,6 +577,9 @@ public class RequestServiceImpl implements RequestService {
             if (maximumTimeToRollback == null) {
                 updateMaximumTimeToRollback(currentTime, id);
             }
+            else {
+                currentTime.setTime(currentTime.getTime() + CommonConstant.MILLISECOND_7_HOURS);
+            }
             Integer isUpdatedSuccess = requestRepository.updateStatusRequest(status, id, currentTime);
             if (isUpdatedSuccess == CommonConstant.UPDATE_FAIL) {
                 throw new BaseException(ErrorCode.UPDATE_FAIL);
@@ -1022,7 +1022,7 @@ public class RequestServiceImpl implements RequestService {
         try {
             OfficeTimeDto officeTimeDto = officeTimeRepository.getOfficeTime();
             int dayOfStartTime = getDayOfDate(startTime);
-            int monthOfStartTime = getCalendarByDate(startTime).get(Calendar.MONTH);
+            int monthOfStartTime = getCalendarByDate(startTime).get(Calendar.MONTH) + 1;
             double otTime = getAmountOfTimeOTByDate(personId, startTime);
             double workingTime = 0;
             double inLate = 0;
@@ -1139,14 +1139,11 @@ public class RequestServiceImpl implements RequestService {
         if (startCalendar.get(Calendar.DAY_OF_MONTH) == endCalendar.get(Calendar.DAY_OF_MONTH)
                 && startCalendar.get(Calendar.MONTH) == endCalendar.get(Calendar.MONTH)) {
             if (startTime.after(startOfficeTime)) {
-//                inLate = calculateHoursBetweenTwoDateTime(startOfficeTime, startTime);
                   inLate = calculateNumOfHoursWorkedInADay(startOfficeTime, startTime);
             }
             if (endTime.before(finishOfficeTime)) {
-//                outEarly = calculateHoursBetweenTwoDateTime(endTime, finishOfficeTime);
                 outEarly = calculateNumOfHoursWorkedInADay(endTime, finishOfficeTime);
             }
-//            workingTime = calculateWorkingTime(inLate, outEarly, startTime, endTime, startOfficeTime, finishOfficeTime);
             workingTime = calculateNumOfHoursWorkedInADay(startTime, endTime);
             saveTimeCheck(startTime, endTime, personId, inLate, outEarly, workingTime);
         } else {
@@ -1326,6 +1323,16 @@ public class RequestServiceImpl implements RequestService {
                 else if (requestTypeId == Long.valueOf(OT_TYPE_ID)) {
                     validateOTRequest(startTime, endTime, personId, year, month, requestTypeId);
                 }
+                // Validate nghỉ đẻ
+                else if (requestTypeId == Long.valueOf(MATERNITY_TYPE_ID)) {
+                    Optional<Person> personFromDB = personRepository.findPersonByPersonId(personId);
+                    Person person = personFromDB.get();
+                    if (person.getGender() == 1) {
+                        throw new BaseException(ErrorCode.newErrorCode(208,
+                                "This request is only for female employees",
+                                httpStatus.NOT_ACCEPTABLE));
+                    }
+                }
                 // Validate WFH request đã nằm trong validate chung nên không cần validate nữa
             } else {
                 validateBorrowDeviceRequest(deviceTypeId);
@@ -1483,6 +1490,9 @@ public class RequestServiceImpl implements RequestService {
         }
         if (maximumTimeToRollback == null) {
             updateMaximumTimeToRollback(currentTime, requestId);
+        }
+        else {
+            currentTime.setTime(currentTime.getTime() + CommonConstant.MILLISECOND_7_HOURS);
         }
         Integer isUpdatedSuccess = requestRepository.updateStatusRequest(status, requestId, currentTime);
         if (isUpdatedSuccess == CommonConstant.UPDATE_FAIL) {

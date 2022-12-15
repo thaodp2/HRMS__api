@@ -16,7 +16,7 @@ import java.util.List;
 @NoArgsConstructor
 public class CreateDepartmentRequest extends BasicRequest{
 
-    public CreateDepartmentRequest(String departmentName, List<PositionDto> listPosition) {
+    public CreateDepartmentRequest(String departmentName, List<String> listPosition) {
         this.departmentName = departmentName;
         this.listPosition = listPosition;
     }
@@ -26,6 +26,6 @@ public class CreateDepartmentRequest extends BasicRequest{
     private String departmentName;
 
     @NotNull(message = "420")
-    private List<PositionDto> listPosition;
+    private List<String> listPosition;
 
 }
