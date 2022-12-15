@@ -1132,14 +1132,11 @@ public class RequestServiceImpl implements RequestService {
         if (startCalendar.get(Calendar.DAY_OF_MONTH) == endCalendar.get(Calendar.DAY_OF_MONTH)
                 && startCalendar.get(Calendar.MONTH) == endCalendar.get(Calendar.MONTH)) {
             if (startTime.after(startOfficeTime)) {
-//                inLate = calculateHoursBetweenTwoDateTime(startOfficeTime, startTime);
                   inLate = calculateNumOfHoursWorkedInADay(startOfficeTime, startTime);
             }
             if (endTime.before(finishOfficeTime)) {
-//                outEarly = calculateHoursBetweenTwoDateTime(endTime, finishOfficeTime);
                 outEarly = calculateNumOfHoursWorkedInADay(endTime, finishOfficeTime);
             }
-//            workingTime = calculateWorkingTime(inLate, outEarly, startTime, endTime, startOfficeTime, finishOfficeTime);
             workingTime = calculateNumOfHoursWorkedInADay(startTime, endTime);
             saveTimeCheck(startTime, endTime, personId, inLate, outEarly, workingTime);
         } else {
