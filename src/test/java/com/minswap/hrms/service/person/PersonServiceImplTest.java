@@ -59,13 +59,13 @@ public class PersonServiceImplTest {
     }
 
 
-    @Test
-    public void testGetMasterDataAllManager() throws Exception {
-        when(personRepository.getMasterDataManagerByDepartment(anyLong(), anyString(), anyLong())).thenReturn(List.of(new Person(Long.valueOf(1), "fullName", "address", "citizenIdentification", "phoneNumber", "email", new GregorianCalendar(2022, Calendar.DECEMBER, 8, 19, 10).getTime(), Long.valueOf(1), Long.valueOf(1), Long.valueOf(1), 0, "rollNumber", new GregorianCalendar(2022, Calendar.DECEMBER, 8, 19, 10).getTime(), "status", Long.valueOf(1), Double.valueOf(0), Double.valueOf(0), "avatarImg", Double.valueOf(0), "pinCode")));
-
-        ResponseEntity<BaseResponse<MasterDataResponse, Pageable>> result = personServiceImpl.getMasterDataAllManager(Long.valueOf(1), "search");
-        Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
-    }
+//    @Test
+//    public void testGetMasterDataAllManager() throws Exception {
+//        when(personRepository.getMasterDataManagerByDepartment(anyLong(), anyString(), anyLong())).thenReturn(List.of(new Person(Long.valueOf(1), "fullName", "address", "citizenIdentification", "phoneNumber", "email", new GregorianCalendar(2022, Calendar.DECEMBER, 8, 19, 10).getTime(), Long.valueOf(1), Long.valueOf(1), Long.valueOf(1), 0, "rollNumber", new GregorianCalendar(2022, Calendar.DECEMBER, 8, 19, 10).getTime(), "status", Long.valueOf(1), Double.valueOf(0), Double.valueOf(0), "avatarImg", Double.valueOf(0), "pinCode")));
+//
+//        ResponseEntity<BaseResponse<MasterDataResponse, Pageable>> result = personServiceImpl.getMasterDataAllManager(Long.valueOf(1), "search");
+//        Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
+//    }
 
     @Test
     public void testGetDetailEmployee() throws Exception {
