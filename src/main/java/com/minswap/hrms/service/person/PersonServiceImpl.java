@@ -22,6 +22,7 @@ import com.minswap.hrms.response.MasterDataResponse;
 import com.minswap.hrms.response.dto.EmployeeDetailDto;
 import com.minswap.hrms.response.dto.EmployeeListDto;
 import com.minswap.hrms.response.dto.MasterDataDto;
+import com.minswap.hrms.response.dto.RequestDto;
 import com.minswap.hrms.security.UserPrincipal;
 import com.minswap.hrms.service.email.EmailSenderService;
 import com.minswap.hrms.util.CommonUtil;
@@ -34,6 +35,12 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.hibernate.Session;
+import org.hibernate.transform.Transformers;
+import org.hibernate.type.IntegerType;
+import org.hibernate.type.LongType;
+import org.hibernate.type.StringType;
+import org.hibernate.type.TimestampType;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -45,18 +52,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
 import java.io.File;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.text.Normalizer;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Year;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -64,6 +71,8 @@ import static com.minswap.hrms.constants.ErrorCode.*;
 
 @Service
 public class PersonServiceImpl implements PersonService {
+    @Autowired
+    EntityManager entityManager;
     @Autowired
     private PersonRepository personRepository;
 
@@ -129,17 +138,77 @@ public class PersonServiceImpl implements PersonService {
     }
 
     @Override
-    public ResponseEntity<BaseResponse<MasterDataResponse, Pageable>> getMasterDataAllManager(Long departmentId, String search) {
-        List<Person> personList = personRepository.getMasterDataManagerByDepartment(CommonConstant.ROLE_ID_OF_MANAGER, search == null ? null : search.trim(), departmentId);
+    public ResponseEntity<BaseResponse<MasterDataResponse, Pageable>> getMasterDataAllManager(Long departmentId, String rollNumber, String search) {
+        List<Person> personList = null;
+        if (rollNumber != null && !rollNumber.isEmpty()) {
+            //List<Person> personList = personRepository.getMasterDataManagerByDepartment(CommonConstant.ROLE_ID_OF_MANAGER, search == null ? null : search.trim(), departmentId);
+            personList = getMasterDataManagerToEdit(departmentId, rollNumber, search == null ? null : search.trim());
+        } else {
+            personList = personRepository.getMasterDataManagerToCreate(CommonConstant.ROLE_ID_OF_MANAGER, search == null ? null : search.trim(), departmentId);
+        }
+
         List<MasterDataDto> masterDataDtos = new ArrayList<>();
         for (int i = 0; i < personList.size(); i++) {
-            MasterDataDto masterDataDto = new MasterDataDto(personList.get(i).getFullName(), personList.get(i).getPersonId());
+            MasterDataDto masterDataDto = new MasterDataDto(personList.get(i).getFullName() + " - " + personList.get(i).getRollNumber(), personList.get(i).getPersonId());
             masterDataDtos.add(masterDataDto);
         }
         MasterDataResponse response = new MasterDataResponse(masterDataDtos);
         ResponseEntity<BaseResponse<MasterDataResponse, Pageable>> responseEntity
                 = BaseResponse.ofSucceededOffset(response, null);
         return responseEntity;
+
+    }
+
+
+    public List<Person> getMasterDataManagerToEdit(Long departmentId, String rollNumber, String search) {
+        List<Person> personList = null;
+        HashMap<String, Object> params = new HashMap<>();
+        Person person = personRepository.findPersonByRollNumberEquals(rollNumber).orElse(null);
+        if (person != null) {
+            StringBuilder queryAllRequest = new StringBuilder("WITH RECURSIVE Subordinates AS " +
+                    "(" +
+                    "SELECT e.person_id , e.full_name , e.manager_id " +
+                    "FROM person AS e " +
+                    "WHERE e.manager_id =:personId " +
+                    "UNION ALL " +
+                    "SELECT e.person_id , e.full_name , e.manager_id " +
+                    "FROM person AS e " +
+                    "INNER JOIN Subordinates AS sub ON e.manager_id = sub.person_id " +
+                    ") " +
+                    "select p.person_id  as personId, p.full_name  as fullName, p.roll_number as rollNumber " +
+                    "from person p, person_role pr, role r " +
+                    "where p.person_id = pr.person_id and pr.role_id  = r.role_id " +
+                    "and r.role_id = :roleId " +
+                    "AND (:search IS NULL OR (p.roll_number like :search or p.full_name like :search)) " +
+                    "AND (:departmentId IS NULL OR p.department_id =:departmentId) " +
+                    "and p.person_id not in(" +
+                    "SELECT DISTINCT s.person_id " +
+                    "FROM Subordinates AS s) " +
+                    "and p.person_id not in (" +
+                    "select p.person_id from person p where p.roll_number =:rollNumber)");
+            params.put("personId", person.getPersonId());
+            params.put("roleId", CommonConstant.ROLE_ID_OF_MANAGER);
+            if(search != null) {
+                params.put("search", "%" + search + "%");
+            }else {
+                params.put("search", search);
+
+            }
+            params.put("departmentId", departmentId);
+            params.put("rollNumber", rollNumber);
+
+            Session session = entityManager.unwrap(Session.class);
+
+            Query query = session.createNativeQuery(queryAllRequest.toString())
+                    .addScalar("personId", LongType.INSTANCE)
+                    .addScalar("fullName", StringType.INSTANCE)
+                    .addScalar("rollNumber", StringType.INSTANCE)
+                    .setResultTransformer(Transformers.aliasToBean(Person.class));
+
+            params.forEach(query::setParameter);
+            personList = query.getResultList();
+        }
+        return personList;
     }
 
     @Override
@@ -156,7 +225,9 @@ public class PersonServiceImpl implements PersonService {
     }
 
     @Override
-    public ResponseEntity<BaseResponse<EmployeeInfoResponse, Pageable>> getSearchListEmployee(int page, int limit, String fullName, String email, Long departmentId, String rollNumber, String status, Long positionId, String managerRoll, String sort, String dir) {
+    public ResponseEntity<BaseResponse<EmployeeInfoResponse, Pageable>> getSearchListEmployee(int page,
+                                                                                              int limit, String fullName, String email, Long departmentId, String rollNumber, String status, Long
+                                                                                                      positionId, String managerRoll, String sort, String dir) {
         Sort.Direction dirSort = CommonUtil.getSortDirection(sort, dir);
         Pagination pagination = new Pagination(page, limit);
         Long managerId = null;
@@ -186,7 +257,7 @@ public class PersonServiceImpl implements PersonService {
             people = people.stream().filter(person -> person.getFullName().toLowerCase().contains(search.toLowerCase())).collect(Collectors.toList());
         }
         people.forEach(person -> {
-            MasterDataDto masterDataDto = new MasterDataDto(person.getFullName(), person.getPersonId());
+            MasterDataDto masterDataDto = new MasterDataDto(person.getFullName()+" - "+person.getRollNumber(), person.getPersonId());
             masterDataDtos.add(masterDataDto);
         });
         MasterDataResponse response = new MasterDataResponse(masterDataDtos);
@@ -194,7 +265,8 @@ public class PersonServiceImpl implements PersonService {
     }
 
     @Override
-    public ResponseEntity<BaseResponse<Void, Void>> updateEmployee(EmployeeUpdateRequest employeeRequest, String rollNumber) {
+    public ResponseEntity<BaseResponse<Void, Void>> updateEmployee(EmployeeUpdateRequest employeeRequest, String
+            rollNumber) {
         EmployeeDetailDto employeeDetailDto = personRepository.getDetailEmployee(rollNumber);
         if (employeeDetailDto == null) {
             throw new BaseException(ErrorCode.PERSON_NOT_EXIST);
@@ -334,7 +406,8 @@ public class PersonServiceImpl implements PersonService {
     }
 
     @Override
-    public ResponseEntity<BaseResponse<Void, Void>> updateStatusEmployee(ChangeStatusEmployeeRequest employeeRequest, String rollNumber) {
+    public ResponseEntity<BaseResponse<Void, Void>> updateStatusEmployee(ChangeStatusEmployeeRequest
+                                                                                 employeeRequest, String rollNumber) {
         personRepository.updateStatusEmployee(employeeRequest.getActive(),
                 rollNumber);
 
@@ -343,7 +416,8 @@ public class PersonServiceImpl implements PersonService {
     }
 
     @Override
-    public ResponseEntity<BaseResponse<Boolean, Void>> checkSecureCodeIsCorrect(UpdateSecureCodeRequest secureCodeRequest, Long personId) {
+    public ResponseEntity<BaseResponse<Boolean, Void>> checkSecureCodeIsCorrect(UpdateSecureCodeRequest
+                                                                                        secureCodeRequest, Long personId) {
 
         Optional<Person> person = personRepository.findById(personId);
         if (!person.isPresent()) {
@@ -393,7 +467,8 @@ public class PersonServiceImpl implements PersonService {
     }
 
     @Override
-    public ResponseEntity<BaseResponse<Boolean, Void>> updatePinCode(UpdateSecureCodeRequest secureCodeRequest, Long personId) {
+    public ResponseEntity<BaseResponse<Boolean, Void>> updatePinCode(UpdateSecureCodeRequest
+                                                                             secureCodeRequest, Long personId) {
 
         Optional<Person> optionalPerson = personRepository.findById(personId);
         if (!optionalPerson.isPresent()) {
@@ -424,7 +499,8 @@ public class PersonServiceImpl implements PersonService {
     }
 
     @Override
-    public ResponseEntity<BaseResponse<Boolean, Void>> createPinCode(UpdateSecureCodeRequest secureCodeRequest, Long personId) {
+    public ResponseEntity<BaseResponse<Boolean, Void>> createPinCode(UpdateSecureCodeRequest
+                                                                             secureCodeRequest, Long personId) {
 
         Optional<Person> optionalPerson = personRepository.findById(personId);
         if (!optionalPerson.isPresent()) {
@@ -627,10 +703,11 @@ public class PersonServiceImpl implements PersonService {
     }
 
     @Override
-    public List<EmployeeListDto> exportEmployee(String fullName, String email, Long departmentId, String rollNumber, Long positionId) {
+    public List<EmployeeListDto> exportEmployee(String fullName, String email, Long departmentId, String
+            rollNumber, Long positionId) {
         Page<EmployeeListDto> pageInfo = personRepository.getSearchListPerson(fullName, email, departmentId, rollNumber, positionId, null, null, null);
         List<EmployeeListDto> employeeListDtos = null;
-        if(pageInfo!= null) {
+        if (pageInfo != null) {
             employeeListDtos = pageInfo.getContent();
         }
         return employeeListDtos;
@@ -675,15 +752,18 @@ public class PersonServiceImpl implements PersonService {
         personRole.setPersonId(personByRollNumber.getPersonId());
         personRoleRepository.save(personRole);
         if (employeeRequest.getIsManager() == 1) {
-            personRole.setRoleId(MANAGER_ROLE);
-            personRoleRepository.save(personRole);
+        	PersonRole personRole1 = new PersonRole();
+        	personRole1.setRoleId(MANAGER_ROLE);
+            personRoleRepository.save(personRole1);
         }
         if (employeeRequest.getDepartmentId() == 35) {
-            personRole.setRoleId(IT_SUPPORT_ROLE);
-            personRoleRepository.save(personRole);
+        	PersonRole personRole2 = new PersonRole();
+        	personRole2.setRoleId(IT_SUPPORT_ROLE);
+            personRoleRepository.save(personRole2);
         } else if (employeeRequest.getDepartmentId() == 2) {
-            personRole.setRoleId(HR_ROLE);
-            personRoleRepository.save(personRole);
+        	PersonRole personRole3 = new PersonRole();
+        	personRole3.setRoleId(HR_ROLE);
+            personRoleRepository.save(personRole3);
         }
     }
 
@@ -702,16 +782,19 @@ public class PersonServiceImpl implements PersonService {
         }
         if (employeeRequest.getDepartmentId() != null) {
             if (employeeRequest.getDepartmentId() == 35) {
-                personRole.setRoleId(IT_SUPPORT_ROLE);
-                personRoleRepository.save(personRole);
+            	 PersonRole personRole1 = new PersonRole();
+            	 personRole1.setRoleId(IT_SUPPORT_ROLE);
+                personRoleRepository.save(personRole1);
             } else if (employeeRequest.getDepartmentId() == 2) {
-                personRole.setRoleId(HR_ROLE);
-                personRoleRepository.save(personRole);
+            	PersonRole personRole2 = new PersonRole();
+            	personRole2.setRoleId(HR_ROLE);
+                personRoleRepository.save(personRole2);
             } else {
-                personRole.setRoleId(IT_SUPPORT_ROLE);
-                personRoleRepository.delete(personRole);
-                personRole.setRoleId(HR_ROLE);
-                personRoleRepository.delete(personRole);
+            	PersonRole personRole3 = new PersonRole();
+            	personRole3.setRoleId(IT_SUPPORT_ROLE);
+                personRoleRepository.delete(personRole3);
+                personRole3.setRoleId(HR_ROLE);
+                personRoleRepository.delete(personRole3);
             }
         }
     }

@@ -144,12 +144,12 @@ public interface PersonRepository extends JpaRepository<Person, Long> {
     List<Person> getMasterDataPersonByRole(@Param("roleId") Long roleId,
                                            @Param("search") String search);
 
-    @Query("select new com.minswap.hrms.entities.Person(p.personId as personId, p.fullName as fullName) " +
+    @Query("select new com.minswap.hrms.entities.Person(p.personId as personId, p.fullName as fullName, p.rollNumber as rollNumber) " +
             "from Person p, PersonRole pr, Role r " +
             "where p.personId = pr.personId and pr.roleId = r.roleId and r.roleId = :roleId " +
-            "AND (:search IS NULL OR p.fullName LIKE %:search%) " +
+            "AND (:search IS NULL OR p.rollNumber like %:search% OR p.fullName like %:search%) " +
             "AND (:departmentId IS NULL OR p.departmentId =:departmentId)")
-    List<Person> getMasterDataManagerByDepartment(@Param("roleId") Long roleId,
+    List<Person> getMasterDataManagerToCreate(@Param("roleId") Long roleId,
                                                   @Param("search") String search,
                                                   @Param("departmentId") Long departmentId);
 

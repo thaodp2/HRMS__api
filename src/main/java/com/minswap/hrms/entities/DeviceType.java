@@ -18,6 +18,11 @@ public class DeviceType {
         this.deviceTypeName = deviceTypeName;
     }
 
+    public DeviceType(String deviceTypeName, Integer status) {
+        this.deviceTypeName = deviceTypeName;
+        this.status = status;
+    }
+
     @Id
     @Column(name = "device_type_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,5 +31,8 @@ public class DeviceType {
 
     @Column(name = "device_type")
     private String deviceTypeName;
+
+    @Column(name = "status")
+    private Integer status;
 
 }
