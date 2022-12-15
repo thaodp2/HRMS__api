@@ -29,6 +29,12 @@ public class Person {
 		this.fullName = fullName;
 	}
 
+	public Person(Long personId, String fullName, String rollNumber) {
+		this.personId = personId;
+		this.fullName = fullName;
+		this.rollNumber = rollNumber;
+	}
+
 	@Id
 	@Column(name = "person_id")
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

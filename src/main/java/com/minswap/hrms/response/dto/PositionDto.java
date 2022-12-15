@@ -7,15 +7,15 @@ import lombok.Setter;
 @NoArgsConstructor
 public class PositionDto {
 
-    public PositionDto(Long positionId, String positionName, int isAllowDelete) {
+    public PositionDto(int isAllowDelete, Long positionId, String positionName) {
+        this.isAllowDelete = isAllowDelete;
         this.positionId = positionId;
         this.positionName = positionName;
-        this.isAllowDelete = isAllowDelete;
     }
 
+    private int isAllowDelete;
     private Long positionId;
-
     private String positionName;
 
-    private int isAllowDelete;
+
 }

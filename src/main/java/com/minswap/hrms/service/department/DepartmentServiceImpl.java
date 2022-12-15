@@ -10,6 +10,7 @@ import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.repsotories.DepartmentRepository;
 import com.minswap.hrms.repsotories.PersonRepository;
 import com.minswap.hrms.repsotories.PositionRepository;
+import com.minswap.hrms.request.CreateDepartmentRequest;
 import com.minswap.hrms.request.DepartmentRequest;
 import com.minswap.hrms.response.DepartmentResponse;
 import com.minswap.hrms.response.MasterDataResponse;
@@ -91,10 +92,10 @@ public class DepartmentServiceImpl implements DepartmentService{
     }
 
     @Override
-    public ResponseEntity<BaseResponse<Void, Void>> createDepartment(DepartmentRequest departmentRequest) {
-        String departmentName = getFormattedName(departmentRequest.getDepartmentName());
-        List<Position> listPositionName = departmentRequest.getListPosition();
-        List<String> listFormattedPositionName = getListPositionNameAfterFormat(departmentRequest);
+    public ResponseEntity<BaseResponse<Void, Void>> createDepartment(CreateDepartmentRequest createDepartmentRequest) {
+        String departmentName = getFormattedName(createDepartmentRequest.getDepartmentName());
+        List<String> listPositionName = createDepartmentRequest.getListPosition();
+        List<String> listFormattedPositionName = getListPositionNameAfterFormat(listPositionName);
         if(isDepartmentAlreadyExist(departmentName)) {
             throw new BaseException(ErrorCode.INVALID_DEPARTMENT);
         }
@@ -104,12 +105,12 @@ public class DepartmentServiceImpl implements DepartmentService{
                                                                 message,
                                                                 httpStatus.ALREADY_REPORTED));
         }
-        else if (departmentRequest.getListPosition().isEmpty()) {
+        else if (createDepartmentRequest.getListPosition().isEmpty()) {
             throw new BaseException(ErrorCode.newErrorCode(208,
                     "List position name can't be empty",
                     httpStatus.ALREADY_REPORTED));
         }
-        else if (isListPositionNameDuplicateElement(departmentRequest)) {
+        else if (isListPositionNameDuplicateElement(listPositionName)) {
             throw new BaseException(ErrorCode.newErrorCode(208,
                     "In the same department can't have the same position!",
                     httpStatus.ALREADY_REPORTED));
@@ -134,6 +135,10 @@ public class DepartmentServiceImpl implements DepartmentService{
                     "Department ID not found!",
                     httpStatus.NOT_FOUND));
         }
+        List<String> listPositionName = new ArrayList<>();
+        for (PositionDto position : departmentRequest.getListPosition()) {
+            listPositionName.add(position.getPositionName());
+        }
         List<String> listDepartmentName = departmentRepository.getOtherDepartmentName(id);
         String formattedDepartName = getFormattedName(departmentRequest.getDepartmentName());
         for (String departName : listDepartmentName) {
@@ -141,8 +146,8 @@ public class DepartmentServiceImpl implements DepartmentService{
                 throw new BaseException(ErrorCode.INVALID_DEPARTMENT);
             }
         }
-        if (getListPositionAlreadyExist(departmentRequest.getListPosition(), id) != null) {
-            String message = getMessageWhenPositionDuplicate(getListPositionAlreadyExist(departmentRequest.getListPosition(), id));
+        if (getListPositionAlreadyExist(listPositionName, id) != null) {
+            String message = getMessageWhenPositionDuplicate(getListPositionAlreadyExist(listPositionName, id));
             throw new BaseException(ErrorCode.newErrorCode(208,
                                                                 message,
                                                                 httpStatus.ALREADY_REPORTED));
@@ -152,7 +157,7 @@ public class DepartmentServiceImpl implements DepartmentService{
                                                         "List position name can't be empty",
                                                                 httpStatus.ALREADY_REPORTED));
         }
-        else if (isListPositionNameDuplicateElement(departmentRequest)) {
+        else if (isListPositionNameDuplicateElement(listPositionName)) {
             throw new BaseException(ErrorCode.newErrorCode(208,
                                                         "In the same department can't have the same position!",
                                                                 httpStatus.ALREADY_REPORTED));
@@ -160,7 +165,7 @@ public class DepartmentServiceImpl implements DepartmentService{
 
         List<Long> listPosition = positionRepository.getPositionIdsByDepartmentId(id);
         List<Long> listPositionIdAfterEdit = new ArrayList<>();
-        for (Position position : departmentRequest.getListPosition()) {
+        for (PositionDto position : departmentRequest.getListPosition()) {
             if (position.getPositionName().trim().isEmpty()) {
                 throw new BaseException(ErrorCode.newErrorCode(406,
                         "Position can't be empty!",
@@ -177,23 +182,26 @@ public class DepartmentServiceImpl implements DepartmentService{
                                     " because it's active",
                             httpStatus.NOT_ACCEPTABLE));
                 }
+                else {
+                    positionRepository.deletePositionByPositionId(positionId);
+                }
             }
         }
 
         Integer isUpdateSucceeded = departmentRepository.updateDepartment(formattedDepartName, id);
         if (isUpdateSucceeded == CommonConstant.UPDATE_SUCCESS) {
-            Integer deleteResult = positionRepository.deletePositionByDepartmentId(id);
-            if (deleteResult != CommonConstant.UPDATE_FAIL) {
-                List<String> listFormattedPositionName = getListPositionNameAfterFormat(departmentRequest);
-                for (String positionName : listFormattedPositionName) {
-                    Position position = new Position(positionName, id);
-                    positionRepository.save(position);
+            for (PositionDto position : departmentRequest.getListPosition()) {
+                if (position.getPositionId() == null) {
+                    Position savingPosition = new Position(getFormattedName(position.getPositionName()),
+                                                           id);
+                    positionRepository.save(savingPosition);
                 }
-                responseEntity = BaseResponse.ofSucceeded(null);
+                else {
+                    positionRepository.updatePosition(getFormattedName(position.getPositionName()),
+                                                      position.getPositionId());
+                }
             }
-            else {
-                throw new BaseException(ErrorCode.UPDATE_FAIL);
-            }
+            responseEntity = BaseResponse.ofSucceeded(null);
         }
         else {
             throw new BaseException(ErrorCode.UPDATE_FAIL);
@@ -260,7 +268,7 @@ public class DepartmentServiceImpl implements DepartmentService{
             if (personRepository.getListPersonIdByPositionId(position.getPositionId(), "1").size() > 0) {
                 isAllowDelete = 0;
             }
-            listPositionDto.add(new PositionDto(position.getPositionId(), position.getPositionName(), isAllowDelete));
+            listPositionDto.add(new PositionDto(isAllowDelete, position.getPositionId(), position.getPositionName()));
         }
         Integer numberOfEmployeeInDepartment = departmentRepository.getNumberOfEmployeeInDepartment(id);
         DepartmentDto departmentDto = new DepartmentDto(department.getDepartmentId(), department.getDepartmentName());
@@ -298,11 +306,11 @@ public class DepartmentServiceImpl implements DepartmentService{
         return false;
     }
 
-    public List<String> getListPositionAlreadyExist(List<Position> listPositionName, Long id) {
+    public List<String> getListPositionAlreadyExist(List<String> listPositionName, Long id) {
         List<String> listPositionNameAlreadyExist = new ArrayList<>();
-        for (Position positionName : listPositionName) {
-            if (positionRepository.isPositionAlreadyExist(positionName.getPositionName(), id) != null) {
-                listPositionNameAlreadyExist.add(positionName.getPositionName());
+        for (String positionName : listPositionName) {
+            if (positionRepository.isPositionAlreadyExist(positionName, id) != null) {
+                listPositionNameAlreadyExist.add(positionName);
             }
         }
 
@@ -342,22 +350,23 @@ public class DepartmentServiceImpl implements DepartmentService{
         return false;
     }
 
-    public List<String> getListPositionNameAfterFormat(DepartmentRequest departmentRequest) {
+    public List<String> getListPositionNameAfterFormat(List<String> listPositionName) {
         List<String> listFormattedPositionName = new ArrayList<>();
-        for (Position posName : departmentRequest.getListPosition()) {
-            listFormattedPositionName.add(getFormattedName(posName.getPositionName()));
+        for (String positionName : listPositionName) {
+            listFormattedPositionName.add(getFormattedName(positionName));
         }
         return listFormattedPositionName;
     }
 
-    public boolean isListPositionNameDuplicateElement(DepartmentRequest departmentRequest) {
-        List<String> listPositionName = getListPositionNameAfterFormat(departmentRequest);
+    public boolean isListPositionNameDuplicateElement(List<String> listPositionName) {
+        List<String> listPosName = getListPositionNameAfterFormat(listPositionName);
         Set<String> store = new HashSet<>();
-        for (String positionName : listPositionName) {
+        for (String positionName : listPosName) {
             if (store.add(positionName.toLowerCase()) == false){
                 return true;
             }
         }
         return false;
     }
+
 }

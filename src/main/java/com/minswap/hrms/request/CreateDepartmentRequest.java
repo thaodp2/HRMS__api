@@ -14,20 +14,18 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
-public class DepartmentRequest extends BasicRequest{
+public class CreateDepartmentRequest extends BasicRequest{
+
+    public CreateDepartmentRequest(String departmentName, List<String> listPosition) {
+        this.departmentName = departmentName;
+        this.listPosition = listPosition;
+    }
 
     @NotNull(message = "415")
     @Pattern(regexp = "(.|\\s)*\\S(.|\\s)*", message = "415")
     private String departmentName;
 
     @NotNull(message = "420")
-    private List<PositionDto> listPosition;
-
-    @JsonCreator
-    public DepartmentRequest(String departmentName,
-                         List<PositionDto> listPosition) {
-        this.departmentName = departmentName;
-        this.listPosition = listPosition;
-    }
+    private List<String> listPosition;
 
 }

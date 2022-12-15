@@ -30,7 +30,6 @@ public class EmployeeRequest extends BasicRequest{
 	private String dateOfBirth;
 	
 	@JsonProperty("managerId")
-	@NotNull(message ="602")
 	private Long managerId;
 	
 	@JsonProperty("departmentId")

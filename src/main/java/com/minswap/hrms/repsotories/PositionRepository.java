@@ -7,6 +7,7 @@ import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Repository;
 
 import javax.transaction.Transactional;
@@ -35,4 +36,15 @@ public interface PositionRepository extends JpaRepository<Position, Long> {
 
     @Query("select p.positionName from Position p where p.positionId=:id")
     String getPositionNameByPositionId(@Param("id") Long id);
+
+    @Modifying
+    @Transactional
+    @Query("update Position p set p.positionName=:positionName where p.positionId=:positionId")
+    Integer updatePosition(@Param("positionName") String positionName,
+                           @Param("positionId") Long positionId);
+
+    @Modifying
+    @Transactional
+    @Query("delete from Position p where p.positionId=:positionId")
+    Integer deletePositionByPositionId(@Param("positionId") Long positionId);
 }

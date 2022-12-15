@@ -3,10 +3,7 @@ package com.minswap.hrms.service.request;
 import com.minswap.hrms.configuration.AppConfig;
 import com.minswap.hrms.constants.CommonConstant;
 import com.minswap.hrms.constants.ErrorCode;
-import com.minswap.hrms.entities.Evidence;
-import com.minswap.hrms.entities.Notification;
-import com.minswap.hrms.entities.Request;
-import com.minswap.hrms.entities.TimeCheck;
+import com.minswap.hrms.entities.*;
 import com.minswap.hrms.exception.model.BaseException;
 import com.minswap.hrms.exception.model.Pagination;
 import com.minswap.hrms.model.BaseResponse;
@@ -242,12 +239,14 @@ public class RequestServiceImpl implements RequestService {
                 .addScalar("status", StringType.INSTANCE)
                 .addScalar("isAssigned", IntegerType.INSTANCE)
                 .addScalar("requestTypeId", LongType.INSTANCE)
+                .addScalar("maximumTimeToRollback", new TimestampType())
                 .setResultTransformer(Transformers.aliasToBean(RequestDto.class));
 
         params.forEach(query::setParameter);
         List<RequestDto> dtos = query.getResultList();
 
         Date currentTime = getCurrentTime();
+        Date max = new Date();
         for (int i = 0; i < dtos.size(); i++) {
             if(dtos.get(i).getRequestTypeId() == (long) FORGOT_CHECK_IN_OUT){
                 dtos.get(i).setIsAllowRollback(NOT_ALLOW_ROLLBACK);
@@ -258,10 +257,15 @@ public class RequestServiceImpl implements RequestService {
                     dtos.get(i).setIsAllowRollback(NOT_ALLOW_ROLLBACK);
                 }
             }else{
-                if (dtos.get(i).getMaximumTimeToRollback() == null || currentTime.after(dtos.get(i).getMaximumTimeToRollback())) {
+                if (dtos.get(i).getMaximumTimeToRollback() == null) {
                     dtos.get(i).setIsAllowRollback(NOT_ALLOW_ROLLBACK);
                 } else {
-                    dtos.get(i).setIsAllowRollback(ALLOW_ROLLBACK);
+                    max.setTime(dtos.get(i).getMaximumTimeToRollback().getTime() - CommonConstant.MILLISECOND_7_HOURS);
+                    if(currentTime.after(max)) {
+                        dtos.get(i).setIsAllowRollback(NOT_ALLOW_ROLLBACK);
+                    }else {
+                        dtos.get(i).setIsAllowRollback(ALLOW_ROLLBACK);
+                    }
                 }
             }
         }
@@ -382,6 +386,7 @@ public class RequestServiceImpl implements RequestService {
                 }
                 Date maximumTimeToRollback = requestDto.getMaximumTimeToRollback();
                 if (maximumTimeToRollback != null) {
+                    maximumTimeToRollback.setTime(maximumTimeToRollback.getTime() - appConfig.getMillisecondSevenHours());
                     if (requestType != FORGOT_CHECK_IN_OUT
                             && currentTime.after(maximumTimeToRollback)) {
                         requestDto.setIsAllowRollback(NOT_ALLOW_ROLLBACK);
@@ -571,6 +576,9 @@ public class RequestServiceImpl implements RequestService {
         } else if (status.equalsIgnoreCase(REJECTED_STATUS) && currentStatus.equalsIgnoreCase(PENDING_STATUS)) {
             if (maximumTimeToRollback == null) {
                 updateMaximumTimeToRollback(currentTime, id);
+            }
+            else {
+                currentTime.setTime(currentTime.getTime() + CommonConstant.MILLISECOND_7_HOURS);
             }
             Integer isUpdatedSuccess = requestRepository.updateStatusRequest(status, id, currentTime);
             if (isUpdatedSuccess == CommonConstant.UPDATE_FAIL) {
@@ -1014,7 +1022,7 @@ public class RequestServiceImpl implements RequestService {
         try {
             OfficeTimeDto officeTimeDto = officeTimeRepository.getOfficeTime();
             int dayOfStartTime = getDayOfDate(startTime);
-            int monthOfStartTime = getCalendarByDate(startTime).get(Calendar.MONTH);
+            int monthOfStartTime = getCalendarByDate(startTime).get(Calendar.MONTH) + 1;
             double otTime = getAmountOfTimeOTByDate(personId, startTime);
             double workingTime = 0;
             double inLate = 0;
@@ -1131,14 +1139,11 @@ public class RequestServiceImpl implements RequestService {
         if (startCalendar.get(Calendar.DAY_OF_MONTH) == endCalendar.get(Calendar.DAY_OF_MONTH)
                 && startCalendar.get(Calendar.MONTH) == endCalendar.get(Calendar.MONTH)) {
             if (startTime.after(startOfficeTime)) {
-//                inLate = calculateHoursBetweenTwoDateTime(startOfficeTime, startTime);
                   inLate = calculateNumOfHoursWorkedInADay(startOfficeTime, startTime);
             }
             if (endTime.before(finishOfficeTime)) {
-//                outEarly = calculateHoursBetweenTwoDateTime(endTime, finishOfficeTime);
                 outEarly = calculateNumOfHoursWorkedInADay(endTime, finishOfficeTime);
             }
-//            workingTime = calculateWorkingTime(inLate, outEarly, startTime, endTime, startOfficeTime, finishOfficeTime);
             workingTime = calculateNumOfHoursWorkedInADay(startTime, endTime);
             saveTimeCheck(startTime, endTime, personId, inLate, outEarly, workingTime);
         } else {
@@ -1215,16 +1220,6 @@ public class RequestServiceImpl implements RequestService {
                     }
                 }
             }
-            if (requestTypeId.intValue() != FORGOT_CHECK_IN_OUT.intValue()) {
-                // Validate 2: Tạo trước 1 ngày
-
-                if (calendarCreate.get(Calendar.DAY_OF_MONTH) == calendarStart.get(Calendar.DAY_OF_MONTH)
-                        && calendarCreate.get(Calendar.MONTH) == calendarStart.get(Calendar.MONTH)) {
-                    throw new BaseException(ErrorCode.newErrorCode(208,
-                            "You must make request 1 day before start date",
-                            httpStatus.NOT_ACCEPTABLE));
-                }
-            }
             // Validate 4: Không tạo sang năm sau
             if (calendarCreate.get(Calendar.YEAR) != calendarStart.get(Calendar.YEAR)
                     || calendarCreate.get(Calendar.YEAR) != calendarEnd.get(Calendar.YEAR)) {
@@ -1236,6 +1231,13 @@ public class RequestServiceImpl implements RequestService {
             }
             if (requestTypeId.intValue() != FORGOT_CHECK_IN_OUT.intValue()
                     && requestTypeId.intValue() != OT_TYPE_ID.intValue()) {
+                // Validate 2: Tạo trước 1 ngày
+                if (calendarCreate.get(Calendar.DAY_OF_MONTH) == calendarStart.get(Calendar.DAY_OF_MONTH)
+                        && calendarCreate.get(Calendar.MONTH) == calendarStart.get(Calendar.MONTH)) {
+                    throw new BaseException(ErrorCode.newErrorCode(208,
+                            "You must make request 1 day before start date",
+                            httpStatus.NOT_ACCEPTABLE));
+                }
                 // Validate 1: CreateDate < StartTime < EndTime (ngoại trừ OT request và forgot check in/out request)
                 if ((startTime.before(createDate)
                         || endTime.before(createDate)
@@ -1320,6 +1322,16 @@ public class RequestServiceImpl implements RequestService {
                 // Validate Over time request
                 else if (requestTypeId == Long.valueOf(OT_TYPE_ID)) {
                     validateOTRequest(startTime, endTime, personId, year, month, requestTypeId);
+                }
+                // Validate nghỉ đẻ
+                else if (requestTypeId == Long.valueOf(MATERNITY_TYPE_ID)) {
+                    Optional<Person> personFromDB = personRepository.findPersonByPersonId(personId);
+                    Person person = personFromDB.get();
+                    if (person.getGender() == 1) {
+                        throw new BaseException(ErrorCode.newErrorCode(208,
+                                "This request is only for female employees",
+                                httpStatus.NOT_ACCEPTABLE));
+                    }
                 }
                 // Validate WFH request đã nằm trong validate chung nên không cần validate nữa
             } else {
@@ -1478,6 +1490,9 @@ public class RequestServiceImpl implements RequestService {
         }
         if (maximumTimeToRollback == null) {
             updateMaximumTimeToRollback(currentTime, requestId);
+        }
+        else {
+            currentTime.setTime(currentTime.getTime() + CommonConstant.MILLISECOND_7_HOURS);
         }
         Integer isUpdatedSuccess = requestRepository.updateStatusRequest(status, requestId, currentTime);
         if (isUpdatedSuccess == CommonConstant.UPDATE_FAIL) {
