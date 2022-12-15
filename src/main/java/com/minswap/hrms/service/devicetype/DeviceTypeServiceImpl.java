@@ -41,11 +41,15 @@ public class DeviceTypeServiceImpl implements DeviceTypeService {
         List<DeviceType> deviceTypes = null;
         List<DeviceTypeDto> deviceTypeDtos = new ArrayList<>();
         if (deviceTypeName != null) {
-            pagination.setTotalRecords(deviceTypeRepository.findByDeviceTypeNameContainsIgnoreCase(deviceTypeName.trim()).size());
-            deviceTypes = deviceTypeRepository.findByDeviceTypeNameContainsIgnoreCase(deviceTypeName.trim(), new Pagination(page - 1, limit));
+            pagination.setTotalRecords(deviceTypeRepository.findByDeviceTypeNameContainsIgnoreCaseAndStatus(deviceTypeName.trim(),0).size());
+            deviceTypes = deviceTypeRepository.findByDeviceTypeNameContainsIgnoreCaseAndStatus(deviceTypeName.trim(),0, new Pagination(page - 1, limit));
+//            pagination.setTotalRecords(deviceTypeRepository.findByDeviceTypeNameContainsIgnoreCase(deviceTypeName.trim()).size());
+//            deviceTypes = deviceTypeRepository.findByDeviceTypeNameContainsIgnoreCase(deviceTypeName.trim(), new Pagination(page - 1, limit));
         } else {
-            pagination.setTotalRecords(deviceTypeRepository.findAll().size());
-            deviceTypes = deviceTypeRepository.findAll(new Pagination(page - 1, limit)).getContent();
+            pagination.setTotalRecords(deviceTypeRepository.findByStatus(0).size());
+            deviceTypes = deviceTypeRepository.findByStatus(0,new Pagination(page - 1, limit));
+//            pagination.setTotalRecords(deviceTypeRepository.findAll().size());
+//            deviceTypes = deviceTypeRepository.findAll(new Pagination(page - 1, limit)).getContent();
         }
         if (deviceTypes != null && !deviceTypes.isEmpty()) {
             for (DeviceType deviceType : deviceTypes) {
@@ -147,12 +151,14 @@ public class DeviceTypeServiceImpl implements DeviceTypeService {
         DeviceType deviceType = deviceTypeRepository.findById(id).orElse(null);
         if (deviceType != null) {
             deviceType.setStatus(1);
+            deviceTypeRepository.save(deviceType);
             //deviceTypeRepository.deleteById(id);
             List<Device> deviceList = deviceRepository.findByDeviceTypeId(id);
             //deviceRepository.deleteAll(deviceList);
             if(deviceList != null && !deviceList.isEmpty()){
                 for (Device device: deviceList) {
                     device.setStatus(2);
+                    deviceRepository.save(device);
                 }
             }
             responseEntity = BaseResponse.ofSucceeded(null);
