@@ -76,7 +76,10 @@ public class PersonServiceImpl implements PersonService {
     @Autowired
     private PersonRepository personRepository;
 
+    private static final long MILLISECOND_PER_8H = 8 * 60 * 60 * 1000;
+
     private static final long MILLISECOND_PER_DAY = 24 * 60 * 60 * 1000;
+
     @Autowired
     private PersonRoleRepository personRoleRepository;
 
@@ -119,12 +122,14 @@ public class PersonServiceImpl implements PersonService {
         if (personCheckCitizen != null && personCheckCitizen > 0 && !person.getCitizenIdentification().equals(updateUserDto.getCitizenIdentification())) {
             throw new BaseException(ErrorCode.CITIZEN_INDENTIFICATION_EXSIT);
         }
+        if(updateUserDto.getAvatarImg() == null){
+            updateUserDto.setAvatarImg(person.getAvatarImg());
+        }
         try {
             ModelMapper modelMapper = new ModelMapper();
-
             modelMapper.map(updateUserDto, person);
             Date dateOfBirth = new Date();
-            dateOfBirth.setTime(person.getDateOfBirth().getTime() + MILLISECOND_PER_DAY); // go to the next day
+            dateOfBirth.setTime(person.getDateOfBirth().getTime() + MILLISECOND_PER_8H); // go to the next day
             person.setDateOfBirth(dateOfBirth);
             personRepository.save(person);
         } catch (Exception ex) {

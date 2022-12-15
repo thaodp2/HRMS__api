@@ -187,12 +187,13 @@ public class DeviceServiceImpl implements DeviceService {
         if (deviceById.get().getStatus() == 1) {
             throw new BaseException(ErrorCode.DEVICE_HAS_BEEN_BORROWED);
         }
-        try {
-            deviceRepository.delete(deviceById.get());
-            responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.OK, null);
-        } catch (Exception p) {
-            responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.EXPECTATION_FAILED, null);
+
+        Integer isUpdateSucceeded = deviceRepository.updateDeviceStatus(deviceById.get().getDeviceId(), 2);
+        if (isUpdateSucceeded != CommonConstant.UPDATE_SUCCESS) {
+            throw new BaseException(ErrorCode.UPDATE_FAIL);
         }
+        responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.OK, null);
+
         return responseEntity;
     }
 
