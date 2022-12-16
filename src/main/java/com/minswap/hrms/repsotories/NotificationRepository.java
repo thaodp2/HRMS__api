@@ -1,7 +1,6 @@
 package com.minswap.hrms.repsotories;
 
 import com.minswap.hrms.entities.Notification;
-import com.minswap.hrms.response.dto.BenefitBudgetDto;
 import com.minswap.hrms.response.dto.NotificationDto;
 import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.domain.Page;
@@ -9,11 +8,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Year;
 import java.util.List;
 
 @Repository
+@Transactional
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
     List<Notification> findByUserToAndDelivered(Long userTo, Integer delivered);
 
