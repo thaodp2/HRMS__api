@@ -68,6 +68,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.minswap.hrms.constants.ErrorCode.*;
+import static org.mockito.ArgumentMatchers.charThat;
 
 @Service
 public class PersonServiceImpl implements PersonService {
@@ -219,6 +220,10 @@ public class PersonServiceImpl implements PersonService {
     @Override
     public ResponseEntity<BaseResponse<EmployeeInfoResponse, Void>> getDetailEmployee(String rollNumber) {
         EmployeeDetailDto employeeDetailDto = personRepository.getDetailEmployee(rollNumber);
+        PersonRole pr = personRoleRepository.findByPersonIdAndAndRoleId(employeeDetailDto.getPersonId(), CommonConstant.ROLE_ID_OF_MANAGER).orElse(null);
+        if(pr != null) {
+        	employeeDetailDto.setIsManager(1);
+        }
         if (employeeDetailDto != null) {
             EmployeeInfoResponse employeeListDtos = new EmployeeInfoResponse(null, employeeDetailDto);
             ResponseEntity<BaseResponse<EmployeeInfoResponse, Void>> responseEntity = BaseResponse
@@ -309,7 +314,7 @@ public class PersonServiceImpl implements PersonService {
             employeeRequest.setDepartmentId(employeeDetailDto.getDepartmentId());
         }
         if (employeeRequest.getManagerId() == null) {
-            employeeRequest.setManagerId(employeeDetailDto.getManagerId());
+            employeeRequest.setManagerId(null);
         }
         if (employeeRequest.getGender() == null) {
             employeeRequest.setGender(employeeDetailDto.getGender());
@@ -724,7 +729,12 @@ public class PersonServiceImpl implements PersonService {
 
     private String convertRollNumber() {
         long count = personRepository.count() + 1;
-        String rollNumber = "MS00" + count;
+        String rollNumber = "MS";
+        int length = (count+"").length();
+        for(int i = 0; i < 5 -length; i++) {
+        	rollNumber += "0";
+        }
+        rollNumber += count;
         return rollNumber;
     }
 
@@ -784,12 +794,13 @@ public class PersonServiceImpl implements PersonService {
         personRole.setPersonId(employeeDetailDto.getPersonId());
         if (employeeRequest.getIsManager() != null) {
             personRole.setRoleId(MANAGER_ROLE);
-            if (employeeDetailDto.getIsManager() != null) {
+            PersonRole pr = personRoleRepository.findByPersonIdAndAndRoleId(employeeDetailDto.getPersonId(), CommonConstant.ROLE_ID_OF_MANAGER).orElse(null);
+            if (pr != null) {
                 if (employeeRequest.getIsManager() == 0) {
                     personRoleRepository.delete(personRole);
-                } else {
-                    personRoleRepository.save(personRole);
-                }
+                } 
+            }else {
+                personRoleRepository.save(personRole);
             }
         }
         if (employeeRequest.getDepartmentId() != null) {

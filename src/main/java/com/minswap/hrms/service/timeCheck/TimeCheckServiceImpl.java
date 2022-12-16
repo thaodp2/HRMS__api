@@ -390,7 +390,11 @@ public class TimeCheckServiceImpl implements TimeCheckService{
     }
     private double processWorkingTime(Date timeIn, Date timeOut, double timeLate, double outEarly){
         double timeWorkingTime = timeOut.getTime() - timeIn.getTime() - timeLate * 60 * 60 - outEarly * 60 *60;
-        return timeWorkingTime /(60*60*1000);
+        double total= timeWorkingTime /(60*60*1000);
+        if(total > 8) {
+        	return 8;
+        }
+        return total;
     }
 
     private Date convertDateInput(String dateStr){
