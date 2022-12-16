@@ -1126,6 +1126,11 @@ public class RequestServiceImpl implements RequestService {
         return url;
     }
 
+    public String getNotiURLForITSupport() {
+        String url = "request-center/borrow-device";
+        return url;
+    }
+
     public void updateTimeCheckWhenWFHRequestApproved(Date startTime, Date endTime, Long personId) throws ParseException {
         Calendar startCalendar = getCalendarByDate(startTime);
         Calendar endCalendar = getCalendarByDate(endTime);
@@ -1485,6 +1490,11 @@ public class RequestServiceImpl implements RequestService {
         Integer isUpdatedSuccess = requestRepository.updateStatusRequest(status, requestId, currentTime);
         if (isUpdatedSuccess == CommonConstant.UPDATE_FAIL) {
             throw new BaseException(ErrorCode.UPDATE_FAIL);
+        }
+        else if (requestTypeId == BORROW_REQUEST_TYPE_ID.intValue()) {
+            String url = getNotiURLForITSupport();
+            createNotification("has approved borrow device request of",
+                    0, url, 0, personRepository.getManagerIdByPersonId(personId), personId, currentTime);
         }
         // Update quỹ nghỉ sau khi approve
         if (LEAVE_REQUEST_TYPE.contains(Integer.valueOf(requestTypeId))) {
