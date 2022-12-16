@@ -18,7 +18,7 @@ import java.util.Date;
 @JsonPropertyOrder("id")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class BorrowHistoryDto {
-    public BorrowHistoryDto(Long borrowHistoryId, String rollNumber, String fullName, String deviceTypeName, String deviceName, String deviceCode, Date borrowDate, Date returnDate, Integer isReturned) {
+    public BorrowHistoryDto(Long borrowHistoryId, String rollNumber, String fullName, String deviceTypeName, String deviceName, String deviceCode, Date borrowDate, Date returnDate, String status) {
         this.borrowHistoryId = borrowHistoryId;
         this.rollNumber = rollNumber;
         this.fullName = fullName;
@@ -27,7 +27,8 @@ public class BorrowHistoryDto {
         this.deviceCode = deviceCode;
         this.borrowDate = borrowDate;
         this.returnDate = returnDate;
-        this.isReturned = isReturned;
+        this.status = status;
+//        this.isReturned = isReturned;
     }
 
     @JsonProperty("id")
@@ -49,6 +50,7 @@ public class BorrowHistoryDto {
     @JsonFormat(pattern = CommonConstant.YYYY_MM_DD_HH_MM_SS, shape = JsonFormat.Shape.STRING)
     private Date returnDate;
 
-    private Integer isReturned;
+//    private Integer isReturned;
+    private String status;
 
 }

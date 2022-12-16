@@ -165,7 +165,7 @@ public class RequestServiceImplTest {
         when(timeCheckRepository.getTimeInOfPersonByDay(anyLong(), anyInt(), anyInt())).thenReturn(new GregorianCalendar(2022, Calendar.DECEMBER, 8, 13, 47).getTime());
         when(timeCheckRepository.updateTimeCheckOfEmployee(anyLong(), anyDouble(), anyDouble(), any(), any(), anyDouble(), anyDouble(), anyInt())).thenReturn(Integer.valueOf(0));
         when(timeCheckRepository.getOTTimeByDay(anyInt(), anyLong())).thenReturn(Double.valueOf(0));
-        when(timeCheckRepository.updateOTTime(anyInt(), anyLong(), anyDouble())).thenReturn(Integer.valueOf(0));
+        when(timeCheckRepository.updateOTTime(anyInt(), anyLong(), anyDouble(), anyInt())).thenReturn(Integer.valueOf(0));
         when(timeCheckRepository.deleteTimeCheckByDate(anyInt(), anyInt(), anyInt())).thenReturn(Integer.valueOf(0));
         when(personRepository.getManagerIdByPersonId(anyLong())).thenReturn(Long.valueOf(3));
         when(personRepository.getListRoleIdByPersonId(anyLong())).thenReturn(List.of(Long.valueOf(2)));

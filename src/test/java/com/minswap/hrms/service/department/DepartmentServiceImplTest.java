@@ -51,7 +51,7 @@ public class DepartmentServiceImplTest {
         when(departmentRepository.getListDepartmentBySearch(anyString(), any())).thenReturn(new PageImpl<>(List.of(new DepartmentDto())));
         when(personRepository.getNumberOfEmplInDepartment(anyLong())).thenReturn(Integer.valueOf(0));
 
-        ResponseEntity<BaseResponse<ListDepartmentDto, Pageable>> result = departmentServiceImpl.getListDepartment(1, 1, "search", "desc");
+        ResponseEntity<BaseResponse<ListDepartmentDto, Pageable>> result = departmentServiceImpl.getListDepartment(1, 1, "search", "desc", "dir");
         Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
     }
 

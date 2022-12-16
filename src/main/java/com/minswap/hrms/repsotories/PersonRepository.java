@@ -11,12 +11,14 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import javax.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
+@Transactional
 public interface PersonRepository extends JpaRepository<Person, Long> {
 
     Optional<Person> findPersonByEmail(String email);
@@ -125,7 +127,7 @@ public interface PersonRepository extends JpaRepository<Person, Long> {
     @Query(" SELECT p.personId " +
             " from Person p " +
             " WHERE p.managerId = :managerId" +
-            " AND (:search IS NULL OR p.fullName LIKE %:search%) ")
+            " AND (:search IS NULL OR p.fullName LIKE %:search% OR p.rollNumber LIKE %:search%) ")
     Page<Long> getListPersonIdByManagerId(@Param("managerId") Long managerId,
                                           @Param("search") String search,
                                           Pageable pageable);
@@ -133,9 +135,9 @@ public interface PersonRepository extends JpaRepository<Person, Long> {
     @Query(" SELECT p.personId " +
             " from Person p " +
             " WHERE 1 = 1 " +
-            " AND (:search IS NULL OR p.fullName LIKE %:search%) ")
-    Page<Long> getListPersonIdByFullName(@Param("search") String search,
-                                         Pageable pageable);
+            " AND (:search IS NULL OR p.fullName LIKE %:search% OR p.rollNumber LIKE %:search%) ")
+    Page<Long> getListPersonIdBySearch(@Param("search") String search,
+                                       Pageable pageable);
 
     @Query("select new com.minswap.hrms.entities.Person(p.personId as personId, p.fullName as fullName) " +
             "from Person p, PersonRole pr, Role r " +

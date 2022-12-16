@@ -31,8 +31,6 @@ import org.springframework.stereotype.Service;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
@@ -232,7 +230,7 @@ public class TimeCheckServiceImpl implements TimeCheckService{
             Sort.Direction dirSort = CommonUtil.getSortDirection(sort, dir);
 
             List<TimeCheckEachSubordinateDto> timeCheckSubordinateList = new ArrayList<>();
-            Page<Long> listPersonIdPage = personRepository.getListPersonIdByFullName(search, PageRequest.of(page - 1, limit, dirSort == null ? Sort.unsorted() : Sort.by(dirSort, sort)));
+            Page<Long> listPersonIdPage = personRepository.getListPersonIdBySearch(search, PageRequest.of(page - 1, limit, dirSort == null ? Sort.unsorted() : Sort.by(dirSort, sort)));
             List<Long> listPersonId = listPersonIdPage.getContent();
 
             List<Date> listDate = getDatesInRange(startDateFormat, endDateFormat);
@@ -292,7 +290,7 @@ public class TimeCheckServiceImpl implements TimeCheckService{
         Date endDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(endDate);
 
         List<TimeCheckEachSubordinateDto> timeCheckSubordinateList = new ArrayList<>();
-        Page<Long> listPersonIdPage = personRepository.getListPersonIdByFullName(search, null);
+        Page<Long> listPersonIdPage = personRepository.getListPersonIdBySearch(search, null);
         List<Long> listPersonId = listPersonIdPage.getContent();
 
         List<Date> listDate = getDatesInRange(startDateFormat, endDateFormat);
