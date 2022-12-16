@@ -7,11 +7,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import org.springframework.transaction.annotation.Transactional;
+
 import java.time.Year;
 import java.util.Date;
 import java.util.Optional;
 
 @Repository
+@Transactional
 public interface PayrollRepository extends JpaRepository<Salary, Long> {
 
     @Query(value = " SELECT  tc.working_time " +

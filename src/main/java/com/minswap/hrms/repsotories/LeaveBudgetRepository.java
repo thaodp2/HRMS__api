@@ -13,12 +13,13 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import javax.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import java.time.Year;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
+@Transactional
 public interface LeaveBudgetRepository extends JpaRepository<LeaveBudget, Long> {
 
     Optional<LeaveBudget> findByPersonIdAndYearAndRequestTypeId(Long personId, Year year, Long requestTypeId);
