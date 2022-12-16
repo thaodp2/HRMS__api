@@ -12,10 +12,12 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import javax.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 
 @Repository
+@Transactional
 public interface DepartmentRepository extends JpaRepository<Department, Long> {
 
     @Query("SELECT new com.minswap.hrms.response.dto.DepartmentDto(d.departmentId, d.departmentName) " +

@@ -13,10 +13,12 @@ import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Repository;
 import org.springframework.validation.annotation.Validated;
 
-import javax.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.Date;
 
 @Repository
+@Transactional
 public interface TimeCheckRepository extends JpaRepository<TimeCheck, Long> {
 
     @Query("SELECT new com.minswap.hrms.response.dto.TimeCheckDto( " +

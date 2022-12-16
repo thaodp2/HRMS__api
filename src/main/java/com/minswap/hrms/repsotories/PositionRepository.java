@@ -11,10 +11,12 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Repository;
 
-import javax.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 
 @Repository
+@Transactional
 public interface PositionRepository extends JpaRepository<Position, Long> {
     List<Position> findByDepartmentId(Long departmentId);
     List<Position> findByDepartmentIdAndPositionNameContainsIgnoreCase(Long departmentId, String search);
