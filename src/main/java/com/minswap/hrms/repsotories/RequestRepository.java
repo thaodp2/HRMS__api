@@ -163,4 +163,6 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
             "left join DeviceType dt on r.deviceTypeId = dt.deviceTypeId " +
             "where r.requestId=:requestId")
     Integer getDeviceTypeStatus(@Param("requestId") Long requestId);
+
+    List<Request> findByRequestTypeIdAndIsAssignedAndStatus(Long requestTypeId, Integer isAssigned, String status);
 }

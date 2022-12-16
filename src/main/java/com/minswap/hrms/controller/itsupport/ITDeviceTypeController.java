@@ -10,6 +10,8 @@ import com.minswap.hrms.request.DeviceTypeRequest;
 import com.minswap.hrms.request.EmployeeRequest;
 import com.minswap.hrms.response.DeviceTypeResponse;
 import com.minswap.hrms.response.RequestResponse;
+import com.minswap.hrms.security.UserPrincipal;
+import com.minswap.hrms.security.oauth2.CurrentUser;
 import com.minswap.hrms.service.department.DepartmentService;
 import com.minswap.hrms.service.devicetype.DeviceTypeService;
 import com.minswap.hrms.service.person.PersonService;
@@ -86,8 +88,8 @@ public class ITDeviceTypeController {
     }
 
     @DeleteMapping("/device-type/{id}")
-    public ResponseEntity<BaseResponse<Void, Void>> deleteDeviceType(@PathVariable Long id) {
-        return deviceTypeService.deleteDeviceType(id);
+    public ResponseEntity<BaseResponse<Void, Void>> deleteDeviceType(@PathVariable Long id, @CurrentUser UserPrincipal userPrincipal) {
+        return deviceTypeService.deleteDeviceType(id, userPrincipal);
     }
 
 }
