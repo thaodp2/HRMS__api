@@ -2,6 +2,7 @@ package com.minswap.hrms.repsotories;
 
 import com.minswap.hrms.entities.Request;
 import com.minswap.hrms.response.dto.DateDto;
+import com.minswap.hrms.response.dto.DeviceTypeDto;
 import com.minswap.hrms.response.dto.PersonAndRequestDto;
 import com.minswap.hrms.response.dto.RequestDto;
 import io.lettuce.core.dynamic.annotation.Param;
@@ -54,18 +55,8 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
                                 @Param("endTime") Date endTime,
                                 @Param("reason") String reason);
 
-    @Modifying
-    @Transactional
-    @Query("UPDATE Request r set r.deviceTypeId =:deviceTypeId, r.reason =:reason where r.requestId =:id")
-    Integer updateDeviceRequest(@Param("id") Long id,
-                                @Param("deviceTypeId") Long deviceTypeId,
-                                @Param("reason") String reason);
-
     @Query("select r.status from Request r where r.requestId =:id")
     String getStatusOfRequestById(@Param("id") Long id);
-
-    @Query("select r.createDate from Request r where r.requestId=:id")
-    Date getCreateDateById(@Param("id") Long id);
 
     @Query("select new com.minswap.hrms.response.dto.DateDto(r.startTime, r.endTime) from Request r where r.requestId=:id")
     DateDto getStartAndEndTimeByRequestId(@Param("id") Long id);
@@ -140,9 +131,6 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
                                                 @Param("deviceTypeId") Long deviceTypeId,
                                                 Pageable pageable);
 
-    @Query("select r.approvalDate from Request r where r.requestId =:id")
-    Date getApprovalDateOfRequest(@Param("id") Long id);
-
     @Query("select r.maximumTimeToRollback from Request r WHERE r.requestId=:id")
     Date getMaximumTimeToRollback(@Param("id") Long id);
 
@@ -167,4 +155,10 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
 
     @Query("select r.isAssigned from Request r where r.requestId=:id")
     Integer isAssignedOrNot(@Param("id") Long id);
+
+    @Query("select dt.status " +
+            "from Request r " +
+            "left join DeviceType dt on r.deviceTypeId = dt.deviceTypeId " +
+            "where r.requestId=:requestId")
+    Integer getDeviceTypeStatus(@Param("requestId") Long requestId);
 }

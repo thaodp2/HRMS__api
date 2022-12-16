@@ -1,8 +1,6 @@
 package com.minswap.hrms.repsotories;
 
 import com.minswap.hrms.entities.DeviceType;
-import com.minswap.hrms.entities.RequestType;
-import com.minswap.hrms.response.dto.DeviceTypeDto;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -28,5 +26,4 @@ public interface DeviceTypeRepository extends JpaRepository<DeviceType,Long> {
     List<DeviceType> findByDeviceTypeNameContainsIgnoreCaseAndStatus(String deviceTypeName, Integer status, Pageable pageable);
 
     List<DeviceType> findByDeviceTypeNameIgnoreCase(String deviceTypeName);
-
 }
