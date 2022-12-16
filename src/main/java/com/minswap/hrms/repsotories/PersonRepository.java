@@ -25,6 +25,8 @@ public interface PersonRepository extends JpaRepository<Person, Long> {
 
     Optional<Person> findPersonByPersonId(Long id);
 
+    Optional<Person> findByCitizenIdentification(String citizenIdentification);
+
     Optional<Person> findPersonByRollNumberEquals(String rollNumber);
 
     List<Person> findByRankIdIsNot(Long rankId);
