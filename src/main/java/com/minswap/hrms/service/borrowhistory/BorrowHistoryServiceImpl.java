@@ -71,7 +71,7 @@ public class BorrowHistoryServiceImpl implements BorrowHistoryService {
         }else {
             intStatus = convertStatus(status.trim());
         }
-        Page<BorrowHistoryDto> pageInfor = borrowHistoryRepository.getBorrowHistoryList(search != null ? search.trim() : null, deviceTypeId, managerId, personId, intStatus, PageRequest.of(page - 1, limit, dirSort == null ? Sort.unsorted() : Sort.by(dirSort, sort)));
+        Page<BorrowHistoryDto> pageInfor = borrowHistoryRepository.getBorrowHistoryList(search != null ? search.trim() : null, deviceTypeId, managerId, personId, intStatus, PageRequest.of(page - 1, limit, dirSort == null ? Sort.by(Sort.Direction.DESC, "borrowHistoryId") : Sort.by(dirSort, sort)));
         if(pageInfor != null && pageInfor.hasContent()) {
             borrowHistoryDtos = pageInfor.getContent();
             pagination = new Pagination(page, limit);
