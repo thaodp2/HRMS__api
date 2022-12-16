@@ -8,6 +8,7 @@ import com.minswap.hrms.repsotories.DeviceRepository;
 import com.minswap.hrms.repsotories.DeviceTypeRepository;
 import com.minswap.hrms.response.DeviceTypeResponse;
 import com.minswap.hrms.response.MasterDataResponse;
+import com.minswap.hrms.security.UserPrincipal;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -82,7 +83,7 @@ public class DeviceTypeServiceImplTest {
     @Test
     public void testDeleteDeviceType() throws Exception {
         when(deviceRepository.findByDeviceTypeId(anyLong())).thenReturn(List.of(new Device(Long.valueOf(1), "deviceName", "deviceCode", "description", Integer.valueOf(0), Long.valueOf(1))));
-        assertThrows(BaseException.class, () -> deviceTypeServiceImpl.deleteDeviceType(Long.valueOf(1)));
+        assertThrows(BaseException.class, () -> deviceTypeServiceImpl.deleteDeviceType(Long.valueOf(1),new UserPrincipal("anhhtkhe141704@fpt.com.vn","KA", new ArrayList<>())));
     }
 
     @Test

@@ -169,4 +169,6 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
 
     @Query("select r.isAssigned from Request r where r.requestId=:id")
     Integer isAssignedOrNot(@Param("id") Long id);
+
+    List<Request> findByRequestTypeIdAndIsAssignedAndStatus(Long requestTypeId, Integer isAssigned, String status);
 }
