@@ -32,9 +32,9 @@ public class ITBorrowHistoryController {
             @RequestParam @Min(0) Integer limit,
             @RequestParam(required = false) Long deviceTypeId,
             @RequestParam(required = false) String search,
-            @RequestParam(required = false) Integer isReturned,
+            @RequestParam(required = false) String status,
             @RequestParam(required = false) String sort,
             @RequestParam(required = false) String dir) {
-        return borrowHistoryService.getBorrowHistoryList(null,null,page,limit,deviceTypeId,search,sort, dir,isReturned);
+        return borrowHistoryService.getBorrowHistoryList(null,null,page,limit,deviceTypeId,search,sort, dir,status);
     }
 }

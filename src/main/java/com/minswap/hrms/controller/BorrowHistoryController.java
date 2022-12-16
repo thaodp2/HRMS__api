@@ -31,13 +31,13 @@ public class BorrowHistoryController {
             @RequestParam @Min(1) Integer page,
             @RequestParam @Min(0) Integer limit,
             @RequestParam(required = false) Long deviceTypeId,
-            @RequestParam(required = false) Integer isReturned,
+            @RequestParam(required = false) String status,
             @RequestParam(required = false) String sort,
             @RequestParam(required = false) String dir,
             @CurrentUser UserPrincipal userPrincipal) {
 //        Long personId = Long.valueOf(2);
         Long personId = personService.getPersonInforByEmail(userPrincipal.getEmail()).getPersonId();
-        return borrowHistoryService.getBorrowHistoryList(null,personId,page,limit,deviceTypeId,null,sort, dir,isReturned);
+        return borrowHistoryService.getBorrowHistoryList(null,personId,page,limit,deviceTypeId,null,sort, dir,status);
     }
 
     @GetMapping("/borrow-history/{id}")

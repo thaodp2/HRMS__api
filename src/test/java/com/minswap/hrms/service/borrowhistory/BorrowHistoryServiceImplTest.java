@@ -49,21 +49,21 @@ public class BorrowHistoryServiceImplTest {
 
     @Test
     public void testGetBorrowHistoryList1() throws Exception {
-        when(borrowHistoryRepository.getBorrowHistoryList(anyString(), anyLong(), anyLong(), anyLong(), anyInt(), any())).thenReturn(new PageImpl<>(Arrays.asList(new BorrowHistoryDto(Long.valueOf(1), "rollNumber", "fullName", "deviceTypeName", "deviceName", "deviceCode", new GregorianCalendar(2022, Calendar.DECEMBER, 8, 16, 36).getTime(), new GregorianCalendar(2022, Calendar.DECEMBER, 8, 16, 36).getTime(), Integer.valueOf(0)))));
-        ResponseEntity<BaseResponse<BorrowHistoryResponse.BorrowHistoryListResponse, Pageable>> result = borrowHistoryServiceImpl.getBorrowHistoryList(Long.valueOf(1), Long.valueOf(1), Integer.valueOf(1), Integer.valueOf(10), Long.valueOf(1), "search", "sort", "dir", Integer.valueOf(0));
+        when(borrowHistoryRepository.getBorrowHistoryList(anyString(), anyLong(), anyLong(), anyLong(), anyInt(), any())).thenReturn(new PageImpl<>(Arrays.asList(new BorrowHistoryDto(Long.valueOf(1), "rollNumber", "fullName", "deviceTypeName", "deviceName", "deviceCode", new GregorianCalendar(2022, Calendar.DECEMBER, 8, 16, 36).getTime(), new GregorianCalendar(2022, Calendar.DECEMBER, 8, 16, 36).getTime(), "Using"))));
+        ResponseEntity<BaseResponse<BorrowHistoryResponse.BorrowHistoryListResponse, Pageable>> result = borrowHistoryServiceImpl.getBorrowHistoryList(Long.valueOf(1), Long.valueOf(1), Integer.valueOf(1), Integer.valueOf(10), Long.valueOf(1), "search", "sort", "dir", "Using");
         Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
     }
 
     @Test
     public void testGetBorrowHistoryDetail1() throws Exception {
-        when(borrowHistoryRepository.getBorrowHistoryDetail(anyLong())).thenReturn(new BorrowHistoryDto(Long.valueOf(8), "rollNumber", "fullName", "deviceTypeName", "deviceName", "deviceCode", new GregorianCalendar(2022, Calendar.DECEMBER, 8, 16, 36).getTime(), new GregorianCalendar(2022, Calendar.DECEMBER, 8, 16, 36).getTime(), Integer.valueOf(0)));
+        when(borrowHistoryRepository.getBorrowHistoryDetail(anyLong())).thenReturn(new BorrowHistoryDto(Long.valueOf(8), "rollNumber", "fullName", "deviceTypeName", "deviceName", "deviceCode", new GregorianCalendar(2022, Calendar.DECEMBER, 8, 16, 36).getTime(), new GregorianCalendar(2022, Calendar.DECEMBER, 8, 16, 36).getTime(), "Using"));
         ResponseEntity<BaseResponse<BorrowHistoryResponse, Pageable>> result = borrowHistoryServiceImpl.getBorrowHistoryDetail(Long.valueOf(8));
         Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
     }
 
     @Test
     public void testGetBorrowHistoryDetail2() throws Exception {
-        when(borrowHistoryRepository.getBorrowHistoryDetail(same(Long.valueOf(1)))).thenReturn(new BorrowHistoryDto(Long.valueOf(1), "rollNumber", "fullName", "deviceTypeName", "deviceName", "deviceCode", new GregorianCalendar(2022, Calendar.DECEMBER, 8, 16, 36).getTime(), new GregorianCalendar(2022, Calendar.DECEMBER, 8, 16, 36).getTime(), Integer.valueOf(0)));
+        when(borrowHistoryRepository.getBorrowHistoryDetail(same(Long.valueOf(1)))).thenReturn(new BorrowHistoryDto(Long.valueOf(1), "rollNumber", "fullName", "deviceTypeName", "deviceName", "deviceCode", new GregorianCalendar(2022, Calendar.DECEMBER, 8, 16, 36).getTime(), new GregorianCalendar(2022, Calendar.DECEMBER, 8, 16, 36).getTime(), "Using"));
         Assert.assertThrows(NumberFormatException.class, () -> borrowHistoryServiceImpl.getBorrowHistoryDetail(Long.valueOf("c")));
     }
 }
