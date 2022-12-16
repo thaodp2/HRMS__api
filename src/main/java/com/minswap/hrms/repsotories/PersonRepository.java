@@ -199,4 +199,7 @@ public interface PersonRepository extends JpaRepository<Person, Long> {
     @Query("select p.personId from Person p where p.positionId=:id and p.status =:status")
     List<Long> getListPersonIdByPositionId(@Param("id") Long id,
                                            @Param("status") String status);
+
+    @Query("select pr.personId from PersonRole pr where pr.roleId=:roleId")
+    List<Long> getListITSupportId(@Param("roleId") Long roleId);
 }

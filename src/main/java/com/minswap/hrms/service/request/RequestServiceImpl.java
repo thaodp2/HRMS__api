@@ -396,6 +396,9 @@ public class RequestServiceImpl implements RequestService {
                     }
                 }
             }
+            if (requestDto.getStatus().equalsIgnoreCase(CANCELED_STATUS)) {
+                requestDto.setIsAllowRollback(NOT_ALLOW_ROLLBACK);
+            }
             requestDto.setRollNumber(personRepository.getRollNumberByPersonId(personId));
             List<String> listImage = evidenceRepository.getListImageByRequest(id);
             requestDto.setListEvidence(listImage);
@@ -1482,10 +1485,21 @@ public class RequestServiceImpl implements RequestService {
             validateOTRequestTimeAlreadyInAnotherOTRequest(startTime, endTime, personId);
             validateOTBudgetTime(startTime, endTime, personId, year, month);
         }
+
         if (maximumTimeToRollback == null) {
             updateMaximumTimeToRollback(currentTime, requestId);
         } else {
             currentTime.setTime(currentTime.getTime() + CommonConstant.MILLISECOND_7_HOURS);
+        }
+        if (requestTypeId == BORROW_REQUEST_TYPE_ID.intValue()) {
+            requestRepository.updateStatusRequest(REJECTED_STATUS, requestId, currentTime);
+            Integer deviceTypeStatus = requestRepository.getDeviceTypeStatus(requestId);
+            if (deviceTypeStatus.intValue() == 1) {
+                throw new BaseException(ErrorCode.newErrorCode(208,
+                        "You can't approve this request because the device type borrowed in the request has " +
+                                "been removed. The request will automatically return to the reject status!",
+                        httpStatus.NOT_ACCEPTABLE));
+            }
         }
         Integer isUpdatedSuccess = requestRepository.updateStatusRequest(status, requestId, currentTime);
         if (isUpdatedSuccess == CommonConstant.UPDATE_FAIL) {
@@ -1493,8 +1507,13 @@ public class RequestServiceImpl implements RequestService {
         }
         else if (requestTypeId == BORROW_REQUEST_TYPE_ID.intValue()) {
             String url = getNotiURLForITSupport();
-            createNotification("has approved borrow device request of",
-                    0, url, 0, personRepository.getManagerIdByPersonId(personId), personId, currentTime);
+            List<Long> listPersonIdHasITSPRole = personRepository.getListITSupportId(Long.valueOf(ROLE_IT_SUPPORT));
+            if (listPersonIdHasITSPRole.size() > 0) {
+                for (Long id : listPersonIdHasITSPRole) {
+                    createNotification("A request needs to be assigned a device",
+                            0, url, 0, null, id, currentTime);
+                }
+            }
         }
         // Update quỹ nghỉ sau khi approve
         if (LEAVE_REQUEST_TYPE.contains(Integer.valueOf(requestTypeId))) {

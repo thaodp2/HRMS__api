@@ -72,7 +72,6 @@ public class RequestDto {
     private String status;
     private String receiver;
     private Long deviceTypeId;
-
     private String deviceTypeName;
     @JsonFormat(pattern = CommonConstant.YYYY_MM_DD_HH_MM_SS, shape = JsonFormat.Shape.STRING)
     private Date approvalDate;
