@@ -14,7 +14,8 @@ public interface DepartmentService {
     ResponseEntity<BaseResponse<ListDepartmentDto, Pageable>> getListDepartment (Integer page,
                                                                                  Integer limit,
                                                                                  String search,
-                                                                                 String sort);
+                                                                                 String sort,
+                                                                                 String dir);
     ResponseEntity<BaseResponse<Void, Void>> createDepartment (CreateDepartmentRequest createDepartmentRequest);
 
     ResponseEntity<BaseResponse<Void, Void>> editDepartment (Long id,

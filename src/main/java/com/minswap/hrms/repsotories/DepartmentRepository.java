@@ -20,7 +20,8 @@ public interface DepartmentRepository extends JpaRepository<Department, Long> {
 
     @Query("SELECT new com.minswap.hrms.response.dto.DepartmentDto(d.departmentId, d.departmentName) " +
             "from Department d " +
-            "where (:departmentName IS NULL OR d.departmentName like %:departmentName%)")
+            "where (:departmentName IS NULL OR d.departmentName like %:departmentName%) " +
+            "order by d.departmentId desc")
     Page<DepartmentDto> getListDepartmentBySearch(@Param("departmentName") String departmentName,
                                                   Pageable pageable);
 
