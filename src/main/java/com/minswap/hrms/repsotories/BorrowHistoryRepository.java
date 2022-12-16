@@ -17,9 +17,10 @@ public interface BorrowHistoryRepository extends JpaRepository<BorrowHistory, Lo
             "d.deviceCode as deviceCode, bh.borrowDate as borrowDate, " +
             "bh.returnDate as returnDate, " +
             "CASE " +
-            "When bh.returnDate is null then 0 " +
-            "else 1 " +
-            "END as isReturned) " +
+            "When d.status = 1 then 'Using' " +
+            "When d.status = 0 then 'Returned' " +
+            "else 'Deleted' " +
+            "END as status) " +
             "from BorrowHistory bh " +
             "left join Person p on bh.personId = p.personId " +
             "left join Device d on bh.deviceId = d.deviceId " +
@@ -28,12 +29,12 @@ public interface BorrowHistoryRepository extends JpaRepository<BorrowHistory, Lo
             "and (:deviceTypeId IS NULL OR dt.deviceTypeId = :deviceTypeId) " +
             "and (:managerId IS NULL OR p.managerId = :managerId) " +
             "and (:personId IS NULL OR p.personId = :personId) " +
-            "and ((:isReturned IS NULL) or (:isReturned = 0 and bh.returnDate is null) OR (:isReturned != 0 and bh.returnDate is not null))")
+            "and (:status IS NULL or d.status =:status)")
     Page<BorrowHistoryDto> getBorrowHistoryList(@Param("search") String search,
                                                 @Param("deviceTypeId") Long deviceTypeId,
                                                 @Param("managerId") Long managerId,
                                                 @Param("personId") Long personId,
-                                                @Param("isReturned") Integer isReturned,
+                                                @Param("status") Integer status,
                                                 Pageable pageable);
 
     @Query("SELECT new com.minswap.hrms.response.dto.BorrowHistoryDto(bh.borrowHistoryId as borrowHistoryId, " +
@@ -42,9 +43,10 @@ public interface BorrowHistoryRepository extends JpaRepository<BorrowHistory, Lo
             "d.deviceCode as deviceCode, bh.borrowDate as borrowDate, " +
             "bh.returnDate as returnDate, " +
             "CASE " +
-            "When bh.returnDate is null then 0 " +
-            "else 1 " +
-            "END as isReturned) " +
+            "When d.status = 1 then 'Using' " +
+            "When d.status = 0 then 'Returned' " +
+            "else 'Deleted' " +
+            "END as status) " +
             "from BorrowHistory bh " +
             "left join Person p on bh.personId = p.personId " +
             "left join Device d on bh.deviceId = d.deviceId " +

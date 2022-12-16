@@ -25,6 +25,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.criteria.CriteriaBuilder;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -59,20 +60,38 @@ public class BorrowHistoryServiceImpl implements BorrowHistoryService {
     }
 
     @Override
-    public ResponseEntity<BaseResponse<BorrowHistoryResponse.BorrowHistoryListResponse, Pageable>> getBorrowHistoryList(Long managerId, Long personId, Integer page, Integer limit, Long deviceTypeId, String search, String sort, String dir, Integer isReturned) {
+    public ResponseEntity<BaseResponse<BorrowHistoryResponse.BorrowHistoryListResponse, Pageable>> getBorrowHistoryList(Long managerId, Long personId, Integer page, Integer limit, Long deviceTypeId, String search, String sort, String dir, String status) {
         Sort.Direction dirSort = CommonUtil.getSortDirection(sort, dir);
         List<BorrowHistoryDto> borrowHistoryDtos =new ArrayList<>();
         ResponseEntity<BaseResponse<BorrowHistoryResponse.BorrowHistoryListResponse, Pageable>> responseEntity = null;
-        Page<BorrowHistoryDto> pageInfor = borrowHistoryRepository.getBorrowHistoryList(search != null ? search.trim() : null, deviceTypeId, managerId, personId, isReturned, PageRequest.of(page - 1, limit, dirSort == null ? Sort.unsorted() : Sort.by(dirSort, sort)));
+        Integer intStatus = null;
+        Pagination pagination = null;
+        if(status == null || status.trim().isEmpty()){
+            intStatus = null;
+        }else {
+            intStatus = convertStatus(status.trim());
+        }
+        Page<BorrowHistoryDto> pageInfor = borrowHistoryRepository.getBorrowHistoryList(search != null ? search.trim() : null, deviceTypeId, managerId, personId, intStatus, PageRequest.of(page - 1, limit, dirSort == null ? Sort.unsorted() : Sort.by(dirSort, sort)));
         if(pageInfor != null && pageInfor.hasContent()) {
             borrowHistoryDtos = pageInfor.getContent();
-            Pagination pagination = new Pagination(page, limit);
+            pagination = new Pagination(page, limit);
             pagination.setTotalRecords(pageInfor);
-            BorrowHistoryResponse.BorrowHistoryListResponse response = new BorrowHistoryResponse.BorrowHistoryListResponse(borrowHistoryDtos);
-             responseEntity
-                    = BaseResponse.ofSucceededOffset(response, pagination);
+
         }
+        BorrowHistoryResponse.BorrowHistoryListResponse response = new BorrowHistoryResponse.BorrowHistoryListResponse(borrowHistoryDtos);
+        responseEntity
+                = BaseResponse.ofSucceededOffset(response, pagination);
         return responseEntity;
+    }
+
+    public Integer convertStatus(String status){
+        if(status.equalsIgnoreCase("Using")){
+            return 1;
+        }else if(status.equalsIgnoreCase("Returned")){
+            return 0;
+        }else {
+            return 2;
+        }
     }
 
     @Override
