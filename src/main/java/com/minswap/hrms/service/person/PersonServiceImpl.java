@@ -568,16 +568,16 @@ public class PersonServiceImpl implements PersonService {
         return false;
     }
 
-    public boolean checkManagerToEdit(Long departmentId, String rollNumber,Long managerId) {
+    public boolean checkManagerToEdit(Long departmentId, String rollNumber, Long managerId) {
         if (managerId != null) {
-            List<Person> personList = getMasterDataManagerToEdit(departmentId,rollNumber,null);
-            if(personList != null && !personList.isEmpty()){
-                for (Person person:personList) {
-                    if(person.getPersonId() == managerId){
+            List<Person> personList = getMasterDataManagerToEdit(departmentId, rollNumber, null);
+            if (personList != null && !personList.isEmpty()) {
+                for (Person person : personList) {
+                    if (person.getPersonId() == managerId) {
                         return true;
                     }
                 }
-            }else {
+            } else {
                 return false;
             }
         } else {
@@ -632,7 +632,6 @@ public class PersonServiceImpl implements PersonService {
 
     @Override
     public ResponseEntity<BaseResponse<HttpStatus, Void>> importExcel(MultipartFile file) {
-        SimpleDateFormat format = new SimpleDateFormat(CommonConstant.YYYY_MM_DD);
         int countRecordSuccess = 0;
         int countRecordUpdateSuccess = 0;
         int countRecordFail = 0;
@@ -658,7 +657,7 @@ public class PersonServiceImpl implements PersonService {
 
         try {
             if (!file.isEmpty()) {
-                if (file.getOriginalFilename().split("\\.")[1].equals("xlsx") || file.getOriginalFilename().split("\\.")[1].equals("xls")) {
+                if (file.getOriginalFilename().split("\\.")[1].equals("xlsx")) {
                     try {
                         Path tempDir = Files.createTempDirectory("");
                         File tempFile = tempDir.resolve(file.getOriginalFilename()).toFile();
@@ -765,16 +764,13 @@ public class PersonServiceImpl implements PersonService {
                                                     throw new BaseException(INVALID_PARAMETERS);
                                                 } else if (rankId != null && !rankService.checkRankExist(rankId)) {
                                                     throw new BaseException(INVALID_PARAMETERS);
-                                                } else if (managerId != null && !checkManagerByDepartmentValid(managerId, departmentId) && !checkManagerToEdit(departmentId,rollNumber,managerId)) {
+                                                } else if (managerId != null && !checkManagerByDepartmentValid(managerId, departmentId) && !checkManagerToEdit(departmentId, rollNumber, managerId)) {
                                                     throw new BaseException(INVALID_PARAMETERS);
                                                 } else if (positionId != null && !positionService.checkPositionByDepartment(positionId, departmentId)) {
                                                     throw new BaseException(INVALID_PARAMETERS);
-                                                } else if(departmentId != null){
-                                                    if(positionId == null){
-                                                        throw new BaseException(INVALID_PARAMETERS);
-                                                    }
-                                                }
-                                                else{
+                                                } else if (departmentId != null && positionId == null) {
+                                                    throw new BaseException(INVALID_PARAMETERS);
+                                                } else {
                                                     EmployeeUpdateRequest employeeUpdateRequest = new EmployeeUpdateRequest(fullName, dateOfBirth, managerId, departmentId
                                                             , positionId, rankId, onBoardDate, citizenIdentification, phoneNumber, address, gender, isActive, salaryBasic, salaryBonus, isManager);
                                                     updateEmployee(employeeUpdateRequest, rollNumber.trim());
