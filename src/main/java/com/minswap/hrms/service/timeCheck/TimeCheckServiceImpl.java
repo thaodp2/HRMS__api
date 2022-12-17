@@ -84,6 +84,8 @@ public class TimeCheckServiceImpl implements TimeCheckService{
                     Date dateAdd = date;
                     dateAdd.setTime(dateAdd.getTime() + MILLISECOND_7_HOURS);
                     String reason = timeCheckRepository.getMissTimeCheckReason(personId, dateAdd);
+                    Double otTimeDB = timeCheckRepository.getOtTimeInDate(personId, dateAdd)  ;
+                    Double otTime = otTimeDB == null ? 0 : otTimeDB;
                     timeCheckPerDateMap.put(date, Arrays.asList(
                             TimeCheckDto.builder()
                                     .personId(personId)
@@ -92,7 +94,7 @@ public class TimeCheckServiceImpl implements TimeCheckService{
                                     .date(dateAdd)
                                     .workingTime(0d)
                                     .requestTypeName(reason)
-                                    .ot(0d)
+                                    .ot(otTime)
                                     .build()
                     ));
                 }

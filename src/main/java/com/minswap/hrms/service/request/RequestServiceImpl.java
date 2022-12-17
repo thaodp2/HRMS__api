@@ -342,6 +342,13 @@ public class RequestServiceImpl implements RequestService {
             }
             Integer requestType = requestTypeRepository.getRequestTypeByRequestId(id);
             if (requestType == BORROW_REQUEST_TYPE_ID) {
+                Integer deviceTypeStatus = requestRepository.getDeviceTypeStatus(id);
+                if (deviceTypeStatus.intValue() == 1) {
+                    requestDto.setIsDeviceTypeDeleted(1);
+                }
+                else {
+                    requestDto.setIsDeviceTypeDeleted(0);
+                }
                 requestDto.setRequestTypeName(DEVICE_TYPE);
                 if (requestRepository.getMaximumTimeToRollback(id) == null) {
                     requestDto.setIsAllowRollback(NOT_ALLOW_ROLLBACK);
@@ -766,9 +773,33 @@ public class RequestServiceImpl implements RequestService {
         if (isReturnNumOfDayOff) {
             newHoursWorked = otBudgetDto.getHoursWorked() - otHoursInRequest;
             remainHoursWorkOfYear = otBudgetDto.getOtHoursRemainOfYear() + otHoursInRequest;
+            // Remove OT time in Time check
+            Calendar calendarStart = getCalendarByDate(startTime);
+            Calendar calendarEnd = getCalendarByDate(endTime);
+            DecimalFormat decimalFormat = new DecimalFormat("#.##");
+            // OT trong ngày
+            if (calendarStart.get(Calendar.DAY_OF_MONTH) == calendarEnd.get(Calendar.DAY_OF_MONTH)
+                    && calendarEnd.get(Calendar.MONTH) == calendarStart.get(Calendar.MONTH)) {
+                double otTimeReturn = calculateHoursBetweenTwoDateTime(startTime, endTime);
+                Double otTime = timeCheckRepository.getOTTimeByDay(getDayOfDate(startTime), personId, getMonthOfDate(startTime));
+                double newOTTime = Double.parseDouble(decimalFormat.format(otTime - otTimeReturn));
+                timeCheckRepository.updateOTTime(getDayOfDate(startTime), personId, newOTTime, getMonthOfDate(startTime));
+            }
+            else {
+                otTimeOfStartDay = calculateHoursBetweenTwoDateTime(startTime,
+                                                                    formatTimeToKnownDate(startTime, TIME_END_OF_DAY));
+                otTimeOfEndDay = calculateHoursBetweenTwoDateTime(formatTimeToKnownDate(endTime, TIME_START_OF_DAY),
+                                                                  endTime);
+                Double otTimeInDBOfStartDay = timeCheckRepository.getOTTimeByDay(getDayOfDate(startTime), personId, getMonthOfDate(startTime));
+                Double otTimeInDBOfEndDay = timeCheckRepository.getOTTimeByDay(getDayOfDate(endTime), personId, getMonthOfDate(endTime));
+                double newOTTimeInStartDay = Double.parseDouble(decimalFormat.format(otTimeInDBOfStartDay - otTimeOfStartDay));
+                double newOTTimeInEndDay = Double.parseDouble(decimalFormat.format(otTimeInDBOfEndDay - otTimeOfEndDay));
+                timeCheckRepository.updateOTTime(getDayOfDate(startTime), personId, newOTTimeInStartDay, getMonthOfDate(startTime));
+                timeCheckRepository.updateOTTime(getDayOfDate(endTime), personId, newOTTimeInEndDay, getMonthOfDate(endTime));
+            }
         } else {
             if (getDayOfDate(startTime) == getDayOfDate(endTime)) {
-                Double otTimeWorkedInThisDay = timeCheckRepository.getOTTimeByDay(getDayOfDate(startTime), personId);
+                Double otTimeWorkedInThisDay = timeCheckRepository.getOTTimeByDay(getDayOfDate(startTime), personId, getMonthOfDate(startTime));
                 if (otTimeWorkedInThisDay == null) {
                     otTimeWorkedInThisDay = Double.valueOf(0);
                 }
@@ -779,7 +810,7 @@ public class RequestServiceImpl implements RequestService {
             } else {
                 otTimeOfStartDay = calculateHoursBetweenTwoDateTime(startTime,
                         formatTimeToKnownDate(startTime, TIME_END_OF_DAY));
-                Double otTimeWorkedInStartDay = timeCheckRepository.getOTTimeByDay(getDayOfDate(startTime), personId);
+                Double otTimeWorkedInStartDay = timeCheckRepository.getOTTimeByDay(getDayOfDate(startTime), personId, getMonthOfDate(startTime));
                 if (otTimeWorkedInStartDay == null) {
                     otTimeWorkedInStartDay = Double.valueOf(0);
                 }
@@ -787,7 +818,7 @@ public class RequestServiceImpl implements RequestService {
                         otHoursRemainOfYear, otTimeWorkedInStartDay + otTimeOfStartDay);
                 otTimeOfEndDay = calculateHoursBetweenTwoDateTime(formatTimeToKnownDate(endTime, TIME_START_OF_DAY),
                         endTime);
-                Double otTimeWorkedInEndDay = timeCheckRepository.getOTTimeByDay(getDayOfDate(endTime), personId);
+                Double otTimeWorkedInEndDay = timeCheckRepository.getOTTimeByDay(getDayOfDate(endTime), personId, getMonthOfDate(endTime));
                 if (otTimeWorkedInEndDay == null) {
                     otTimeWorkedInEndDay = Double.valueOf(0);
                 }

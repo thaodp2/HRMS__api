@@ -330,7 +330,7 @@ public class PersonServiceImpl implements PersonService {
         }
         if (employeeRequest.getIsManager() == null) {
             employeeRequest.setIsManager(employeeDetailDto.getIsManager());
-        } else {
+        } else if(employeeRequest.getIsManager() != null && employeeRequest.getDepartmentId() != null){
             updatePersonRole(employeeDetailDto, employeeRequest);
         }
 
@@ -938,24 +938,25 @@ public class PersonServiceImpl implements PersonService {
             }
         }
         if (employeeRequest.getDepartmentId() != null) {
-            if (employeeRequest.getDepartmentId() == 35) {
+            PersonRole prItSp = personRoleRepository.findByPersonIdAndAndRoleId(employeeDetailDto.getPersonId(), CommonConstant.ROLE_ID_OF_IT_SUPPORT).orElse(null);
+            PersonRole prHr = personRoleRepository.findByPersonIdAndAndRoleId(employeeDetailDto.getPersonId(), HR_ROLE).orElse(null);
+
+            if (employeeRequest.getDepartmentId() == 35 && prItSp == null) {
                 PersonRole personRole1 = new PersonRole();
                 personRole1.setPersonId(employeeDetailDto.getPersonId());
                 personRole1.setRoleId(IT_SUPPORT_ROLE);
                 personRoleRepository.save(personRole1);
-            } else if (employeeRequest.getDepartmentId() == 2) {
+                if (prHr != null) {
+                	personRoleRepository.delete(prHr);
+                }
+            } else if (employeeRequest.getDepartmentId() == 2 && prHr == null) {
                 PersonRole personRole2 = new PersonRole();
                 personRole2.setPersonId(employeeDetailDto.getPersonId());
                 personRole2.setRoleId(HR_ROLE);
                 personRoleRepository.save(personRole2);
-            } else {
-                PersonRole personRole3 = new PersonRole();
-                personRole3.setPersonId(employeeDetailDto.getPersonId());
-                personRole3.setRoleId(IT_SUPPORT_ROLE);
-                personRoleRepository.delete(personRole3);
-                personRole3.setRoleId(HR_ROLE);
-                personRoleRepository.delete(personRole3);
-            }
+                if(prItSp != null) {
+                	personRoleRepository.delete(prItSp);                }
+            } 
         }
     }
 
