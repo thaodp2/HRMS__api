@@ -90,4 +90,6 @@ public class RequestDto {
     private double otTimeRemainingOfYear;
 
     private int periodTime;
+
+    private int isDeviceTypeDeleted;
 }
