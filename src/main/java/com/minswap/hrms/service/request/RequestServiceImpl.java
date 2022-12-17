@@ -342,6 +342,13 @@ public class RequestServiceImpl implements RequestService {
             }
             Integer requestType = requestTypeRepository.getRequestTypeByRequestId(id);
             if (requestType == BORROW_REQUEST_TYPE_ID) {
+                Integer deviceTypeStatus = requestRepository.getDeviceTypeStatus(id);
+                if (deviceTypeStatus.intValue() == 1) {
+                    requestDto.setIsDeviceTypeDeleted(1);
+                }
+                else {
+                    requestDto.setIsDeviceTypeDeleted(0);
+                }
                 requestDto.setRequestTypeName(DEVICE_TYPE);
                 if (requestRepository.getMaximumTimeToRollback(id) == null) {
                     requestDto.setIsAllowRollback(NOT_ALLOW_ROLLBACK);
