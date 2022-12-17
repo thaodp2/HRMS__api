@@ -48,16 +48,19 @@ public class DepartmentServiceImpl implements DepartmentService{
     private static final String SORT_ASC = "asc";
     private static final int NOT_ALLOW_DELETE = 0;
     private static final int ALLOW_DELETE = 1;
+    private static final String TOTAL_EMPLOYEE = "totalEmployee";
     @Override
     public ResponseEntity<BaseResponse<ListDepartmentDto, Pageable>> getListDepartment(Integer page,
                                                                                        Integer limit,
                                                                                        String search,
-                                                                                       String sort) {
+                                                                                       String sort,
+                                                                                       String dir) {
         ResponseEntity<BaseResponse<ListDepartmentDto, Pageable>> responseEntity = null;
         Pagination pagination = new Pagination(page - 1, limit);
         Page<DepartmentDto> listDepartmentDto = departmentRepository.getListDepartmentBySearch(search, pagination);
         List<DepartmentDto> departmentDtos = listDepartmentDto.getContent();
         for (DepartmentDto departmentDto : departmentDtos) {
+            departmentDto.setListPosition(positionRepository.getListPosition(departmentDto.getId()));
             departmentDto.setTotalEmployee(personRepository.getNumberOfEmplInDepartment(departmentDto.getId()));
             List<Long> listPersonId = departmentRepository.getPersonIdByDepartmentId(departmentDto.getId());
             if (listPersonId.size() > 0) {
@@ -67,23 +70,25 @@ public class DepartmentServiceImpl implements DepartmentService{
                 departmentDto.setIsAllowDelete(ALLOW_DELETE);
             }
         }
-        if (sort != null && (sort.equalsIgnoreCase(SORT_ASC) || sort.equalsIgnoreCase(SORT_DESC))) {
-            departmentDtos = listDepartmentDto.getContent()
-                                               .stream().sorted((o1, o2) -> {
-                                                   if (sort.equalsIgnoreCase(SORT_DESC)) {
-                                                       if (o1.getTotalEmployee() > o2.getTotalEmployee()) {
-                                                           return -1;
-                                                       }
-                                                       return 1;
-                                                   }
-                                                   else {
-                                                       if (o1.getTotalEmployee() < o2.getTotalEmployee()) {
-                                                           return -1;
-                                                       }
-                                                       return 1;
-                                                   }
-                                               })
-                                               .collect(Collectors.toList());
+        if (sort != null && dir != null) {
+            if (sort.equalsIgnoreCase(TOTAL_EMPLOYEE) && (dir.equalsIgnoreCase(SORT_ASC) || dir.equalsIgnoreCase(SORT_DESC))) {
+                departmentDtos = listDepartmentDto.getContent()
+                        .stream().sorted((o1, o2) -> {
+                            if (dir.equalsIgnoreCase(SORT_DESC)) {
+                                if (o1.getTotalEmployee() > o2.getTotalEmployee()) {
+                                    return -1;
+                                }
+                                return 1;
+                            }
+                            else {
+                                if (o1.getTotalEmployee() < o2.getTotalEmployee()) {
+                                    return -1;
+                                }
+                                return 1;
+                            }
+                        })
+                        .collect(Collectors.toList());
+            }
         }
         pagination.setTotalRecords(listDepartmentDto);
         pagination.setPage(page);

@@ -8,8 +8,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 @Repository
+@Transactional
 public interface BorrowHistoryRepository extends JpaRepository<BorrowHistory, Long> {
     @Query("SELECT new com.minswap.hrms.response.dto.BorrowHistoryDto(bh.borrowHistoryId as borrowHistoryId, " +
             "p.rollNumber as rollNumber, p.fullName as fullName, " +

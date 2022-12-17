@@ -74,6 +74,7 @@ public class CommonConstant {
     };
 
     public static String[] TEMPLATE_HEADER_TO_IMPORT = {
+            "Roll Number",
             "Full Name",
             "Date Of Birth",
             "Manager Id",
@@ -87,7 +88,8 @@ public class CommonConstant {
             "Gender",
             "Salary Basic",
             "Salary Bonus",
-            "Is Manager"
+            "Is Manager",
+            "Is Active"
     };
 
     public static Long[] LIST_REQUEST_TYPE_ID_IN_LEAVE_BUDGET = {

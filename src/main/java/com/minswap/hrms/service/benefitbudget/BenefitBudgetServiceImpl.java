@@ -59,10 +59,10 @@ public class BenefitBudgetServiceImpl implements BenefitBudgetService {
                 }
                 item.setRemainOfYear(Double.valueOf(df.format(item.getRemainOfYear())));
             }
-            BenefitBudgetResponse.BenefitBudgetListResponse response = new BenefitBudgetResponse.BenefitBudgetListResponse(benefitBudgetDtos);
-            responseEntity
-                    = BaseResponse.ofSucceededOffset(response, pagination);
         }
+        BenefitBudgetResponse.BenefitBudgetListResponse response = new BenefitBudgetResponse.BenefitBudgetListResponse(benefitBudgetDtos);
+        responseEntity
+                = BaseResponse.ofSucceededOffset(response, pagination);
         return responseEntity;
     }
 

@@ -11,17 +11,21 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import javax.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
+@Transactional
 public interface PersonRepository extends JpaRepository<Person, Long> {
 
     Optional<Person> findPersonByEmail(String email);
 
     Optional<Person> findPersonByPersonId(Long id);
+
+    Optional<Person> findByCitizenIdentification(String citizenIdentification);
 
     Optional<Person> findPersonByRollNumberEquals(String rollNumber);
 
@@ -197,4 +201,7 @@ public interface PersonRepository extends JpaRepository<Person, Long> {
     @Query("select p.personId from Person p where p.positionId=:id and p.status =:status")
     List<Long> getListPersonIdByPositionId(@Param("id") Long id,
                                            @Param("status") String status);
+
+    @Query("select pr.personId from PersonRole pr where pr.roleId=:roleId")
+    List<Long> getListITSupportId(@Param("roleId") Long roleId);
 }

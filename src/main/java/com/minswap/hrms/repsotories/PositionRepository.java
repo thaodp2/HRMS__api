@@ -3,6 +3,7 @@ package com.minswap.hrms.repsotories;
 import com.minswap.hrms.entities.Department;
 import com.minswap.hrms.entities.DeviceType;
 import com.minswap.hrms.entities.Position;
+import com.minswap.hrms.response.dto.PositionDto;
 import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -10,10 +11,12 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Repository;
 
-import javax.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 
 @Repository
+@Transactional
 public interface PositionRepository extends JpaRepository<Position, Long> {
     List<Position> findByDepartmentId(Long departmentId);
     List<Position> findByDepartmentIdAndPositionNameContainsIgnoreCase(Long departmentId, String search);
@@ -47,4 +50,9 @@ public interface PositionRepository extends JpaRepository<Position, Long> {
     @Transactional
     @Query("delete from Position p where p.positionId=:positionId")
     Integer deletePositionByPositionId(@Param("positionId") Long positionId);
+
+    @Query("select new com.minswap.hrms.response.dto.PositionDto(p.positionId, p.positionName) " +
+            "from Position p " +
+            "where p.departmentId=:departmentId")
+    List<PositionDto> getListPosition(@Param("departmentId") Long departmentId);
 }

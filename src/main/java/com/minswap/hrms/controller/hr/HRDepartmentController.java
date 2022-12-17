@@ -29,8 +29,9 @@ public class HRDepartmentController {
                             getListDepartment(@RequestParam @Min(1) Integer page,
                                               @RequestParam @Min(0) Integer limit,
                                               @RequestParam (required = false) String search,
-                                              @RequestParam (required = false) String sort) {
-        return departmentService.getListDepartment(page, limit, search, sort);
+                                              @RequestParam (required = false) String sort,
+                                              @RequestParam (required = false) String dir) {
+        return departmentService.getListDepartment(page, limit, search, sort, dir);
     }
     @PostMapping("/department")
     @ServiceProcessingValidateAnnotation
