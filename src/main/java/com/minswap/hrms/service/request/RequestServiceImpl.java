@@ -1273,9 +1273,11 @@ public class RequestServiceImpl implements RequestService {
         LeaveBudgetDto leaveBudgetDto = leaveBudgetRepository.getLeaveBudget(personId, year, requestTypeId);
         double numberOfDayOff = calculateNumOfDayOff(startTime, endTime);
         if (numberOfDayOff > leaveBudgetDto.getRemainDayOff()) {
+            DecimalFormat decimalFormat = new DecimalFormat("#.##");
             throw new BaseException(ErrorCode.newErrorCode(208,
                     "Not enough remaining day off! " +
-                            "You only have " + leaveBudgetDto.getRemainDayOff() + " days left this year",
+                            "You only have " + Double.parseDouble(decimalFormat.format(leaveBudgetDto.getRemainDayOff()))
+                            + " days left this year",
                     httpStatus.NOT_ACCEPTABLE));
         }
     }
