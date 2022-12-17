@@ -168,7 +168,7 @@ public class DeviceTypeServiceImpl implements DeviceTypeService {
                 }
             }
 
-            List<Request> requests = requestRepository.findByRequestTypeIdAndIsAssignedAndStatus(CommonConstant.REQUEST_TYPE_ID_OF_BORROW_DEVICE, 0, "Approved");
+            List<Request> requests = requestRepository.getListRequestWhenDeviceTypeDelete(deviceType.getDeviceTypeId());
             Person currentUser = personService.getPersonInforByEmail(userPrincipal.getEmail());
             List<Notification> notificationList = new ArrayList<>();
             if(requests != null && !requests.isEmpty()){
@@ -183,10 +183,10 @@ public class DeviceTypeServiceImpl implements DeviceTypeService {
                     Notification notificationToEmp = new Notification("asks you to choose another device type because the device you requested no longer exists!",
                             0, null, 0, currentUser.getPersonId(), request.getPersonId(), date);
                     notificationList.add(notificationToEmp);
-                    if(currentUser.getManagerId() != null) {
-                        Person person = personRepository.findById(request.getPersonId()).orElse(null);
-                        Notification notificationToManager = new Notification("informs that the device you requested to lend to "+person.getFullName() +" - "+person.getRollNumber()  +" staff no longer exists!",
-                                0, null, 0, currentUser.getPersonId(), request.getPersonId(), date);
+                    Person person = personRepository.findById(request.getPersonId()).orElse(null);
+                    if(person != null && person.getManagerId() != null) {
+                        Notification notificationToManager = new Notification("informs that the device type you requested to borrow to "+person.getFullName() +" - "+person.getRollNumber()  +" staff no longer exists!",
+                                0, null, 0, currentUser.getPersonId(), person.getManagerId(), date);
                         notificationList.add(notificationToManager);
                     }
                 }
