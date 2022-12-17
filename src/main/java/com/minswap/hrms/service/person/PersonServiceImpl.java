@@ -123,7 +123,7 @@ public class PersonServiceImpl implements PersonService {
         if (personCheckCitizen != null && personCheckCitizen > 0 && !person.getCitizenIdentification().equals(updateUserDto.getCitizenIdentification())) {
             throw new BaseException(ErrorCode.CITIZEN_INDENTIFICATION_EXSIT);
         }
-        if(updateUserDto.getAvatarImg() == null){
+        if (updateUserDto.getAvatarImg() == null) {
             updateUserDto.setAvatarImg(person.getAvatarImg());
         }
         try {
@@ -194,9 +194,9 @@ public class PersonServiceImpl implements PersonService {
                     "select p.person_id from person p where p.roll_number =:rollNumber)");
             params.put("personId", person.getPersonId());
             params.put("roleId", CommonConstant.ROLE_ID_OF_MANAGER);
-            if(search != null) {
+            if (search != null) {
                 params.put("search", "%" + search + "%");
-            }else {
+            } else {
                 params.put("search", search);
 
             }
@@ -221,8 +221,8 @@ public class PersonServiceImpl implements PersonService {
     public ResponseEntity<BaseResponse<EmployeeInfoResponse, Void>> getDetailEmployee(String rollNumber) {
         EmployeeDetailDto employeeDetailDto = personRepository.getDetailEmployee(rollNumber);
         PersonRole pr = personRoleRepository.findByPersonIdAndAndRoleId(employeeDetailDto.getPersonId(), CommonConstant.ROLE_ID_OF_MANAGER).orElse(null);
-        if(pr != null) {
-        	employeeDetailDto.setIsManager(1);
+        if (pr != null) {
+            employeeDetailDto.setIsManager(1);
         }
         if (employeeDetailDto != null) {
             EmployeeInfoResponse employeeListDtos = new EmployeeInfoResponse(null, employeeDetailDto);
@@ -237,12 +237,12 @@ public class PersonServiceImpl implements PersonService {
     @Override
     public ResponseEntity<BaseResponse<EmployeeInfoResponse, Pageable>> getSearchListEmployee(int page,
                                                                                               int limit, String fullName, String email, Long departmentId, String rollNumber, String status, Long
-                                                                                                   positionId, String managerRoll, String sort, String dir) {
-        if(StringUtils.isEmpty(sort) && StringUtils.isEmpty(dir)) {
-        	sort = "personId";
-        	dir = "DESC";
+                                                                                                      positionId, String managerRoll, String sort, String dir) {
+        if (StringUtils.isEmpty(sort) && StringUtils.isEmpty(dir)) {
+            sort = "personId";
+            dir = "DESC";
         }
-    	Sort.Direction dirSort = CommonUtil.getSortDirection(sort, dir);
+        Sort.Direction dirSort = CommonUtil.getSortDirection(sort, dir);
         Pagination pagination = new Pagination(page, limit);
         Long managerId = null;
         if (!StringUtils.isEmpty(managerRoll)) {
@@ -271,7 +271,7 @@ public class PersonServiceImpl implements PersonService {
             people = people.stream().filter(person -> person.getFullName().toLowerCase().contains(search.toLowerCase())).collect(Collectors.toList());
         }
         people.forEach(person -> {
-            MasterDataDto masterDataDto = new MasterDataDto(person.getFullName()+" - "+person.getRollNumber(), person.getPersonId());
+            MasterDataDto masterDataDto = new MasterDataDto(person.getFullName() + " - " + person.getRollNumber(), person.getPersonId());
             masterDataDtos.add(masterDataDto);
         });
         MasterDataResponse response = new MasterDataResponse(masterDataDtos);
@@ -554,12 +554,34 @@ public class PersonServiceImpl implements PersonService {
 
     @Override
     public boolean checkManagerByDepartmentValid(Long managerId, Long departmentId) {
-        Person p = personRepository.findById(managerId).orElse(null);
-        if (p != null) {
-            PersonRole pr = personRoleRepository.findByPersonIdAndAndRoleId(managerId, CommonConstant.ROLE_ID_OF_MANAGER).orElse(null);
-            if (pr != null && p.getDepartmentId() == departmentId) {
-                return true;
+        if (managerId != null) {
+            Person p = personRepository.findById(managerId).orElse(null);
+            if (p != null) {
+                PersonRole pr = personRoleRepository.findByPersonIdAndAndRoleId(managerId, CommonConstant.ROLE_ID_OF_MANAGER).orElse(null);
+                if (pr != null && p.getDepartmentId() == departmentId) {
+                    return true;
+                }
             }
+        } else {
+            return true;
+        }
+        return false;
+    }
+
+    public boolean checkManagerToEdit(Long departmentId, String rollNumber, Long managerId) {
+        if (managerId != null) {
+            List<Person> personList = getMasterDataManagerToEdit(departmentId, rollNumber, null);
+            if (personList != null && !personList.isEmpty()) {
+                for (Person person : personList) {
+                    if (person.getPersonId() == managerId) {
+                        return true;
+                    }
+                }
+            } else {
+                return false;
+            }
+        } else {
+            return true;
         }
         return false;
     }
@@ -598,15 +620,44 @@ public class PersonServiceImpl implements PersonService {
         return false;
     }
 
+    public boolean checkFormatDate(String date) {
+        try {
+            SimpleDateFormat format = new SimpleDateFormat(CommonConstant.YYYY_MM_DD);
+            Date date1 = format.parse(date);
+            return true;
+        } catch (Exception x) {
+            return false;
+        }
+    }
+
     @Override
     public ResponseEntity<BaseResponse<HttpStatus, Void>> importExcel(MultipartFile file) {
         int countRecordSuccess = 0;
+        int countRecordUpdateSuccess = 0;
         int countRecordFail = 0;
         String message = "";
         String rowFail = "";
+
+        Long managerId = null;
+        Long departmentId = null;
+        Long positionId = null;
+        Long rankId = null;
+        Integer gender = null;
+        Double salaryBasic = null;
+        Double salaryBonus = null;
+        Integer isManager = null;
+        String fullName = null;
+        String dateOfBirth = null;
+        String onBoardDate = null;
+        String citizenIdentification = null;
+        String phoneNumber = null;
+        String address = null;
+        String isActive = null;
+        String rollNumber = null;
+
         try {
             if (!file.isEmpty()) {
-                if (file.getOriginalFilename().split("\\.")[1].equals("xlsx") || file.getOriginalFilename().split("\\.")[1].equals("xls")) {
+                if (file.getOriginalFilename().split("\\.")[1].equals("xlsx")) {
                     try {
                         Path tempDir = Files.createTempDirectory("");
                         File tempFile = tempDir.resolve(file.getOriginalFilename()).toFile();
@@ -630,46 +681,128 @@ public class PersonServiceImpl implements PersonService {
                                             row.getCell(10) == null &&
                                             row.getCell(11) == null &&
                                             row.getCell(12) == null &&
-                                            row.getCell(13) == null
+                                            row.getCell(13) == null &&
+                                            row.getCell(14) == null &&
+                                            row.getCell(15) == null
                                     ) {
                                         continue;
                                     }
                                     try {
-                                        String fullName = row.getCell(0).getStringCellValue();
-                                        String dateOfBirth = row.getCell(1).getStringCellValue();
-                                        String onBoardDate = row.getCell(6).getStringCellValue();
-                                        String citizenIdentification = row.getCell(7).getStringCellValue();
-                                        String phoneNumber = row.getCell(8).getStringCellValue();
-                                        String address = row.getCell(9).getStringCellValue();
-                                        long managerId = (long) row.getCell(2).getNumericCellValue();
-                                        long departmentId = (long) row.getCell(3).getNumericCellValue();
-                                        long positionId = (long) row.getCell(4).getNumericCellValue();
-                                        long rankId = (long) row.getCell(5).getNumericCellValue();
-                                        int gender = (int) row.getCell(10).getNumericCellValue();
-                                        double salaryBasic = row.getCell(11).getNumericCellValue();
-                                        double salaryBonus = row.getCell(12).getNumericCellValue();
-                                        int isManager = (int) row.getCell(13).getNumericCellValue();
+                                        if (row.getCell(0) != null) {
+                                            rollNumber = row.getCell(0).getStringCellValue();
+                                        }
+                                        if (row.getCell(1) != null) {
+                                            fullName = row.getCell(1).getStringCellValue();
+                                        }
+                                        if (row.getCell(2) != null) {
+                                            dateOfBirth = row.getCell(2).getStringCellValue();
+                                        }
+                                        if (row.getCell(7) != null) {
+                                            onBoardDate = row.getCell(7).getStringCellValue();
+                                        }
+                                        if (row.getCell(8) != null) {
+                                            citizenIdentification = row.getCell(8).getStringCellValue();
+                                        }
+                                        if (row.getCell(9) != null) {
+                                            phoneNumber = row.getCell(9).getStringCellValue();
+                                        }
+                                        if (row.getCell(10) != null) {
+                                            address = row.getCell(10).getStringCellValue();
+                                        }
+                                        if (row.getCell(15) != null) {
+                                            isActive = row.getCell(15).getStringCellValue();
+                                        }
 
-                                        if (checkManagerByDepartmentValid(managerId, departmentId) &&
-                                                departmentService.checkDepartmentExist(departmentId) &&
-                                                positionService.checkPositionByDepartment(positionId, departmentId) &&
-                                                rankService.checkRankExist(rankId) &&
-                                                checkCCCDValid(citizenIdentification) &&
-                                                checkPhoneValid(phoneNumber) &&
-                                                checkGenderValid(gender) &&
-                                                checkIsManagerValid(isManager) &&
-                                                checkSalaryValid(salaryBasic) && checkSalaryValid(salaryBonus)) {
-                                            //create employee
-                                            EmployeeRequest employeeRequest = new EmployeeRequest(fullName, dateOfBirth.toString(),
-                                                    managerId, departmentId, positionId, rankId, onBoardDate.toString(),
-                                                    citizenIdentification + "", phoneNumber + "",
-                                                    address, gender, null, salaryBasic, salaryBonus, isManager
-                                            );
-                                            createEmployee(employeeRequest);
-                                            countRecordSuccess++;
+                                        if (row.getCell(3) != null) {
+                                            managerId = (long) row.getCell(3).getNumericCellValue();
+                                        }
+                                        if (row.getCell(4) != null) {
+                                            departmentId = (long) row.getCell(4).getNumericCellValue();
+                                        }
+                                        if (row.getCell(5) != null) {
+                                            positionId = (long) row.getCell(5).getNumericCellValue();
+                                        }
+                                        if (row.getCell(6) != null) {
+                                            rankId = (long) row.getCell(6).getNumericCellValue();
+                                        }
+                                        if (row.getCell(11) != null) {
+                                            gender = (int) row.getCell(11).getNumericCellValue();
+                                        }
+                                        if (row.getCell(14) != null) {
+                                            isManager = (int) row.getCell(14).getNumericCellValue();
+                                        }
+                                        if (row.getCell(12) != null) {
+                                            salaryBasic = (double) row.getCell(12).getNumericCellValue();
+                                        }
+                                        if (row.getCell(13) != null) {
+                                            salaryBonus = (double) row.getCell(13).getNumericCellValue();
+                                        }
+
+                                        if (rollNumber != null && !rollNumber.trim().isEmpty()) {
+                                            //update
+                                            Person person = personRepository.findPersonByRollNumberEquals(rollNumber.trim()).orElse(null);
+                                            if (person != null) {
+                                                if (isManager != null && isManager != 0 && isManager != 1) {
+                                                    throw new BaseException(INVALID_PARAMETERS);
+                                                } else if (gender != null && gender != 0 && gender != 1) {
+                                                    throw new BaseException(INVALID_PARAMETERS);
+                                                } else if (gender != null && !isActive.equals("0") && !isActive.equals("1")) {
+                                                    throw new BaseException(INVALID_PARAMETERS);
+                                                } else if (salaryBonus != null && !checkSalaryValid(salaryBonus)) {
+                                                    throw new BaseException(INVALID_PARAMETERS);
+                                                } else if (salaryBasic != null && !checkSalaryValid(salaryBasic)) {
+                                                    throw new BaseException(INVALID_PARAMETERS);
+                                                } else if (phoneNumber != null && !checkPhoneValid(phoneNumber)) {
+                                                    throw new BaseException(INVALID_PARAMETERS);
+                                                } else if (citizenIdentification != null && !checkCCCDValid(citizenIdentification)) {
+                                                    throw new BaseException(INVALID_PARAMETERS);
+                                                } else if (onBoardDate != null && !checkFormatDate(onBoardDate)) {
+                                                    throw new BaseException(INVALID_PARAMETERS);
+                                                } else if (dateOfBirth != null && !checkFormatDate(dateOfBirth)) {
+                                                    throw new BaseException(INVALID_PARAMETERS);
+                                                } else if (departmentId != null && !departmentService.checkDepartmentExist(departmentId)) {
+                                                    throw new BaseException(INVALID_PARAMETERS);
+                                                } else if (rankId != null && !rankService.checkRankExist(rankId)) {
+                                                    throw new BaseException(INVALID_PARAMETERS);
+                                                } else if (managerId != null && !checkManagerByDepartmentValid(managerId, departmentId) && !checkManagerToEdit(departmentId, rollNumber, managerId)) {
+                                                    throw new BaseException(INVALID_PARAMETERS);
+                                                } else if (positionId != null && !positionService.checkPositionByDepartment(positionId, departmentId)) {
+                                                    throw new BaseException(INVALID_PARAMETERS);
+                                                } else if (departmentId != null && positionId == null) {
+                                                    throw new BaseException(INVALID_PARAMETERS);
+                                                } else {
+                                                    EmployeeUpdateRequest employeeUpdateRequest = new EmployeeUpdateRequest(fullName, dateOfBirth, managerId, departmentId
+                                                            , positionId, rankId, onBoardDate, citizenIdentification, phoneNumber, address, gender, isActive, salaryBasic, salaryBonus, isManager);
+                                                    updateEmployee(employeeUpdateRequest, rollNumber.trim());
+                                                    countRecordUpdateSuccess++;
+                                                }
+                                            }
+
                                         } else {
-                                            countRecordFail++;
-                                            rowFail += (row.getRowNum() + 1) + ", ";
+                                            //create employee
+                                            if (fullName == null || fullName.trim().isEmpty()
+                                                    || dateOfBirth == null || dateOfBirth.trim().isEmpty()
+                                                    || !checkFormatDate(dateOfBirth) || !checkManagerByDepartmentValid(managerId, departmentId)
+                                                    || !departmentService.checkDepartmentExist(departmentId)
+                                                    || !positionService.checkPositionByDepartment(positionId, departmentId)
+                                                    || !rankService.checkRankExist(rankId)
+                                                    || !checkFormatDate(onBoardDate)
+                                                    || !checkCCCDValid(citizenIdentification)
+                                                    || !checkPhoneValid(phoneNumber)
+                                                    || !checkGenderValid(gender)
+                                                    || !checkIsManagerValid(isManager)
+                                                    || !checkSalaryValid(salaryBasic)
+                                                    || !checkSalaryValid(salaryBonus)) {
+                                                throw new BaseException(INVALID_PARAMETERS);
+                                            } else {
+                                                EmployeeRequest employeeRequest = new EmployeeRequest(fullName, dateOfBirth,
+                                                        managerId, departmentId, positionId, rankId, onBoardDate,
+                                                        citizenIdentification, phoneNumber,
+                                                        address, gender, null, salaryBasic, salaryBonus, isManager
+                                                );
+                                                createEmployee(employeeRequest);
+                                                countRecordSuccess++;
+                                            }
                                         }
                                     } catch (Exception e) {
                                         //show dòng bị fail
@@ -681,8 +814,9 @@ public class PersonServiceImpl implements PersonService {
                             }
                             //show number sucess
                             message += "Create success " + countRecordSuccess + " employee. ";
+                            message += "Update success " + countRecordUpdateSuccess + " employee. ";
                             if (!rowFail.equals("")) {
-                                message += "Create fail " + countRecordFail + " employee in rows (" + rowFail.substring(0, rowFail.length() - 2) + ")";
+                                message += "Create and update fail " + countRecordFail + " employee in rows (" + rowFail.substring(0, rowFail.length() - 2) + ")";
                             }
                             return BaseResponse.ofSucceededOffset(HttpStatus.OK, null, message);
                         } else {
@@ -730,9 +864,9 @@ public class PersonServiceImpl implements PersonService {
     private String convertRollNumber() {
         long count = personRepository.count() + 1;
         String rollNumber = "MS";
-        int length = (count+"").length();
-        for(int i = 0; i < 5 -length; i++) {
-        	rollNumber += "0";
+        int length = (count + "").length();
+        for (int i = 0; i < 5 - length; i++) {
+            rollNumber += "0";
         }
         rollNumber += count;
         return rollNumber;
@@ -771,20 +905,20 @@ public class PersonServiceImpl implements PersonService {
         personRole.setPersonId(personByRollNumber.getPersonId());
         personRoleRepository.save(personRole);
         if (employeeRequest.getIsManager() == 1) {
-        	PersonRole personRole1 = new PersonRole();
-        	personRole1.setRoleId(MANAGER_ROLE);
-        	personRole1.setPersonId(personByRollNumber.getPersonId());
+            PersonRole personRole1 = new PersonRole();
+            personRole1.setRoleId(MANAGER_ROLE);
+            personRole1.setPersonId(personByRollNumber.getPersonId());
             personRoleRepository.save(personRole1);
         }
         if (employeeRequest.getDepartmentId() == 35) {
-        	PersonRole personRole2 = new PersonRole();
-        	personRole2.setRoleId(IT_SUPPORT_ROLE);
-        	personRole2.setPersonId(personByRollNumber.getPersonId());
+            PersonRole personRole2 = new PersonRole();
+            personRole2.setRoleId(IT_SUPPORT_ROLE);
+            personRole2.setPersonId(personByRollNumber.getPersonId());
             personRoleRepository.save(personRole2);
         } else if (employeeRequest.getDepartmentId() == 2) {
-        	PersonRole personRole3 = new PersonRole();
-        	personRole3.setPersonId(personByRollNumber.getPersonId());
-        	personRole3.setRoleId(HR_ROLE);
+            PersonRole personRole3 = new PersonRole();
+            personRole3.setPersonId(personByRollNumber.getPersonId());
+            personRole3.setRoleId(HR_ROLE);
             personRoleRepository.save(personRole3);
         }
     }
@@ -798,26 +932,26 @@ public class PersonServiceImpl implements PersonService {
             if (pr != null) {
                 if (employeeRequest.getIsManager() == 0) {
                     personRoleRepository.delete(personRole);
-                } 
-            }else {
+                }
+            } else {
                 personRoleRepository.save(personRole);
             }
         }
         if (employeeRequest.getDepartmentId() != null) {
             if (employeeRequest.getDepartmentId() == 35) {
-            	 PersonRole personRole1 = new PersonRole();
-            	 personRole1.setPersonId(employeeDetailDto.getPersonId());
-            	 personRole1.setRoleId(IT_SUPPORT_ROLE);
+                PersonRole personRole1 = new PersonRole();
+                personRole1.setPersonId(employeeDetailDto.getPersonId());
+                personRole1.setRoleId(IT_SUPPORT_ROLE);
                 personRoleRepository.save(personRole1);
             } else if (employeeRequest.getDepartmentId() == 2) {
-            	PersonRole personRole2 = new PersonRole();
-            	personRole2.setPersonId(employeeDetailDto.getPersonId());
-            	personRole2.setRoleId(HR_ROLE);
+                PersonRole personRole2 = new PersonRole();
+                personRole2.setPersonId(employeeDetailDto.getPersonId());
+                personRole2.setRoleId(HR_ROLE);
                 personRoleRepository.save(personRole2);
             } else {
-            	PersonRole personRole3 = new PersonRole();
-            	personRole3.setPersonId(employeeDetailDto.getPersonId());
-            	personRole3.setRoleId(IT_SUPPORT_ROLE);
+                PersonRole personRole3 = new PersonRole();
+                personRole3.setPersonId(employeeDetailDto.getPersonId());
+                personRole3.setRoleId(IT_SUPPORT_ROLE);
                 personRoleRepository.delete(personRole3);
                 personRole3.setRoleId(HR_ROLE);
                 personRoleRepository.delete(personRole3);

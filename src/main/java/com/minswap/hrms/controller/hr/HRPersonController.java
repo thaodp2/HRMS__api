@@ -1,8 +1,14 @@
 package com.minswap.hrms.controller.hr;
 
 import com.minswap.hrms.constants.CommonConstant;
+import com.minswap.hrms.entities.Department;
+import com.minswap.hrms.entities.Position;
+import com.minswap.hrms.entities.Rank;
 import com.minswap.hrms.exception.annotation.ServiceProcessingValidateAnnotation;
 import com.minswap.hrms.model.BaseResponse;
+import com.minswap.hrms.repsotories.DepartmentRepository;
+import com.minswap.hrms.repsotories.PositionRepository;
+import com.minswap.hrms.repsotories.RankRepository;
 import com.minswap.hrms.request.ChangeStatusEmployeeRequest;
 import com.minswap.hrms.request.EmployeeRequest;
 import com.minswap.hrms.request.EmployeeUpdateRequest;
@@ -11,6 +17,8 @@ import com.minswap.hrms.response.MasterDataResponse;
 import com.minswap.hrms.response.dto.EmployeeListDto;
 import com.minswap.hrms.service.person.PersonService;
 import com.minswap.hrms.util.ExportEmployee;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
@@ -21,10 +29,13 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.List;
 
@@ -34,6 +45,13 @@ public class HRPersonController {
 
     @Autowired
     private PersonService personService;
+    @Autowired
+    private DepartmentRepository departmentRepository;
+    @Autowired
+    private PositionRepository positionRepository;
+
+    @Autowired
+    private RankRepository rankRepository;
 
     @Value("${template.dir}")
     private String templateDir;
@@ -123,6 +141,53 @@ public class HRPersonController {
         response.setContentType("application/octet-stream");
         response.setHeader("Content-Disposition", "attachment; filename=template_import_employee.xlsx");
         String localDir =templateDir;
+
+        //test
+        List<Department> departmentList = departmentRepository.findAll();
+        List<Position> positionList = positionRepository.findAll();
+        List<Rank> rankList = rankRepository.findAll();
+        int maxRow = Math.max(departmentList.size(),Math.max(positionList.size(),rankList.size()));
+
+        InputStream inputStream = new FileInputStream(new File(localDir));
+        Workbook workbook = new XSSFWorkbook(inputStream);
+        Sheet sheet = workbook.getSheetAt(1);
+        int rowCount = 1;
+        for (int i = 0; i < maxRow; i++) {
+            Row row = sheet.createRow(rowCount++);
+        }
+
+        for (int i = 0; i < departmentList.size(); i++) {
+            Row row = sheet.getRow(i+1);
+            Cell cell = row.createCell(0);
+            cell.setCellValue(departmentList.get(i).getDepartmentId());
+            cell = row.createCell(1);
+            cell.setCellValue(departmentList.get(i).getDepartmentName());
+        }
+
+        for (int i = 0; i < positionList.size(); i++) {
+            Row row = sheet.getRow(i+1);
+            Cell cell = row.createCell(3);
+            cell.setCellValue(positionList.get(i).getPositionId());
+            cell = row.createCell(4);
+            cell.setCellValue(positionList.get(i).getPositionName());
+            cell = row.createCell(5);
+            cell.setCellValue(positionList.get(i).getDepartmentId());
+        }
+
+        for (int i = 0; i < rankList.size(); i++) {
+            Row row = sheet.getRow(i+1);
+            Cell cell = row.createCell(7);
+            cell.setCellValue(rankList.get(i).getRankId());
+            cell = row.createCell(8);
+            cell.setCellValue(rankList.get(i).getRankName());
+        }
+
+
+        FileOutputStream fileOut = new FileOutputStream(localDir);
+        workbook.write(fileOut);
+        fileOut.close();
+
+
         InputStreamResource resource = new InputStreamResource(new FileInputStream(localDir));
         return ResponseEntity.ok().body(resource);
     }
