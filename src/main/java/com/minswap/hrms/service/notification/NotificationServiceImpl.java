@@ -71,7 +71,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public void send(Notification... notifs) {
         Arrays.stream(notifs).forEach(notif -> {
-                    template.convertAndSend("notification/" + notif.getUserTo(), List.of(toDto(notif)));
+                    template.convertAndSend("/notification/" + notif.getUserTo(), List.of(toDto(notif)));
         });
     }
 
