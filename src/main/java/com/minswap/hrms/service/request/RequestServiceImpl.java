@@ -509,8 +509,12 @@ public class RequestServiceImpl implements RequestService {
                 && (editRequest.getStartTime() == null || editRequest.getEndTime() == null)) {
             throw new BaseException(ErrorCode.DATE_INVALID_IN_LEAVE_REQUEST);
         } else {
-            Date startTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).parse(editRequest.getStartTime());
-            Date endTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).parse(editRequest.getEndTime());
+            Date startTime = null;
+            Date endTime = null;
+            if (requestTypeId != BORROW_REQUEST_TYPE_ID) {
+                 startTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).parse(editRequest.getStartTime());
+                 endTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).parse(editRequest.getEndTime());
+            }
             validateForCreateAndEditRequest(Long.valueOf(requestTypeId.intValue()),
                     startTime,
                     endTime,
@@ -519,8 +523,11 @@ public class RequestServiceImpl implements RequestService {
             if (requestTypeId != BORROW_REQUEST_TYPE_ID) {
                 startTime.setTime(startTime.getTime() + appConfig.getMillisecondSevenHours());
                 endTime.setTime(endTime.getTime() + appConfig.getMillisecondSevenHours());
+                requestRepository.updateNormalRequest(id, startTime, endTime, editRequest.getReason());
             }
-            requestRepository.updateNormalRequest(id, startTime, endTime, editRequest.getReason());
+            else {
+                requestRepository.updateBorrowDeviceRequest(id, editRequest.getDeviceTypeId());
+            }
             List<String> listImage = editRequest.getListEvidence();
             evidenceRepository.deleteImageByRequestId(id);
             if (!listImage.isEmpty()) {
