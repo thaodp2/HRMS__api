@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
@@ -42,23 +43,23 @@ public class NotificationController {
 //    }
 
     @MessageMapping("/read-notifications")
-    public void changeNotifStatusToRead(@CurrentUser UserPrincipal user, @Payload Long notifID) {
-        notificationService.changeNotifStatusToRead(user, notifID);
+    public void changeNotifStatusToRead(
+            @Payload Long notifID
+    ) {
+        notificationService.changeNotifStatusToRead(notifID);
     }
 
     @GetMapping("employee/notifications")
     public ResponseEntity<BaseResponse<NotificationResponse, Pagination>> getNotificationsByUserID(@RequestParam @Min(1) Integer page,
                                                                                                    @RequestParam @Min(0) Integer limit,
                                                                                                    @CurrentUser UserPrincipal userPrincipal) {
-//        Long userID = Long.valueOf(2);
         Long userID = personService.getPersonInforByEmail(userPrincipal.getEmail()).getPersonId();
         return notificationService.getNotificationsByUserID(page, limit, userID);
     }
 
     @GetMapping("employee/notifications/unread")
-    public ResponseEntity<BaseResponse<NotificationResponse, Pagination>> getTotalUnreadNotifications(
+    public ResponseEntity<BaseResponse<Long, Pagination>> getTotalUnreadNotifications(
             @CurrentUser UserPrincipal userPrincipal) {
-//        Long userID = Long.valueOf(2);
         Long userID = personService.getPersonInforByEmail(userPrincipal.getEmail()).getPersonId();
         return notificationService.getTotalUnreadNotifs(userID);
     }

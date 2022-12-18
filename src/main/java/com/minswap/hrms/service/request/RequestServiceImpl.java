@@ -3,6 +3,7 @@ package com.minswap.hrms.service.request;
 import com.minswap.hrms.configuration.AppConfig;
 import com.minswap.hrms.constants.CommonConstant;
 import com.minswap.hrms.constants.ErrorCode;
+import com.minswap.hrms.controller.NotificationController;
 import com.minswap.hrms.entities.*;
 import com.minswap.hrms.exception.model.BaseException;
 import com.minswap.hrms.exception.model.Pagination;
@@ -12,7 +13,9 @@ import com.minswap.hrms.request.CreateRequest;
 import com.minswap.hrms.request.EditRequest;
 import com.minswap.hrms.response.RequestResponse;
 import com.minswap.hrms.response.dto.*;
+import com.minswap.hrms.service.notification.NotificationService;
 import com.minswap.hrms.util.CommonUtil;
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Session;
@@ -134,6 +137,8 @@ public class RequestServiceImpl implements RequestService {
     private static final int DAYS_OF_SIX_MONTH = 186;
 
     private final AppConfig appConfig;
+    @Autowired
+    private final NotificationService notificationService;
 
     public List<RequestDto> getQueryForRequestList(String type, Long managerId, Long personId, Boolean isLimit, Integer limit, Integer page, String search, String createDateFrom, String createDateTo, Long requestTypeId, String status, String sort, String dir) throws ParseException {
         HashMap<String, Object> params = new HashMap<>();
@@ -1140,6 +1145,7 @@ public class RequestServiceImpl implements RequestService {
                                    Date createDate) {
         Notification notification = new Notification(content, delivered, redirectUrl, isRead, userFrom, userTo, createDate);
         notificationRepository.save(notification);
+        notificationService.send(notification);
     }
 
     public String getNotiContentWhenCreateRequest() {

@@ -2,6 +2,7 @@ package com.minswap.hrms.service.devicetype;
 
 import com.minswap.hrms.constants.CommonConstant;
 import com.minswap.hrms.constants.ErrorCode;
+import com.minswap.hrms.controller.NotificationController;
 import com.minswap.hrms.entities.*;
 import com.minswap.hrms.exception.model.BaseException;
 import com.minswap.hrms.exception.model.Pagination;
@@ -13,6 +14,7 @@ import com.minswap.hrms.response.dto.DeviceTypeDto;
 import com.minswap.hrms.response.dto.MasterDataDto;
 import com.minswap.hrms.security.UserPrincipal;
 import com.minswap.hrms.security.oauth2.CurrentUser;
+import com.minswap.hrms.service.notification.NotificationService;
 import com.minswap.hrms.service.person.PersonService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +48,8 @@ public class DeviceTypeServiceImpl implements DeviceTypeService {
 
     @Autowired
     PersonRepository personRepository;
+    @Autowired
+    private NotificationService notificationService;
 
     @Override
     public ResponseEntity<BaseResponse<DeviceTypeResponse.DeviceTypeDtoResponse, Pageable>> getAllDeviceType(Integer page, Integer limit, String deviceTypeName) {
@@ -191,6 +195,7 @@ public class DeviceTypeServiceImpl implements DeviceTypeService {
                     }
                 }
                 notificationRepository.saveAll(notificationList);
+                notificationService.send(notificationList.toArray(new Notification[0]));
             }
             responseEntity = BaseResponse.ofSucceeded(null);
         } else {

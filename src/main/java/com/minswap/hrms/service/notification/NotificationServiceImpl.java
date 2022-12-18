@@ -1,25 +1,21 @@
 package com.minswap.hrms.service.notification;
 
 import com.minswap.hrms.entities.Notification;
+import com.minswap.hrms.entities.Person;
 import com.minswap.hrms.exception.model.Pagination;
 import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.repsotories.NotificationRepository;
+import com.minswap.hrms.repsotories.PersonRepository;
 import com.minswap.hrms.response.NotificationResponse;
 import com.minswap.hrms.response.dto.NotificationDto;
-import com.minswap.hrms.security.UserPrincipal;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Flux;
-import reactor.core.scheduler.Schedulers;
 
-import java.time.Duration;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -30,6 +26,7 @@ import java.util.stream.Collectors;
 public class NotificationServiceImpl implements NotificationService {
     private final SimpMessagingTemplate template;
     private final NotificationRepository notificationRepository;
+    private final PersonRepository personRepository;
 
     @Override
     public ResponseEntity<BaseResponse<NotificationResponse, Pagination>> getNotificationsByUserID(Integer page, Integer limit, Long userID) {
@@ -48,36 +45,9 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public NotificationResponse getNotifs(Long userID) {
-        List<Notification> notifsSave = notificationRepository.findByUserToAndDelivered(userID, 0);
-        List<NotificationDto> notifs = notificationRepository.getNotiByUserToAndDelivered(userID);
-
+    public ResponseEntity<BaseResponse<Long, Pagination>> getTotalUnreadNotifs(Long userID) {
         Long total = getTotal(userID);
-        if ((notifs != null && !notifs.isEmpty())) {
-            for (NotificationDto noti : notifs) {
-                noti.setTotalNotificationNotRead(total);
-            }
-        }
-        NotificationResponse response = new NotificationResponse(notifs);
-
-        if (notifsSave != null && !notifsSave.isEmpty()) {
-            notifsSave.forEach(x -> x.setDelivered(1));
-            notificationRepository.saveAll(notifsSave);
-        }
-        return response;
-    }
-
-    @Override
-    public ResponseEntity<BaseResponse<NotificationResponse, Pagination>> getTotalUnreadNotifs(Long userID) {
-        NotificationDto notificationDto = new NotificationDto();
-        Long total = getTotal(userID);
-        notificationDto.setTotalNotificationNotRead(total);
-        List<NotificationDto> list = new ArrayList<>();
-        list.add(notificationDto);
-        NotificationResponse response = new NotificationResponse(list);
-        ResponseEntity<BaseResponse<NotificationResponse, Pagination>> responseEntity
-                = BaseResponse.ofSucceededOffset(response, null);
-        return responseEntity;
+        return BaseResponse.ofSucceededOffset(total, null);
     }
 
     public Long getTotal(Long userID) {
@@ -85,41 +55,37 @@ public class NotificationServiceImpl implements NotificationService {
         if (notifs != null && !notifs.isEmpty()) {
             return (long) notifs.size();
         }
-        return (long) 0;
-    }
-
-    public Flux<ServerSentEvent<NotificationResponse>> getNotificationsByUserToID(Long userID) {
-        if (userID != null) {
-            return Flux.interval(Duration.ofSeconds(1))
-                    .publishOn(Schedulers.boundedElastic())
-                    .map(sequence -> ServerSentEvent.<NotificationResponse>builder().id(String.valueOf(sequence))
-                            .event("user-list-event").data(getNotifs(userID))
-                            .build());
-        }
-
-        return Flux.interval(Duration.ofSeconds(1)).map(sequence -> ServerSentEvent.<NotificationResponse>builder()
-                .id(String.valueOf(sequence)).event("user-list-event").data(new NotificationResponse()).build());
+        return 0L;
     }
 
     @Override
-    public void changeNotifStatusToRead(UserPrincipal user, Long notifID) {
+    public void changeNotifStatusToRead(Long notifID) {
         Notification notification = notificationRepository.findById(notifID).orElse(null);
+        log.debug("##DEBUG## Notification: {}", notification);
         if (notification != null) {
             notification.setIsRead(1);
             notificationRepository.save(notification);
-            this.send(notification);
         }
     }
 
     @Override
     public void send(Notification... notifs) {
-        Long userTo = notifs[0].getUserTo();
-        if (userTo == null) {
-            List<Notification> notifications = Arrays.stream(notifs).filter(x -> x.getUserTo() == null).collect(Collectors.toList());
-            template.convertAndSend("/notification/all", notifications);
-        } else {
-            List<Notification> notifications = Arrays.stream(notifs).filter(x -> x.getUserTo().equals(userTo)).collect(Collectors.toList());
-            template.convertAndSend("/notification/" + userTo, notifications);
-        }
+        Arrays.stream(notifs).forEach(notif -> {
+                    template.convertAndSend("notification/" + notif.getUserTo(), List.of(toDto(notif)));
+        });
+    }
+
+    private NotificationDto toDto(Notification notification) {
+        return new NotificationDto(
+                notification.getNotificationId(),
+                personRepository.findPersonByPersonId(notification.getUserTo()).orElse(new Person()).getFullName(),
+                personRepository.findPersonByPersonId(notification.getUserFrom()).orElse(new Person()).getFullName(),
+                notification.getContent(),
+                notification.getRedirectUrl(),
+                notification.getDelivered(),
+                notification.getIsRead(),
+                personRepository.findPersonByPersonId(notification.getUserFrom()).orElse(new Person()).getAvatarImg(),
+                notification.getCreateDate()
+        );
     }
 }
