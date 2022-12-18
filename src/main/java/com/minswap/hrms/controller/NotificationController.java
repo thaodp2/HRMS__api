@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
@@ -42,8 +43,10 @@ public class NotificationController {
 //    }
 
     @MessageMapping("/read-notifications")
-    public void changeNotifStatusToRead(@CurrentUser UserPrincipal user, @Payload Long notifID) {
-        notificationService.changeNotifStatusToRead(user, notifID);
+    public void changeNotifStatusToRead(
+            @Payload Long notifID
+    ) {
+        notificationService.changeNotifStatusToRead(notifID);
     }
 
     @GetMapping("employee/notifications")

@@ -9,7 +9,7 @@ import org.springframework.http.ResponseEntity;
 
 public interface NotificationService {
 
-    void changeNotifStatusToRead(UserPrincipal user, Long notifID);
+    void changeNotifStatusToRead(Long notifID);
 
     ResponseEntity<BaseResponse<NotificationResponse, Pagination>> getNotificationsByUserID(Integer page, Integer limit,Long userID);
 

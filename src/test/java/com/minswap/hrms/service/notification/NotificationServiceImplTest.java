@@ -72,7 +72,7 @@ public class NotificationServiceImplTest {
 
     @Test
     public void testChangeNotifStatusToRead() throws Exception {
-        notificationServiceImpl.changeNotifStatusToRead(new UserPrincipal(), Long.valueOf(1));
+        notificationServiceImpl.changeNotifStatusToRead(Long.valueOf(1));
     }
 }
 
