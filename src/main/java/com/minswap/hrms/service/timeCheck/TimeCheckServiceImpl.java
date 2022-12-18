@@ -368,6 +368,11 @@ public class TimeCheckServiceImpl implements TimeCheckService{
             timeCheck.setInLate(processTimeCome(officeTime.getTimeStart(), timeCheck.getTimeIn(), 0));
             timeCheckRepository.save(timeCheck);
         }else{
+        	//time check update when log time ot
+        	if(dailyTimeCheckDto.getTimeIn() == null) {
+        		timeCheck.setTimeIn(convertDateInput(timeCheckInRequest.getTimeLog().toString()));
+                timeCheck.setInLate(processTimeCome(officeTime.getTimeStart(), timeCheck.getTimeIn(), 0));
+        	}
             //update time out
             timeCheck.setPersonId(signatureProfile.getPersonId());
             timeCheck.setTimeOut(convertDateInput(timeCheckInRequest.getTimeLog().toString()));

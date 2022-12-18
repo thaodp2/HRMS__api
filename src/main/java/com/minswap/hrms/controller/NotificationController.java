@@ -3,62 +3,77 @@ package com.minswap.hrms.controller;
 import com.minswap.hrms.entities.Notification;
 import com.minswap.hrms.exception.model.Pagination;
 import com.minswap.hrms.model.BaseResponse;
+import com.minswap.hrms.repsotories.NotificationRepository;
 import com.minswap.hrms.response.NotificationResponse;
-import com.minswap.hrms.response.dto.NotificationDto;
 import com.minswap.hrms.security.UserPrincipal;
 import com.minswap.hrms.security.oauth2.CurrentUser;
-import com.minswap.hrms.service.device.DeviceService;
 import com.minswap.hrms.service.notification.NotificationService;
 import com.minswap.hrms.service.person.PersonService;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.codec.ServerSentEvent;
+import org.springframework.messaging.handler.annotation.Header;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Flux;
 
 import javax.validation.constraints.Min;
-import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
+@AllArgsConstructor
 @Validated
+@Slf4j
 public class NotificationController {
 
-    @Autowired
-    private NotificationService notificationService;
+    private final NotificationService notificationService;
 
-    @Autowired
-    PersonService personService;
+    private final PersonService personService;
+//    private final SimpMessageSendingOperations simpMessagingTemplate;
 
-    @GetMapping("push-notifications/{email}")
-    public Flux<ServerSentEvent<NotificationResponse>> streamLastMessage(@PathVariable String email) {
-//        Long userID = Long.valueOf(2);
-        Long userID = personService.getPersonInforByEmail(email.trim()).getPersonId();
-        return notificationService.getNotificationsByUserToID(userID);
-    }
+//    @GetMapping("push-notifications/{email}")
+//    public Flux<ServerSentEvent<NotificationResponse>> streamLastMessage(@PathVariable String email) {
+////        Long userID = Long.valueOf(2);
+//        Long userID = personService.getPersonInforByEmail(email.trim()).getPersonId();
+//        return notificationService.getNotificationsByUserToID(userID);
+//    }
 
-    @PutMapping("/read-notifications/{notifID}")
-    public ResponseEntity<BaseResponse<HttpStatus, Void>> changeNotifStatusToRead(@PathVariable Long notifID) {
+    @MessageMapping("/read-notifications")
+    public void changeNotifStatusToRead(
+            @Payload Long notifID
+    ) {
         notificationService.changeNotifStatusToRead(notifID);
-        return BaseResponse.ofSucceededOffset(HttpStatus.OK, null);
     }
 
     @GetMapping("employee/notifications")
     public ResponseEntity<BaseResponse<NotificationResponse, Pagination>> getNotificationsByUserID(@RequestParam @Min(1) Integer page,
                                                                                                    @RequestParam @Min(0) Integer limit,
                                                                                                    @CurrentUser UserPrincipal userPrincipal) {
-//        Long userID = Long.valueOf(2);
         Long userID = personService.getPersonInforByEmail(userPrincipal.getEmail()).getPersonId();
         return notificationService.getNotificationsByUserID(page, limit, userID);
     }
 
     @GetMapping("employee/notifications/unread")
-    public ResponseEntity<BaseResponse<NotificationResponse, Pagination>> getTotalUnreadNotifications(
+    public ResponseEntity<BaseResponse<Long, Pagination>> getTotalUnreadNotifications(
             @CurrentUser UserPrincipal userPrincipal) {
-//        Long userID = Long.valueOf(2);
         Long userID = personService.getPersonInforByEmail(userPrincipal.getEmail()).getPersonId();
         return notificationService.getTotalUnreadNotifs(userID);
+    }
+    @Autowired NotificationRepository notificationRepository;
+    @PostMapping("/push-notifications/sample")
+    public void send() {
+        Notification[] notif = notificationRepository.findByUserTo(1L).toArray(new Notification[0]);
+        notificationService.send(notif);
+    }
+
+    @PostMapping("/push-notifications/all")
+    public void sendAll() {
+        Notification[] notif = notificationRepository.findByUserToIsNull().toArray(new Notification[0]);
+        notificationService.send(notif);
     }
 
 }

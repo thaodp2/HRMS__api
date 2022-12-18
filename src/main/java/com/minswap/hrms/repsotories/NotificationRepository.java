@@ -18,6 +18,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     List<Notification> findByUserToAndDelivered(Long userTo, Integer delivered);
 
     List<Notification> findByUserTo(Long userTo);
+    List<Notification> findByUserToIsNull();
 
     List<Notification> findByUserToAndIsRead(Long userTo,Integer isRead);
 

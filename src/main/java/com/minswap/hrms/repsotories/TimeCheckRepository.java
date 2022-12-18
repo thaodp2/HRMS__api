@@ -132,9 +132,11 @@ public interface TimeCheckRepository extends JpaRepository<TimeCheck, Long> {
 
     @Query("select tc.ot from TimeCheck tc " +
             "where tc.personId=:personId " +
-            "and DAY(tc.timeIn) =:dayIn")
+            "and DAY(tc.timeIn) =:dayIn " +
+            "and MONTH(tc.timeIn) =:monthIn")
     Double getOTTimeByDay(@Param("dayIn") int dayIn,
-                          @Param("personId") Long personId);
+                          @Param("personId") Long personId,
+                          @Param("monthIn") int monthIn);
 
     @Modifying
     @Transactional

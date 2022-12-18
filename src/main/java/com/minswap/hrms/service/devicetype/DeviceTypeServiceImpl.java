@@ -2,6 +2,7 @@ package com.minswap.hrms.service.devicetype;
 
 import com.minswap.hrms.constants.CommonConstant;
 import com.minswap.hrms.constants.ErrorCode;
+import com.minswap.hrms.controller.NotificationController;
 import com.minswap.hrms.entities.*;
 import com.minswap.hrms.exception.model.BaseException;
 import com.minswap.hrms.exception.model.Pagination;
@@ -13,6 +14,7 @@ import com.minswap.hrms.response.dto.DeviceTypeDto;
 import com.minswap.hrms.response.dto.MasterDataDto;
 import com.minswap.hrms.security.UserPrincipal;
 import com.minswap.hrms.security.oauth2.CurrentUser;
+import com.minswap.hrms.service.notification.NotificationService;
 import com.minswap.hrms.service.person.PersonService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +48,8 @@ public class DeviceTypeServiceImpl implements DeviceTypeService {
 
     @Autowired
     PersonRepository personRepository;
+    @Autowired
+    private NotificationService notificationService;
 
     @Override
     public ResponseEntity<BaseResponse<DeviceTypeResponse.DeviceTypeDtoResponse, Pageable>> getAllDeviceType(Integer page, Integer limit, String deviceTypeName) {
@@ -168,29 +172,31 @@ public class DeviceTypeServiceImpl implements DeviceTypeService {
                 }
             }
 
-            List<Request> requests = requestRepository.findByRequestTypeIdAndIsAssignedAndStatus(CommonConstant.REQUEST_TYPE_ID_OF_BORROW_DEVICE, 0, "Approved");
+            List<Request> requests = requestRepository.getListRequestWhenDeviceTypeDelete(deviceType.getDeviceTypeId());
             Person currentUser = personService.getPersonInforByEmail(userPrincipal.getEmail());
             List<Notification> notificationList = new ArrayList<>();
             if(requests != null && !requests.isEmpty()){
                 for (Request request: requests) {
+                    Date dateToReject = new Date();
                     Date date = new Date();
-                    date.setTime(date.getTime() - CommonConstant.MILLISECOND_7_HOURS);
+                    dateToReject.setTime(dateToReject.getTime() - CommonConstant.MILLISECOND_7_HOURS);
                     request.setStatus("Rejected");
-                    request.setMaximumTimeToRollback(date);
+                    request.setMaximumTimeToRollback(dateToReject);
                     requestRepository.save(request);
-                    date.setTime(date.getTime() + CommonConstant.MILLISECOND_7_HOURS * 2);
+                    date.setTime(date.getTime() + CommonConstant.MILLISECOND_7_HOURS);
 
                     Notification notificationToEmp = new Notification("asks you to choose another device type because the device you requested no longer exists!",
                             0, null, 0, currentUser.getPersonId(), request.getPersonId(), date);
                     notificationList.add(notificationToEmp);
-                    if(currentUser.getManagerId() != null) {
-                        Person person = personRepository.findById(request.getPersonId()).orElse(null);
-                        Notification notificationToManager = new Notification("informs that the device you requested to lend to "+person.getFullName() +" - "+person.getRollNumber()  +" staff no longer exists!",
-                                0, null, 0, currentUser.getPersonId(), request.getPersonId(), date);
+                    Person person = personRepository.findById(request.getPersonId()).orElse(null);
+                    if(person != null && person.getManagerId() != null) {
+                        Notification notificationToManager = new Notification("informs that the device type you requested to borrow to "+person.getFullName() +" - "+person.getRollNumber()  +" staff no longer exists!",
+                                0, null, 0, currentUser.getPersonId(), person.getManagerId(), date);
                         notificationList.add(notificationToManager);
                     }
                 }
                 notificationRepository.saveAll(notificationList);
+                notificationService.send(notificationList.toArray(new Notification[0]));
             }
             responseEntity = BaseResponse.ofSucceeded(null);
         } else {

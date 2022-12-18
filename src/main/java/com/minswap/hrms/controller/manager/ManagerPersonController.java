@@ -22,11 +22,10 @@ public class ManagerPersonController {
   public ResponseEntity<BaseResponse<EmployeeInfoResponse, Pageable>> getSearchListEmployee(
           @RequestParam int page,
           @RequestParam int limit,
-          @RequestParam (name = "fullName", required = false)String fullName,
+          @RequestParam (name = "search", required = false)String fullName,
           @RequestParam (name = "email", required = false)String email,
           @RequestParam (name = "departmentId", required = false) Long departmentId,
-          @RequestParam (name = "rollNumber", required = false) String rollNumber,
-          @RequestParam (name = "active", required = false) String active,
+          @RequestParam (name = "isActive", required = false) String active,
           @RequestParam (name = "positionId", required = false)Long positionId,
           @CurrentUser UserPrincipal userPrincipal,
           @RequestParam(required = false) String sort,
@@ -34,6 +33,6 @@ public class ManagerPersonController {
 
   ) {
 	 String managerRoll = personService.getPersonInforByEmail(userPrincipal.getEmail()).getRollNumber();
-    return personService.getSearchListEmployee(page,limit,fullName,email,departmentId,rollNumber,active,positionId,managerRoll, sort, dir);
+    return personService.getSearchListEmployee(page,limit,fullName,email,departmentId,fullName,active,positionId,managerRoll, sort, dir);
   }
 }
