@@ -1,18 +1,21 @@
 package com.minswap.hrms.service.devicetype;
 
+import com.minswap.hrms.constants.CommonConstant;
 import com.minswap.hrms.constants.ErrorCode;
-import com.minswap.hrms.entities.Device;
-import com.minswap.hrms.entities.DeviceType;
-import com.minswap.hrms.entities.Position;
+import com.minswap.hrms.controller.NotificationController;
+import com.minswap.hrms.entities.*;
 import com.minswap.hrms.exception.model.BaseException;
 import com.minswap.hrms.exception.model.Pagination;
 import com.minswap.hrms.model.BaseResponse;
-import com.minswap.hrms.repsotories.DeviceRepository;
-import com.minswap.hrms.repsotories.DeviceTypeRepository;
+import com.minswap.hrms.repsotories.*;
 import com.minswap.hrms.response.DeviceTypeResponse;
 import com.minswap.hrms.response.MasterDataResponse;
 import com.minswap.hrms.response.dto.DeviceTypeDto;
 import com.minswap.hrms.response.dto.MasterDataDto;
+import com.minswap.hrms.security.UserPrincipal;
+import com.minswap.hrms.security.oauth2.CurrentUser;
+import com.minswap.hrms.service.notification.NotificationService;
+import com.minswap.hrms.service.person.PersonService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -22,10 +25,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -36,6 +36,20 @@ public class DeviceTypeServiceImpl implements DeviceTypeService {
 
     @Autowired
     DeviceRepository deviceRepository;
+
+    @Autowired
+    RequestRepository requestRepository;
+
+    @Autowired
+    NotificationRepository notificationRepository;
+
+    @Autowired
+    PersonService personService;
+
+    @Autowired
+    PersonRepository personRepository;
+    @Autowired
+    private NotificationService notificationService;
 
     @Override
     public ResponseEntity<BaseResponse<DeviceTypeResponse.DeviceTypeDtoResponse, Pageable>> getAllDeviceType(Integer page, Integer limit, String deviceTypeName) {
@@ -144,7 +158,7 @@ public class DeviceTypeServiceImpl implements DeviceTypeService {
     }
 
     @Override
-    public ResponseEntity<BaseResponse<Void, Void>> deleteDeviceType(Long id) {
+    public ResponseEntity<BaseResponse<Void, Void>> deleteDeviceType(Long id, UserPrincipal userPrincipal) {
         ResponseEntity<BaseResponse<Void, Void>> responseEntity = null;
         DeviceType deviceType = deviceTypeRepository.findById(id).orElse(null);
         if (deviceType != null) {
@@ -156,6 +170,33 @@ public class DeviceTypeServiceImpl implements DeviceTypeService {
                     device.setStatus(2);
                     deviceRepository.save(device);
                 }
+            }
+
+            List<Request> requests = requestRepository.getListRequestWhenDeviceTypeDelete(deviceType.getDeviceTypeId());
+            Person currentUser = personService.getPersonInforByEmail(userPrincipal.getEmail());
+            List<Notification> notificationList = new ArrayList<>();
+            if(requests != null && !requests.isEmpty()){
+                for (Request request: requests) {
+                    Date dateToReject = new Date();
+                    Date date = new Date();
+                    dateToReject.setTime(dateToReject.getTime() - CommonConstant.MILLISECOND_7_HOURS);
+                    request.setStatus("Rejected");
+                    request.setMaximumTimeToRollback(dateToReject);
+                    requestRepository.save(request);
+                    date.setTime(date.getTime() + CommonConstant.MILLISECOND_7_HOURS);
+
+                    Notification notificationToEmp = new Notification("asks you to choose another device type because the device you requested no longer exists!",
+                            0, null, 0, currentUser.getPersonId(), request.getPersonId(), date);
+                    notificationList.add(notificationToEmp);
+                    Person person = personRepository.findById(request.getPersonId()).orElse(null);
+                    if(person != null && person.getManagerId() != null) {
+                        Notification notificationToManager = new Notification("informs that the device type you requested to borrow to "+person.getFullName() +" - "+person.getRollNumber()  +" staff no longer exists!",
+                                0, null, 0, currentUser.getPersonId(), person.getManagerId(), date);
+                        notificationList.add(notificationToManager);
+                    }
+                }
+                notificationRepository.saveAll(notificationList);
+                notificationService.send(notificationList.toArray(new Notification[0]));
             }
             responseEntity = BaseResponse.ofSucceeded(null);
         } else {

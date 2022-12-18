@@ -1,13 +1,16 @@
 package com.minswap.hrms.job;
 
 import com.minswap.hrms.constants.CommonConstant;
+import com.minswap.hrms.controller.NotificationController;
 import com.minswap.hrms.entities.Notification;
 import com.minswap.hrms.entities.Salary;
 import com.minswap.hrms.repsotories.NotificationRepository;
 import com.minswap.hrms.repsotories.PayrollRepository;
 import com.minswap.hrms.repsotories.PersonRepository;
 import com.minswap.hrms.response.dto.PayrollDto;
+import com.minswap.hrms.service.notification.NotificationService;
 import com.minswap.hrms.util.DateTimeUtil;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -20,6 +23,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Component
+@AllArgsConstructor
 public class PayslipJob {
 
     @Autowired
@@ -30,6 +34,7 @@ public class PayslipJob {
 
     @Autowired
     NotificationRepository notificationRepository;
+    private final NotificationService notificationService;
 
     @Scheduled(cron = "* 0 1 1 * *")
     public void  cronjobUpdateSalary() throws ParseException {
@@ -99,7 +104,7 @@ public class PayslipJob {
             Notification notification = new Notification("Salary slip of month " + month + "/" + year + " already available! " ,
                     0, "emp-self-service/payslip" , 0, null, personId, currentDate);
             notificationRepository.save(notification);
-
+            notificationService.send(notification);
         }
     }
 
@@ -151,15 +156,10 @@ public class PayslipJob {
             if(workTime >= 8D){
                 actualWork++;
             }else {
-                String additionalWork = payrollRepository.getAdditionalWorkInRequest(date, personId);
+                actualWork += workTime/8;
+                Double additionalWork = payrollRepository.getAdditionalWorkInRequest(date, personId);
                 if (additionalWork != null){
-                    additionalWork.replaceAll("-","");
-                    Double hour = (Double.valueOf(additionalWork.substring(0,2)));
-                    if(hour > 8L){
-                        hour = hour - 8L;
-                    }
-                    Double minute = Double.valueOf(additionalWork.substring(3,5));
-                    workTime = (workTime + (hour + (minute/60)))/8;
+                    workTime = additionalWork/8;
                     actualWork = actualWork + workTime;
                 }
             }

@@ -2,6 +2,7 @@ package com.minswap.hrms.service.device;
 
 import com.minswap.hrms.constants.CommonConstant;
 import com.minswap.hrms.constants.ErrorCode;
+import com.minswap.hrms.controller.NotificationController;
 import com.minswap.hrms.entities.*;
 import com.minswap.hrms.exception.model.BaseException;
 import com.minswap.hrms.exception.model.Pagination;
@@ -17,8 +18,10 @@ import com.minswap.hrms.response.dto.DeviceDto;
 import com.minswap.hrms.response.dto.MasterDataDto;
 import com.minswap.hrms.security.UserPrincipal;
 import com.minswap.hrms.service.borrowhistory.BorrowHistoryService;
+import com.minswap.hrms.service.notification.NotificationService;
 import com.minswap.hrms.service.person.PersonService;
 import com.minswap.hrms.util.DateTimeUtil;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +38,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@AllArgsConstructor
 @Slf4j
 public class DeviceServiceImpl implements DeviceService {
 
@@ -58,6 +62,7 @@ public class DeviceServiceImpl implements DeviceService {
 
     @Autowired
     PersonService personService;
+    private final NotificationService notificationService;
 
     @Override
     public ResponseEntity<BaseResponse<MasterDataResponse, Pageable>> getMasterDataDeviceByDeviceType(Long deviceTypeId, Integer status, String search) {
@@ -105,6 +110,7 @@ public class DeviceServiceImpl implements DeviceService {
                 Notification notification = new Notification("just assigned you a device " + device.getDeviceName() + " - " + device.getDeviceCode() + "!",
                         0, "emp-self-service/device-history/detail/" + borrowHistory.getBorrowHistoryId(), 0, currentUser, request.getPersonId(), currentDate);
                 notificationRepository.save(notification);
+                notificationService.send(notification);
 
                 responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.OK, null);
             } else {
@@ -275,6 +281,7 @@ public class DeviceServiceImpl implements DeviceService {
                         Notification notification = new Notification("retunred device " + device.getDeviceName() + " - " + device.getDeviceCode(),
                                 0, "human-resource/borrow-device-history/detail/" + borrowHistoryId, 0, currentUser, person.getPersonId(), currentDate);
                         notificationRepository.save(notification);
+                        notificationService.send(notification);
                     }
                     responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.OK, null);
                 }else {

@@ -13,10 +13,12 @@ import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Repository;
 import org.springframework.validation.annotation.Validated;
 
-import javax.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.Date;
 
 @Repository
+@Transactional
 public interface TimeCheckRepository extends JpaRepository<TimeCheck, Long> {
 
     @Query("SELECT new com.minswap.hrms.response.dto.TimeCheckDto( " +
@@ -53,6 +55,17 @@ public interface TimeCheckRepository extends JpaRepository<TimeCheck, Long> {
             "AND r.status LIKE 'Approved' LIMIT  1", nativeQuery = true)
     String getMissTimeCheckReason(@Param("personId") Long personId,
                                   @Param("absentDate") Date absentDate);
+    
+    @Query(value = " SELECT TIME_TO_SEC(TIMEDIFF(r.end_time, r.start_time))/3600 " +
+            " FROM request r   " +
+            " WHERE date( :otDate ) BETWEEN date(r.start_time) and date(r.end_time)  " +
+            " and r.status  = 'Approved'  " +
+            " and r.request_type_id = 7  " +
+            " and r.person_id  = :personId " +
+            " limit 1 ", nativeQuery = true)
+    Double getOtTimeInDate(@Param("personId") Long personId,
+                           @Param("otDate") Date otDate);
+
     @Query("SELECT new com.minswap.hrms.response.dto.TimeCheckDto( " +
             " tc.personId as id,  " +
             " tc.personId as personId,  " +
@@ -119,9 +132,11 @@ public interface TimeCheckRepository extends JpaRepository<TimeCheck, Long> {
 
     @Query("select tc.ot from TimeCheck tc " +
             "where tc.personId=:personId " +
-            "and DAY(tc.timeIn) =:dayIn")
+            "and DAY(tc.timeIn) =:dayIn " +
+            "and MONTH(tc.timeIn) =:monthIn")
     Double getOTTimeByDay(@Param("dayIn") int dayIn,
-                          @Param("personId") Long personId);
+                          @Param("personId") Long personId,
+                          @Param("monthIn") int monthIn);
 
     @Modifying
     @Transactional

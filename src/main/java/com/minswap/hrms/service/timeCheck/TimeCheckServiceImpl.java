@@ -84,6 +84,8 @@ public class TimeCheckServiceImpl implements TimeCheckService{
                     Date dateAdd = date;
                     dateAdd.setTime(dateAdd.getTime() + MILLISECOND_7_HOURS);
                     String reason = timeCheckRepository.getMissTimeCheckReason(personId, dateAdd);
+                    Double otTimeDB = timeCheckRepository.getOtTimeInDate(personId, dateAdd)  ;
+                    Double otTime = otTimeDB == null ? 0 : otTimeDB;
                     timeCheckPerDateMap.put(date, Arrays.asList(
                             TimeCheckDto.builder()
                                     .personId(personId)
@@ -92,7 +94,7 @@ public class TimeCheckServiceImpl implements TimeCheckService{
                                     .date(dateAdd)
                                     .workingTime(0d)
                                     .requestTypeName(reason)
-                                    .ot(0d)
+                                    .ot(otTime)
                                     .build()
                     ));
                 }
@@ -366,6 +368,11 @@ public class TimeCheckServiceImpl implements TimeCheckService{
             timeCheck.setInLate(processTimeCome(officeTime.getTimeStart(), timeCheck.getTimeIn(), 0));
             timeCheckRepository.save(timeCheck);
         }else{
+        	//time check update when log time ot
+        	if(dailyTimeCheckDto.getTimeIn() == null) {
+        		timeCheck.setTimeIn(convertDateInput(timeCheckInRequest.getTimeLog().toString()));
+                timeCheck.setInLate(processTimeCome(officeTime.getTimeStart(), timeCheck.getTimeIn(), 0));
+        	}
             //update time out
             timeCheck.setPersonId(signatureProfile.getPersonId());
             timeCheck.setTimeOut(convertDateInput(timeCheckInRequest.getTimeLog().toString()));
@@ -390,7 +397,11 @@ public class TimeCheckServiceImpl implements TimeCheckService{
     }
     private double processWorkingTime(Date timeIn, Date timeOut, double timeLate, double outEarly){
         double timeWorkingTime = timeOut.getTime() - timeIn.getTime() - timeLate * 60 * 60 - outEarly * 60 *60;
-        return timeWorkingTime /(60*60*1000);
+        double total= timeWorkingTime /(60*60*1000);
+        if(total > 8) {
+        	return 8;
+        }
+        return total;
     }
 
     private Date convertDateInput(String dateStr){

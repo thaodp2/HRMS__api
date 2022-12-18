@@ -2,6 +2,7 @@ package com.minswap.hrms.repsotories;
 
 import com.minswap.hrms.entities.Request;
 import com.minswap.hrms.response.dto.DateDto;
+import com.minswap.hrms.response.dto.DeviceTypeDto;
 import com.minswap.hrms.response.dto.PersonAndRequestDto;
 import com.minswap.hrms.response.dto.RequestDto;
 import io.lettuce.core.dynamic.annotation.Param;
@@ -12,11 +13,13 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import javax.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.Date;
 import java.util.List;
 
 @Repository
+@Transactional
 public interface RequestRepository extends JpaRepository<Request, Long> {
 
     @Query("select new com.minswap.hrms.response.dto.RequestDto(" +
@@ -54,18 +57,8 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
                                 @Param("endTime") Date endTime,
                                 @Param("reason") String reason);
 
-    @Modifying
-    @Transactional
-    @Query("UPDATE Request r set r.deviceTypeId =:deviceTypeId, r.reason =:reason where r.requestId =:id")
-    Integer updateDeviceRequest(@Param("id") Long id,
-                                @Param("deviceTypeId") Long deviceTypeId,
-                                @Param("reason") String reason);
-
     @Query("select r.status from Request r where r.requestId =:id")
     String getStatusOfRequestById(@Param("id") Long id);
-
-    @Query("select r.createDate from Request r where r.requestId=:id")
-    Date getCreateDateById(@Param("id") Long id);
 
     @Query("select new com.minswap.hrms.response.dto.DateDto(r.startTime, r.endTime) from Request r where r.requestId=:id")
     DateDto getStartAndEndTimeByRequestId(@Param("id") Long id);
@@ -140,9 +133,6 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
                                                 @Param("deviceTypeId") Long deviceTypeId,
                                                 Pageable pageable);
 
-    @Query("select r.approvalDate from Request r where r.requestId =:id")
-    Date getApprovalDateOfRequest(@Param("id") Long id);
-
     @Query("select r.maximumTimeToRollback from Request r WHERE r.requestId=:id")
     Date getMaximumTimeToRollback(@Param("id") Long id);
 
@@ -167,4 +157,28 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
 
     @Query("select r.isAssigned from Request r where r.requestId=:id")
     Integer isAssignedOrNot(@Param("id") Long id);
+
+    @Query("select dt.status " +
+            "from Request r " +
+            "left join DeviceType dt on r.deviceTypeId = dt.deviceTypeId " +
+            "where r.requestId=:requestId")
+    Integer getDeviceTypeStatus(@Param("requestId") Long requestId);
+
+    @Query("select new com.minswap.hrms.entities.Request(r.requestId as requestId," +
+            " r.requestTypeId as requestTypeId, " +
+            "r.personId as personId," +
+            " r.deviceTypeId as deviceTypeId," +
+            "r.startTime as startTime, " +
+            "r.endTime as endTime," +
+            "r.reason as reason" +
+            ", r.createDate as createDate," +
+            " r.approvalDate as approvalDate, " +
+            "r.status as status," +
+            " r.isAssigned as isAssigned, " +
+            "r.maximumTimeToRollback as maximumTimeToRollback) " +
+            "from Request r " +
+            "where r.requestTypeId = 11 " +
+            "and (r.status = 'Pending' or (r.status = 'Approved' and r.isAssigned = 0))" +
+            " and r.deviceTypeId =:deviceTypeId")
+    List<Request> getListRequestWhenDeviceTypeDelete(@Param("deviceTypeId") Long deviceTypeId);
 }

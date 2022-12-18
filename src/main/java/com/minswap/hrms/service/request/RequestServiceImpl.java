@@ -3,6 +3,7 @@ package com.minswap.hrms.service.request;
 import com.minswap.hrms.configuration.AppConfig;
 import com.minswap.hrms.constants.CommonConstant;
 import com.minswap.hrms.constants.ErrorCode;
+import com.minswap.hrms.controller.NotificationController;
 import com.minswap.hrms.entities.*;
 import com.minswap.hrms.exception.model.BaseException;
 import com.minswap.hrms.exception.model.Pagination;
@@ -12,7 +13,9 @@ import com.minswap.hrms.request.CreateRequest;
 import com.minswap.hrms.request.EditRequest;
 import com.minswap.hrms.response.RequestResponse;
 import com.minswap.hrms.response.dto.*;
+import com.minswap.hrms.service.notification.NotificationService;
 import com.minswap.hrms.util.CommonUtil;
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Session;
@@ -134,6 +137,8 @@ public class RequestServiceImpl implements RequestService {
     private static final int DAYS_OF_SIX_MONTH = 186;
 
     private final AppConfig appConfig;
+    @Autowired
+    private final NotificationService notificationService;
 
     public List<RequestDto> getQueryForRequestList(String type, Long managerId, Long personId, Boolean isLimit, Integer limit, Integer page, String search, String createDateFrom, String createDateTo, Long requestTypeId, String status, String sort, String dir) throws ParseException {
         HashMap<String, Object> params = new HashMap<>();
@@ -192,31 +197,39 @@ public class RequestServiceImpl implements RequestService {
 
         queryAllRequest.append(whereBuild);
         //sort
-        if (sort != null && (sort.equalsIgnoreCase(CommonConstant.CREATE_DATE_FIELD) || sort.equalsIgnoreCase(CommonConstant.START_TIME_FIELD) || sort.equalsIgnoreCase(CommonConstant.END_TIME_FIELD) || sort.equalsIgnoreCase(CommonConstant.ROLL_NUMBER_FIELD)|| sort.equalsIgnoreCase("fullName"))) {
+        if (sort == null & dir == null) {
             StringBuilder orderByBuild = new StringBuilder("Order by ");
-            switch (sort) {
-                case CommonConstant.CREATE_DATE_FIELD:
-                    orderByBuild.append("r.create_date ");
-                    break;
-                case CommonConstant.START_TIME_FIELD:
-                    orderByBuild.append("r.start_time ");
-                    break;
-                case CommonConstant.END_TIME_FIELD:
-                    orderByBuild.append("r.end_time ");
-                    break;
-                case CommonConstant.ROLL_NUMBER_FIELD:
-                    orderByBuild.append("p.roll_number ");
-                    break;
-                case "fullName":
-                    orderByBuild.append("p.full_name ");
-                    break;
-            }
-            if (dir != null && dir.equalsIgnoreCase("desc")) {
-                orderByBuild.append("desc ");
-            }else {
-                orderByBuild.append("asc ");
-            }
+            orderByBuild.append("r.request_id ");
+            orderByBuild.append("desc ");
             queryAllRequest.append(orderByBuild);
+        } else {
+            if (sort != null && (sort.equalsIgnoreCase(CommonConstant.CREATE_DATE_FIELD) || sort.equalsIgnoreCase(CommonConstant.START_TIME_FIELD) || sort.equalsIgnoreCase(CommonConstant.END_TIME_FIELD) || sort.equalsIgnoreCase(CommonConstant.ROLL_NUMBER_FIELD) || sort.equalsIgnoreCase("fullName"))) {
+                StringBuilder orderByBuild = new StringBuilder("Order by ");
+                switch (sort) {
+                    case CommonConstant.CREATE_DATE_FIELD:
+                        orderByBuild.append("r.create_date ");
+                        break;
+                    case CommonConstant.START_TIME_FIELD:
+                        orderByBuild.append("r.start_time ");
+                        break;
+                    case CommonConstant.END_TIME_FIELD:
+                        orderByBuild.append("r.end_time ");
+                        break;
+                    case CommonConstant.ROLL_NUMBER_FIELD:
+                        orderByBuild.append("p.roll_number ");
+                        break;
+                    case "fullName":
+                        orderByBuild.append("p.full_name ");
+                        break;
+                }
+
+                if (dir != null && dir.equalsIgnoreCase("desc")) {
+                    orderByBuild.append("desc ");
+                } else {
+                    orderByBuild.append("asc ");
+                }
+                queryAllRequest.append(orderByBuild);
+            }
         }
         //limit
         if (isLimit) {
@@ -248,7 +261,7 @@ public class RequestServiceImpl implements RequestService {
         Date currentTime = getCurrentTime();
         Date max = new Date();
         for (int i = 0; i < dtos.size(); i++) {
-            if(dtos.get(i).getRequestTypeId() == (long) FORGOT_CHECK_IN_OUT){
+            if (dtos.get(i).getRequestTypeId() == (long) FORGOT_CHECK_IN_OUT) {
                 dtos.get(i).setIsAllowRollback(NOT_ALLOW_ROLLBACK);
             } else if (dtos.get(i).getRequestTypeId() == CommonConstant.REQUEST_TYPE_ID_OF_BORROW_DEVICE) {
                 if (dtos.get(i).getIsAssigned() == null || dtos.get(i).getIsAssigned() == 0) {
@@ -256,14 +269,14 @@ public class RequestServiceImpl implements RequestService {
                 } else {
                     dtos.get(i).setIsAllowRollback(NOT_ALLOW_ROLLBACK);
                 }
-            }else{
+            } else {
                 if (dtos.get(i).getMaximumTimeToRollback() == null) {
                     dtos.get(i).setIsAllowRollback(NOT_ALLOW_ROLLBACK);
                 } else {
                     max.setTime(dtos.get(i).getMaximumTimeToRollback().getTime() - CommonConstant.MILLISECOND_7_HOURS);
-                    if(currentTime.after(max)) {
+                    if (currentTime.after(max)) {
                         dtos.get(i).setIsAllowRollback(NOT_ALLOW_ROLLBACK);
-                    }else {
+                    } else {
                         dtos.get(i).setIsAllowRollback(ALLOW_ROLLBACK);
                     }
                 }
@@ -303,12 +316,10 @@ public class RequestServiceImpl implements RequestService {
         Long personId = null;
         if (personIdByRequestId == currentUserId) {
             personId = currentUserId;
-        }
-        else {
+        } else {
             if (listRoleOfPerson.contains(Long.valueOf(ROLE_HR))) {
                 personId = personIdByRequestId;
-            }
-            else {
+            } else {
                 // current user là manager
                 if (listRoleOfPerson.contains(Long.valueOf(ROLE_MANAGER))) {
                     // Kiểm tra xem thằng current user có phải manager của thằng gửi request hay không
@@ -318,8 +329,7 @@ public class RequestServiceImpl implements RequestService {
                                 httpStatus.UNAUTHORIZED));
                     }
                     personId = personIdByRequestId;
-                }
-                else {
+                } else {
                     throw new BaseException(ErrorCode.newErrorCode(401,
                             "You can't view requests from other employees",
                             httpStatus.UNAUTHORIZED));
@@ -337,11 +347,17 @@ public class RequestServiceImpl implements RequestService {
             }
             Integer requestType = requestTypeRepository.getRequestTypeByRequestId(id);
             if (requestType == BORROW_REQUEST_TYPE_ID) {
+                Integer deviceTypeStatus = requestRepository.getDeviceTypeStatus(id);
+                if (deviceTypeStatus.intValue() == 1) {
+                    requestDto.setIsDeviceTypeDeleted(1);
+                }
+                else {
+                    requestDto.setIsDeviceTypeDeleted(0);
+                }
                 requestDto.setRequestTypeName(DEVICE_TYPE);
                 if (requestRepository.getMaximumTimeToRollback(id) == null) {
                     requestDto.setIsAllowRollback(NOT_ALLOW_ROLLBACK);
-                }
-                else if (currentTime.after(requestRepository.getMaximumTimeToRollback(id))) {
+                } else if (currentTime.after(requestRepository.getMaximumTimeToRollback(id))) {
                     requestDto.setIsAllowRollback(NOT_ALLOW_ROLLBACK);
                 } else if (requestRepository.isAssignedOrNot(id) == ASSIGNED) {
                     requestDto.setIsAllowRollback(NOT_ALLOW_ROLLBACK);
@@ -368,20 +384,17 @@ public class RequestServiceImpl implements RequestService {
                 } else if (requestType == FORGOT_CHECK_IN_OUT) {
                     requestDto.setRequestTypeName(FORGOT_CHECK_IN_CHECK_OUT_TYPE);
                     requestDto.setIsAllowRollback(NOT_ALLOW_ROLLBACK);
-                }
-                else if (requestType.intValue() == MATERNITY_TYPE_ID) {
+                } else if (requestType.intValue() == MATERNITY_TYPE_ID) {
                     requestDto.setRequestTypeName(MATERNITY_TYPE);
                     long timeBetween = requestDto.getEndTime().getTime() - requestDto.getStartTime().getTime();
                     long numOfDaysOffBetweenStartAndEnd = TimeUnit.DAYS.convert(timeBetween, TimeUnit.MILLISECONDS);
                     if (numOfDaysOffBetweenStartAndEnd <= DAYS_OF_FOUR_MONTH) {
                         requestDto.setPeriodTime(FOUR_MONTH);
-                    }
-                    else {
+                    } else {
                         requestDto.setPeriodTime(SIX_MONTH);
                     }
 
-                }
-                else {
+                } else {
                     requestDto.setRequestTypeName(OTHER_TYPE);
                 }
                 Date maximumTimeToRollback = requestDto.getMaximumTimeToRollback();
@@ -394,6 +407,9 @@ public class RequestServiceImpl implements RequestService {
                         requestDto.setIsAllowRollback(ALLOW_ROLLBACK);
                     }
                 }
+            }
+            if (requestDto.getStatus().equalsIgnoreCase(CANCELED_STATUS)) {
+                requestDto.setIsAllowRollback(NOT_ALLOW_ROLLBACK);
             }
             requestDto.setRollNumber(personRepository.getRollNumberByPersonId(personId));
             List<String> listImage = evidenceRepository.getListImageByRequest(id);
@@ -426,24 +442,21 @@ public class RequestServiceImpl implements RequestService {
         List<Long> listRequestTypesId = requestTypeRepository.getAllRequestTypeId();
         if (!listRequestTypesId.contains(requestTypeId)) {
             throw new BaseException(ErrorCode.REQUEST_TYPE_INVALID);
-        }
-        else if (requestTypeId != Long.valueOf(BORROW_REQUEST_TYPE_ID)
+        } else if (requestTypeId != Long.valueOf(BORROW_REQUEST_TYPE_ID)
                 && (createRequest.getStartTime() == null || createRequest.getEndTime() == null)) {
             throw new BaseException(ErrorCode.DATE_INVALID_IN_LEAVE_REQUEST);
-        }
-        else if (createRequest.getStartTime() != null && createRequest.getEndTime() != null) {
+        } else if (createRequest.getStartTime() != null && createRequest.getEndTime() != null) {
             startTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).parse(createRequest.getStartTime());
             endTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).parse(createRequest.getEndTime());
         }
         validateForCreateAndEditRequest(requestTypeId,
-                                        startTime,
-                                        endTime,
-                                        personId,
-                                        deviceTypeId);
+                startTime,
+                endTime,
+                personId,
+                deviceTypeId);
         if (requestTypeId == Long.valueOf(BORROW_REQUEST_TYPE_ID)) {
             isAssigned = 0;
-        }
-        else {
+        } else {
             startTime.setTime(startTime.getTime() + appConfig.getMillisecondSevenHours());
             endTime.setTime(endTime.getTime() + appConfig.getMillisecondSevenHours());
         }
@@ -492,19 +505,17 @@ public class RequestServiceImpl implements RequestService {
             throw new BaseException(ErrorCode.newErrorCode(208,
                     "You can't edit requests that have been approved or rejected",
                     httpStatus.NOT_ACCEPTABLE));
-        }
-        else if (requestTypeId != BORROW_REQUEST_TYPE_ID
+        } else if (requestTypeId != BORROW_REQUEST_TYPE_ID
                 && (editRequest.getStartTime() == null || editRequest.getEndTime() == null)) {
             throw new BaseException(ErrorCode.DATE_INVALID_IN_LEAVE_REQUEST);
-        }
-        else {
+        } else {
             Date startTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).parse(editRequest.getStartTime());
             Date endTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).parse(editRequest.getEndTime());
             validateForCreateAndEditRequest(Long.valueOf(requestTypeId.intValue()),
-                                            startTime,
-                                            endTime,
-                                            personId,
-                                            editRequest.getDeviceTypeId());
+                    startTime,
+                    endTime,
+                    personId,
+                    editRequest.getDeviceTypeId());
             if (requestTypeId != BORROW_REQUEST_TYPE_ID) {
                 startTime.setTime(startTime.getTime() + appConfig.getMillisecondSevenHours());
                 endTime.setTime(endTime.getTime() + appConfig.getMillisecondSevenHours());
@@ -534,8 +545,7 @@ public class RequestServiceImpl implements RequestService {
                         "You do not have the right to update the request status of employees other than your subordinates",
                         httpStatus.UNAUTHORIZED));
             }
-        }
-        else {
+        } else {
             throw new BaseException(ErrorCode.newErrorCode(401,
                     "You do not have the authority to update your request status or others",
                     httpStatus.UNAUTHORIZED));
@@ -576,8 +586,7 @@ public class RequestServiceImpl implements RequestService {
         } else if (status.equalsIgnoreCase(REJECTED_STATUS) && currentStatus.equalsIgnoreCase(PENDING_STATUS)) {
             if (maximumTimeToRollback == null) {
                 updateMaximumTimeToRollback(currentTime, id);
-            }
-            else {
+            } else {
                 currentTime.setTime(currentTime.getTime() + CommonConstant.MILLISECOND_7_HOURS);
             }
             Integer isUpdatedSuccess = requestRepository.updateStatusRequest(status, id, currentTime);
@@ -699,14 +708,13 @@ public class RequestServiceImpl implements RequestService {
             throw new BaseException(ErrorCode.newErrorCode(208,
                     "You can't cancel an request that has already been processed",
                     httpStatus.NOT_ACCEPTABLE));
-        }
-        else if (personIdByRequestId != personId) {
+        } else if (personIdByRequestId != personId) {
             throw new BaseException(ErrorCode.newErrorCode(208,
                     "You can't cancel someone else's request",
                     httpStatus.NOT_ACCEPTABLE));
         }
         Integer isUpdatedSuccess = requestRepository.updateStatusRequest(CANCELED_STATUS,
-                                                                        id,null);
+                id, null);
         if (isUpdatedSuccess == CommonConstant.UPDATE_FAIL) {
             throw new BaseException(ErrorCode.UPDATE_FAIL);
         }
@@ -770,9 +778,33 @@ public class RequestServiceImpl implements RequestService {
         if (isReturnNumOfDayOff) {
             newHoursWorked = otBudgetDto.getHoursWorked() - otHoursInRequest;
             remainHoursWorkOfYear = otBudgetDto.getOtHoursRemainOfYear() + otHoursInRequest;
+            // Remove OT time in Time check
+            Calendar calendarStart = getCalendarByDate(startTime);
+            Calendar calendarEnd = getCalendarByDate(endTime);
+            DecimalFormat decimalFormat = new DecimalFormat("#.##");
+            // OT trong ngày
+            if (calendarStart.get(Calendar.DAY_OF_MONTH) == calendarEnd.get(Calendar.DAY_OF_MONTH)
+                    && calendarEnd.get(Calendar.MONTH) == calendarStart.get(Calendar.MONTH)) {
+                double otTimeReturn = calculateHoursBetweenTwoDateTime(startTime, endTime);
+                Double otTime = timeCheckRepository.getOTTimeByDay(getDayOfDate(startTime), personId, getMonthOfDate(startTime));
+                double newOTTime = Double.parseDouble(decimalFormat.format(otTime - otTimeReturn));
+                timeCheckRepository.updateOTTime(getDayOfDate(startTime), personId, newOTTime, getMonthOfDate(startTime));
+            }
+            else {
+                otTimeOfStartDay = calculateHoursBetweenTwoDateTime(startTime,
+                                                                    formatTimeToKnownDate(startTime, TIME_END_OF_DAY));
+                otTimeOfEndDay = calculateHoursBetweenTwoDateTime(formatTimeToKnownDate(endTime, TIME_START_OF_DAY),
+                                                                  endTime);
+                Double otTimeInDBOfStartDay = timeCheckRepository.getOTTimeByDay(getDayOfDate(startTime), personId, getMonthOfDate(startTime));
+                Double otTimeInDBOfEndDay = timeCheckRepository.getOTTimeByDay(getDayOfDate(endTime), personId, getMonthOfDate(endTime));
+                double newOTTimeInStartDay = Double.parseDouble(decimalFormat.format(otTimeInDBOfStartDay - otTimeOfStartDay));
+                double newOTTimeInEndDay = Double.parseDouble(decimalFormat.format(otTimeInDBOfEndDay - otTimeOfEndDay));
+                timeCheckRepository.updateOTTime(getDayOfDate(startTime), personId, newOTTimeInStartDay, getMonthOfDate(startTime));
+                timeCheckRepository.updateOTTime(getDayOfDate(endTime), personId, newOTTimeInEndDay, getMonthOfDate(endTime));
+            }
         } else {
             if (getDayOfDate(startTime) == getDayOfDate(endTime)) {
-                Double otTimeWorkedInThisDay = timeCheckRepository.getOTTimeByDay(getDayOfDate(startTime), personId);
+                Double otTimeWorkedInThisDay = timeCheckRepository.getOTTimeByDay(getDayOfDate(startTime), personId, getMonthOfDate(startTime));
                 if (otTimeWorkedInThisDay == null) {
                     otTimeWorkedInThisDay = Double.valueOf(0);
                 }
@@ -783,7 +815,7 @@ public class RequestServiceImpl implements RequestService {
             } else {
                 otTimeOfStartDay = calculateHoursBetweenTwoDateTime(startTime,
                         formatTimeToKnownDate(startTime, TIME_END_OF_DAY));
-                Double otTimeWorkedInStartDay = timeCheckRepository.getOTTimeByDay(getDayOfDate(startTime), personId);
+                Double otTimeWorkedInStartDay = timeCheckRepository.getOTTimeByDay(getDayOfDate(startTime), personId, getMonthOfDate(startTime));
                 if (otTimeWorkedInStartDay == null) {
                     otTimeWorkedInStartDay = Double.valueOf(0);
                 }
@@ -791,7 +823,7 @@ public class RequestServiceImpl implements RequestService {
                         otHoursRemainOfYear, otTimeWorkedInStartDay + otTimeOfStartDay);
                 otTimeOfEndDay = calculateHoursBetweenTwoDateTime(formatTimeToKnownDate(endTime, TIME_START_OF_DAY),
                         endTime);
-                Double otTimeWorkedInEndDay = timeCheckRepository.getOTTimeByDay(getDayOfDate(endTime), personId);
+                Double otTimeWorkedInEndDay = timeCheckRepository.getOTTimeByDay(getDayOfDate(endTime), personId, getMonthOfDate(endTime));
                 if (otTimeWorkedInEndDay == null) {
                     otTimeWorkedInEndDay = Double.valueOf(0);
                 }
@@ -808,13 +840,13 @@ public class RequestServiceImpl implements RequestService {
         double remainHoursWorkOfMonth = otBudgetDto.getOtHoursBudget() - newHoursWorked;
 //        double remainHoursWorkOfYear = otBudgetDto.getOtHoursRemainOfYear() - otHoursInRequest;
         Integer isUpdateOTBudgetOfMonthSucceeded = otBudgetRepository.updateOTBudgetOfMonth(personId,
-                                                                                            year,
-                                                                                            month,
-                                                                                            newHoursWorked,
-                                                                                            remainHoursWorkOfMonth);
+                year,
+                month,
+                newHoursWorked,
+                remainHoursWorkOfMonth);
         Integer isUpdateOTBudgetOfYearSucceeded = otBudgetRepository.updateOTBudgetOfYear(personId,
-                                                                                          year,
-                                                                                          remainHoursWorkOfYear);
+                year,
+                remainHoursWorkOfYear);
         if (isUpdateOTBudgetOfMonthSucceeded == CommonConstant.UPDATE_FAIL
                 || isUpdateOTBudgetOfYearSucceeded == CommonConstant.UPDATE_FAIL) {
             throw new BaseException(ErrorCode.UPDATE_FAIL);
@@ -986,9 +1018,9 @@ public class RequestServiceImpl implements RequestService {
         timeBasedOnStartDay.setTime(timeBasedOnStartDay.getTime() + appConfig.getMillisecondSevenHours());
         timeBasedOnEndDay.setTime(timeBasedOnEndDay.getTime() + appConfig.getMillisecondSevenHours());
         List<DateDto> listOTRequestByDate = requestRepository.getListRequestApprovedByDate(personId,
-                                                                                           timeBasedOnStartDay,
-                                                                                           timeBasedOnEndDay,
-                                                                                           APPROVED_STATUS);
+                timeBasedOnStartDay,
+                timeBasedOnEndDay,
+                APPROVED_STATUS);
         // Thời gian OT người dùng đã làm trong ngày hôm đó
         double otHoursWorked = 0;
         if (!listOTRequestByDate.isEmpty() && listOTRequestByDate != null) {
@@ -1093,7 +1125,7 @@ public class RequestServiceImpl implements RequestService {
         startTime.setTime(startTime.getTime() + appConfig.getMillisecondSevenHours());
         endTime.setTime(endTime.getTime() + appConfig.getMillisecondSevenHours());
         List<DateDto> listOTRequestInPeriodTime = requestRepository.getListRequestApprovedByDate(personId,
-                                                                        startTime, endTime, APPROVED_STATUS);
+                startTime, endTime, APPROVED_STATUS);
         // Trừ giờ về như cũ
         startTime.setTime(startTime.getTime() - appConfig.getMillisecondSevenHours());
         endTime.setTime(endTime.getTime() - appConfig.getMillisecondSevenHours());
@@ -1113,6 +1145,7 @@ public class RequestServiceImpl implements RequestService {
                                    Date createDate) {
         Notification notification = new Notification(content, delivered, redirectUrl, isRead, userFrom, userTo, createDate);
         notificationRepository.save(notification);
+        notificationService.send(notification);
     }
 
     public String getNotiContentWhenCreateRequest() {
@@ -1133,6 +1166,11 @@ public class RequestServiceImpl implements RequestService {
         return url;
     }
 
+    public String getNotiURLForITSupport() {
+        String url = "request-center/borrow-device";
+        return url;
+    }
+
     public void updateTimeCheckWhenWFHRequestApproved(Date startTime, Date endTime, Long personId) throws ParseException {
         Calendar startCalendar = getCalendarByDate(startTime);
         Calendar endCalendar = getCalendarByDate(endTime);
@@ -1147,7 +1185,7 @@ public class RequestServiceImpl implements RequestService {
         if (startCalendar.get(Calendar.DAY_OF_MONTH) == endCalendar.get(Calendar.DAY_OF_MONTH)
                 && startCalendar.get(Calendar.MONTH) == endCalendar.get(Calendar.MONTH)) {
             if (startTime.after(startOfficeTime)) {
-                  inLate = calculateNumOfHoursWorkedInADay(startOfficeTime, startTime);
+                inLate = calculateNumOfHoursWorkedInADay(startOfficeTime, startTime);
             }
             if (endTime.before(finishOfficeTime)) {
                 outEarly = calculateNumOfHoursWorkedInADay(endTime, finishOfficeTime);
@@ -1180,7 +1218,7 @@ public class RequestServiceImpl implements RequestService {
             LocalDate endDate = LocalDate.parse(endDateStr);
             for (LocalDate date = startDate.plusDays(1); date.isBefore(endDate); date = date.plusDays(1)) {
                 startOfficeTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
-                        parse(date.toString() + " " +  officeTimeDto.getTimeStart());
+                        parse(date.toString() + " " + officeTimeDto.getTimeStart());
                 finishOfficeTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
                         parse(date.toString() + " " + officeTimeDto.getTimeEnd());
                 saveTimeCheck(startOfficeTime, finishOfficeTime, personId, 0, 0, calculateNumOfHoursWorkedInADay(startOfficeTime, finishOfficeTime));
@@ -1272,9 +1310,11 @@ public class RequestServiceImpl implements RequestService {
         LeaveBudgetDto leaveBudgetDto = leaveBudgetRepository.getLeaveBudget(personId, year, requestTypeId);
         double numberOfDayOff = calculateNumOfDayOff(startTime, endTime);
         if (numberOfDayOff > leaveBudgetDto.getRemainDayOff()) {
+            DecimalFormat decimalFormat = new DecimalFormat("#.##");
             throw new BaseException(ErrorCode.newErrorCode(208,
                     "Not enough remaining day off! " +
-                            "You only have " + leaveBudgetDto.getRemainDayOff() + " days left this year",
+                            "You only have " + Double.parseDouble(decimalFormat.format(leaveBudgetDto.getRemainDayOff()))
+                            + " days left this year",
                     httpStatus.NOT_ACCEPTABLE));
         }
     }
@@ -1365,7 +1405,7 @@ public class RequestServiceImpl implements RequestService {
             double otHoursRemainOfMonth = otBudgetDto.getOtHoursRemainOfMonth();
             double otHoursRemainOfYear = otBudgetDto.getOtHoursRemainOfYear();
             if (calendarStart.get(Calendar.DAY_OF_MONTH) == calendarEnd.get(Calendar.DAY_OF_MONTH)
-            && calendarStart.get(Calendar.MONTH) == calendarEnd.get(Calendar.MONTH)) {
+                    && calendarStart.get(Calendar.MONTH) == calendarEnd.get(Calendar.MONTH)) {
                 if ((startTime.before(otStartTime) && startTime.after(otEndTime))
                         || (endTime.before(otStartTime) && endTime.after(otEndTime))) {
                     throw new BaseException(ErrorCode.newErrorCode(208,
@@ -1401,8 +1441,7 @@ public class RequestServiceImpl implements RequestService {
                         otHoursRemainOfYear,
                         otHoursRequest + timeHasBeenOTInEndDay);
             }
-        }
-        catch (ParseException e) {
+        } catch (ParseException e) {
             throw new RuntimeException(e);
         }
     }
@@ -1419,47 +1458,36 @@ public class RequestServiceImpl implements RequestService {
         if (startTime.before(startOfficeTime)) {
             if (endTime.after(endOfficeTime)) {
                 workingTimeHoursInOneDay = calculateHoursBetweenTwoDateTime(startOfficeTime, endOfficeTime) - breakTimeHoursInOneDay;
-            }
-            else if (endTime.after(lunchBreakEndTime) && endTime.getTime() <= endOfficeTime.getTime()) {
+            } else if (endTime.after(lunchBreakEndTime) && endTime.getTime() <= endOfficeTime.getTime()) {
                 workingTimeHoursInOneDay = calculateHoursBetweenTwoDateTime(startOfficeTime, lunchBreakStartTime)
-                                            + calculateHoursBetweenTwoDateTime(lunchBreakEndTime, endTime);
-            }
-            else if (endTime.getTime() >= lunchBreakStartTime.getTime() && endTime.getTime() <= lunchBreakEndTime.getTime()) {
+                        + calculateHoursBetweenTwoDateTime(lunchBreakEndTime, endTime);
+            } else if (endTime.getTime() >= lunchBreakStartTime.getTime() && endTime.getTime() <= lunchBreakEndTime.getTime()) {
                 workingTimeHoursInOneDay = calculateHoursBetweenTwoDateTime(startOfficeTime, lunchBreakStartTime);
-            }
-            else {
+            } else {
                 workingTimeHoursInOneDay = calculateHoursBetweenTwoDateTime(startOfficeTime, endTime);
             }
-        }
-        else if (startTime.getTime() >= startOfficeTime.getTime() && startTime.getTime() < lunchBreakStartTime.getTime()) {
+        } else if (startTime.getTime() >= startOfficeTime.getTime() && startTime.getTime() < lunchBreakStartTime.getTime()) {
             if (endTime.after(endOfficeTime)) {
                 workingTimeHoursInOneDay = calculateHoursBetweenTwoDateTime(startTime, lunchBreakStartTime)
-                                            + calculateHoursBetweenTwoDateTime(lunchBreakEndTime, endOfficeTime);
-            }
-            else if (endTime.after(lunchBreakEndTime) && endTime.getTime() <= endOfficeTime.getTime()) {
+                        + calculateHoursBetweenTwoDateTime(lunchBreakEndTime, endOfficeTime);
+            } else if (endTime.after(lunchBreakEndTime) && endTime.getTime() <= endOfficeTime.getTime()) {
                 workingTimeHoursInOneDay = calculateHoursBetweenTwoDateTime(startTime, lunchBreakStartTime)
-                                            + calculateHoursBetweenTwoDateTime(lunchBreakEndTime, endTime);
-            }
-            else if (endTime.getTime() >= lunchBreakStartTime.getTime() && endTime.getTime() <= lunchBreakEndTime.getTime()) {
+                        + calculateHoursBetweenTwoDateTime(lunchBreakEndTime, endTime);
+            } else if (endTime.getTime() >= lunchBreakStartTime.getTime() && endTime.getTime() <= lunchBreakEndTime.getTime()) {
                 workingTimeHoursInOneDay = calculateHoursBetweenTwoDateTime(startTime, lunchBreakStartTime);
-            }
-            else {
+            } else {
                 workingTimeHoursInOneDay = calculateHoursBetweenTwoDateTime(startTime, endTime);
             }
-        }
-        else if (startTime.getTime() >= lunchBreakStartTime.getTime() && startTime.getTime() <= lunchBreakEndTime.getTime()) {
+        } else if (startTime.getTime() >= lunchBreakStartTime.getTime() && startTime.getTime() <= lunchBreakEndTime.getTime()) {
             if (endTime.after(endOfficeTime)) {
                 workingTimeHoursInOneDay = calculateHoursBetweenTwoDateTime(lunchBreakEndTime, endOfficeTime);
-            }
-            else if (endTime.after(lunchBreakEndTime) && endTime.getTime() <= endOfficeTime.getTime()) {
+            } else if (endTime.after(lunchBreakEndTime) && endTime.getTime() <= endOfficeTime.getTime()) {
                 workingTimeHoursInOneDay = calculateHoursBetweenTwoDateTime(lunchBreakEndTime, endTime);
             }
-        }
-        else {
+        } else {
             if (endTime.after(endOfficeTime)) {
                 workingTimeHoursInOneDay = calculateHoursBetweenTwoDateTime(startTime, endOfficeTime);
-            }
-            else if (endTime.after(lunchBreakEndTime) && endTime.getTime() <= endOfficeTime.getTime()) {
+            } else if (endTime.after(lunchBreakEndTime) && endTime.getTime() <= endOfficeTime.getTime()) {
                 workingTimeHoursInOneDay = calculateHoursBetweenTwoDateTime(startTime, endTime);
             }
         }
@@ -1492,33 +1520,54 @@ public class RequestServiceImpl implements RequestService {
         }
         if (LEAVE_REQUEST_TYPE.contains(Integer.valueOf(requestTypeId))) {
             validateLeaveBenefitRequest(personId, Long.valueOf(requestTypeId), year, startTime, endTime);
-        }
-        else if (requestTypeId == OT_TYPE_ID.intValue()) {
+        } else if (requestTypeId == OT_TYPE_ID.intValue()) {
             validateOTRequestTimeAlreadyInAnotherOTRequest(startTime, endTime, personId);
             validateOTBudgetTime(startTime, endTime, personId, year, month);
         }
+
         if (maximumTimeToRollback == null) {
             updateMaximumTimeToRollback(currentTime, requestId);
-        }
-        else {
+        } else {
             currentTime.setTime(currentTime.getTime() + CommonConstant.MILLISECOND_7_HOURS);
+        }
+        if (requestTypeId == BORROW_REQUEST_TYPE_ID.intValue()) {
+            requestRepository.updateStatusRequest(REJECTED_STATUS, requestId, currentTime);
+            Integer deviceTypeStatus = requestRepository.getDeviceTypeStatus(requestId);
+            if (deviceTypeStatus.intValue() == 1) {
+                throw new BaseException(ErrorCode.newErrorCode(208,
+                        "You can't approve this request because the device type borrowed in the request has " +
+                                "been removed. The request will automatically return to the reject status!",
+                        httpStatus.NOT_ACCEPTABLE));
+            }
+            else if (deviceTypeStatus == null) {
+                throw new BaseException(ErrorCode.newErrorCode(208,
+                        "Device type is not exist!",
+                        httpStatus.NOT_ACCEPTABLE));
+            }
         }
         Integer isUpdatedSuccess = requestRepository.updateStatusRequest(status, requestId, currentTime);
         if (isUpdatedSuccess == CommonConstant.UPDATE_FAIL) {
             throw new BaseException(ErrorCode.UPDATE_FAIL);
         }
+        else if (requestTypeId == BORROW_REQUEST_TYPE_ID.intValue()) {
+            String url = getNotiURLForITSupport();
+            List<Long> listPersonIdHasITSPRole = personRepository.getListITSupportId(Long.valueOf(ROLE_IT_SUPPORT));
+            if (listPersonIdHasITSPRole.size() > 0) {
+                for (Long id : listPersonIdHasITSPRole) {
+                    createNotification("A request needs to be assigned a device",
+                            0, url, 0, null, id, currentTime);
+                }
+            }
+        }
         // Update quỹ nghỉ sau khi approve
         if (LEAVE_REQUEST_TYPE.contains(Integer.valueOf(requestTypeId))) {
             updateLeaveBenefitBudget(Long.valueOf(requestTypeId), personId, year,
                     calculateNumOfDayOff(startTime, endTime), false);
-        }
-        else if (requestTypeId == OT_TYPE_ID.intValue()) {
+        } else if (requestTypeId == OT_TYPE_ID.intValue()) {
             updateOTBudget(personId, month, year, startTime, endTime, false);
-        }
-        else if (requestTypeId == FORGOT_CHECK_IN_OUT_TYPE_ID.intValue()) {
+        } else if (requestTypeId == FORGOT_CHECK_IN_OUT_TYPE_ID.intValue()) {
             updateTimeCheck(startTime, endTime, personId);
-        }
-        else if (requestTypeId == WFH_REQUEST_TYPE_ID.intValue()) {
+        } else if (requestTypeId == WFH_REQUEST_TYPE_ID.intValue()) {
             updateTimeCheckWhenWFHRequestApproved(startTime, endTime, personId);
         }
     }
@@ -1530,6 +1579,7 @@ public class RequestServiceImpl implements RequestService {
             timeCheckRepository.deleteTimeCheckByDate(date.getDayOfMonth(), date.getMonthValue(), date.getYear());
         }
     }
+
     public boolean isRequestValidInBreakTime(Date startTime, Date endTime) {
         Calendar calendarStart = getCalendarByDate(startTime);
         Calendar calendarEnd = getCalendarByDate(endTime);
@@ -1540,12 +1590,10 @@ public class RequestServiceImpl implements RequestService {
                 && calendarStart.get(Calendar.MONTH) == calendarEnd.get(Calendar.MONTH)) {
             if (startTime.getTime() == lunchBreakStartTime.getTime() && endTime.getTime() == lunchBreakEndTime.getTime()) {
                 return true;
-            }
-            else {
+            } else {
                 return false;
             }
-        }
-        else {
+        } else {
             return false;
         }
     }

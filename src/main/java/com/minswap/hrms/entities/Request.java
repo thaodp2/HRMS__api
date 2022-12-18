@@ -10,10 +10,24 @@ import java.util.Date;
 @Entity
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 @Table(name = Request.TABLE_NAME)
 public class Request {
     public static final String TABLE_NAME = "request";
+
+    public Request(Long requestId, Long requestTypeId, Long personId, Long deviceTypeId, Date startTime, Date endTime, String reason, Date createDate, Date approvalDate, String status, Integer isAssigned, Date maximumTimeToRollback) {
+        this.requestId = requestId;
+        this.requestTypeId = requestTypeId;
+        this.personId = personId;
+        this.deviceTypeId = deviceTypeId;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.reason = reason;
+        this.createDate = createDate;
+        this.approvalDate = approvalDate;
+        this.status = status;
+        this.isAssigned = isAssigned;
+        this.maximumTimeToRollback = maximumTimeToRollback;
+    }
 
     public Request(Long requestTypeId, Long personId, Long deviceTypeId, Date startTime,
                    Date endTime, String reason, Date createDate, String status, Integer isAssigned) {

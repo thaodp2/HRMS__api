@@ -59,10 +59,10 @@ public class BenefitBudgetServiceImpl implements BenefitBudgetService {
                 }
                 item.setRemainOfYear(Double.valueOf(df.format(item.getRemainOfYear())));
             }
-            BenefitBudgetResponse.BenefitBudgetListResponse response = new BenefitBudgetResponse.BenefitBudgetListResponse(benefitBudgetDtos);
-            responseEntity
-                    = BaseResponse.ofSucceededOffset(response, pagination);
         }
+        BenefitBudgetResponse.BenefitBudgetListResponse response = new BenefitBudgetResponse.BenefitBudgetListResponse(benefitBudgetDtos);
+        responseEntity
+                = BaseResponse.ofSucceededOffset(response, pagination);
         return responseEntity;
     }
 
@@ -72,15 +72,15 @@ public class BenefitBudgetServiceImpl implements BenefitBudgetService {
         List<BenefitBudgetDto> pageInfor = null;
         if (requestTypeId != CommonConstant.REQUEST_TYPE_ID_OF_OT) {
             if (page == null && limit == null) {
-                pageInfor = leaveBudgetRepository.getBenefitBudgetListWithoutPaging(year == null ? Year.now() : year, (search == null || search.trim().isEmpty()) ? null : search.trim(), managerId, requestTypeId, personId, dirSort == null ? Sort.unsorted() : Sort.by(dirSort, sort));
+                pageInfor = leaveBudgetRepository.getBenefitBudgetListWithoutPaging(year == null ? Year.now() : year, (search == null || search.trim().isEmpty()) ? null : search.trim(), managerId, requestTypeId, personId, dirSort == null ? Sort.by(Sort.Direction.ASC, "rollNumber") : Sort.by(dirSort, sort));
             } else {
-                pageInfor = leaveBudgetRepository.getBenefitBudgetList(year == null ? Year.now() : year, (search == null || search.trim().isEmpty()) ? null : search.trim(), managerId, requestTypeId, personId, PageRequest.of(page - 1, limit, dirSort == null ? Sort.unsorted() : Sort.by(dirSort, sort))).getContent();
+                pageInfor = leaveBudgetRepository.getBenefitBudgetList(year == null ? Year.now() : year, (search == null || search.trim().isEmpty()) ? null : search.trim(), managerId, requestTypeId, personId, PageRequest.of(page - 1, limit, dirSort == null ? Sort.by(Sort.Direction.ASC, "rollNumber") : Sort.by(dirSort, sort))).getContent();
             }
         } else {
             if (page == null && limit == null) {
-                pageInfor = otBudgetRepository.getBenefitBudgetListWithoutPaging(month == null ? java.time.LocalDateTime.now().getMonthValue() : month, year == null ? Year.now() : year, (search == null || search.trim().isEmpty()) ? null : search.trim(), managerId, personId, dirSort == null ? Sort.unsorted() : Sort.by(dirSort, sort));
+                pageInfor = otBudgetRepository.getBenefitBudgetListWithoutPaging(month == null ? java.time.LocalDateTime.now().getMonthValue() : month, year == null ? Year.now() : year, (search == null || search.trim().isEmpty()) ? null : search.trim(), managerId, personId, dirSort == null ? Sort.by(Sort.Direction.ASC, "rollNumber") : Sort.by(dirSort, sort));
             } else {
-                pageInfor = otBudgetRepository.getBenefitBudgetList(month == null ? java.time.LocalDateTime.now().getMonthValue() : month, year == null ? Year.now() : year, (search == null || search.trim().isEmpty()) ? null : search.trim(), managerId, personId, PageRequest.of(page - 1, limit, dirSort == null ? Sort.unsorted() : Sort.by(dirSort, sort))).getContent();
+                pageInfor = otBudgetRepository.getBenefitBudgetList(month == null ? java.time.LocalDateTime.now().getMonthValue() : month, year == null ? Year.now() : year, (search == null || search.trim().isEmpty()) ? null : search.trim(), managerId, personId, PageRequest.of(page - 1, limit, dirSort == null ? Sort.by(Sort.Direction.ASC, "rollNumber") : Sort.by(dirSort, sort))).getContent();
             }
         }
         return pageInfor;

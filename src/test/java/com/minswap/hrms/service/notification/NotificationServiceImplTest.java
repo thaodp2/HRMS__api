@@ -6,6 +6,7 @@ import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.repsotories.NotificationRepository;
 import com.minswap.hrms.response.NotificationResponse;
 import com.minswap.hrms.response.dto.NotificationDto;
+import com.minswap.hrms.security.UserPrincipal;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -56,7 +57,7 @@ public class NotificationServiceImplTest {
     public void testGetTotalUnreadNotifs() throws Exception {
         when(notificationRepository.findByUserToAndIsRead(anyLong(), anyInt())).thenReturn(List.of(new Notification(Long.valueOf(1), Long.valueOf(1), Long.valueOf(1), "content", "redirectUrl", Integer.valueOf(0), Integer.valueOf(0), new GregorianCalendar(2022, Calendar.DECEMBER, 8, 18, 35).getTime())));
 
-        ResponseEntity<BaseResponse<NotificationResponse, Pagination>> result = notificationServiceImpl.getTotalUnreadNotifs(Long.valueOf(1));
+        ResponseEntity<BaseResponse<Long, Pagination>> result = notificationServiceImpl.getTotalUnreadNotifs(Long.valueOf(1));
         Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
     }
 
