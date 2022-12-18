@@ -328,12 +328,8 @@ public class PersonServiceImpl implements PersonService {
         if (employeeRequest.getSalaryBonus() == null) {
             employeeRequest.setSalaryBonus(Double.parseDouble(employeeDetailDto.getSalaryBonus()));
         }
-        if (employeeRequest.getIsManager() == null) {
-            employeeRequest.setIsManager(employeeDetailDto.getIsManager());
-        } else if(employeeRequest.getIsManager() != null && employeeRequest.getDepartmentId() != null){
-            updatePersonRole(employeeDetailDto, employeeRequest);
-        }
-
+        //update role person 
+        updatePersonRole(employeeDetailDto, employeeRequest);
         if (employeeRequest.getOnBoardDate() == null) {
             employeeRequest.setOnBoardDate(employeeDetailDto.getOnBoardDate().toString());
         }
@@ -935,6 +931,11 @@ public class PersonServiceImpl implements PersonService {
                 }
             } else {
                 personRoleRepository.save(personRole);
+            }
+        }else {
+            PersonRole pr = personRoleRepository.findByPersonIdAndAndRoleId(employeeDetailDto.getPersonId(), CommonConstant.ROLE_ID_OF_MANAGER).orElse(null);
+            if (pr != null) {
+                personRoleRepository.delete(personRole);
             }
         }
         if (employeeRequest.getDepartmentId() != null) {
