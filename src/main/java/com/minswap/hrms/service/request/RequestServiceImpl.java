@@ -1539,6 +1539,11 @@ public class RequestServiceImpl implements RequestService {
                                 "been removed. The request will automatically return to the reject status!",
                         httpStatus.NOT_ACCEPTABLE));
             }
+            else if (deviceTypeStatus == null) {
+                throw new BaseException(ErrorCode.newErrorCode(208,
+                        "Device type is not exist!",
+                        httpStatus.NOT_ACCEPTABLE));
+            }
         }
         Integer isUpdatedSuccess = requestRepository.updateStatusRequest(status, requestId, currentTime);
         if (isUpdatedSuccess == CommonConstant.UPDATE_FAIL) {
