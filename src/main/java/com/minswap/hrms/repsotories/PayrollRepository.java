@@ -26,14 +26,14 @@ public interface PayrollRepository extends JpaRepository<Salary, Long> {
 
     Optional<Salary> findByPersonIdAndMonthAndYear(Long personId, int month, Year year);
 
-    @Query(value = " SELECT TIMEDIFF(time(r.end_time), time(r.start_time))  as diff " +
+    @Query(value = " SELECT TIME_TO_SEC(TIMEDIFF(r.end_time, r.start_time))/3600 " +
            " FROM request r  " +
            " WHERE date(:date) BETWEEN date(r.start_time) and date(r.end_time) " +
            " and r.status  = 'Approved' " +
            " and r.request_type_id in(1,3,8,10) " +
            " and r.person_id  = :personId " +
            " limit 1 ", nativeQuery = true)
-    String getAdditionalWorkInRequest(@Param("date") Date date,
+    Double getAdditionalWorkInRequest(@Param("date") Date date,
                                       @Param("personId") Long personId);
     
     @Query(value = " SELECT new com.minswap.hrms.response.dto.PayrollDto(" +
