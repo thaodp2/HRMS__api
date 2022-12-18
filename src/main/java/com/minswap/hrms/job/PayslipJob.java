@@ -151,15 +151,10 @@ public class PayslipJob {
             if(workTime >= 8D){
                 actualWork++;
             }else {
-                String additionalWork = payrollRepository.getAdditionalWorkInRequest(date, personId);
+                actualWork += workTime/8;
+                Double additionalWork = payrollRepository.getAdditionalWorkInRequest(date, personId);
                 if (additionalWork != null){
-                    additionalWork.replaceAll("-","");
-                    Double hour = (Double.valueOf(additionalWork.substring(0,2)));
-                    if(hour > 8L){
-                        hour = hour - 8L;
-                    }
-                    Double minute = Double.valueOf(additionalWork.substring(3,5));
-                    workTime = (workTime + (hour + (minute/60)))/8;
+                    workTime = additionalWork/8;
                     actualWork = actualWork + workTime;
                 }
             }
