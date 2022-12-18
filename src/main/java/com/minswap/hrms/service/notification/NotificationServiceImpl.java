@@ -14,14 +14,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Flux;
-import reactor.core.scheduler.Schedulers;
 
-import java.time.Duration;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -67,6 +62,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public void changeNotifStatusToRead(UserPrincipal user, Long notifID) {
         Notification notification = notificationRepository.findById(notifID).orElse(null);
+        log.debug("##DEBUG## Notification: {}", notification);
         if (notification != null) {
             notification.setIsRead(1);
             notificationRepository.save(notification);
