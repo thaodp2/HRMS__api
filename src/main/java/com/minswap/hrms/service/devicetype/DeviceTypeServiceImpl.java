@@ -173,12 +173,13 @@ public class DeviceTypeServiceImpl implements DeviceTypeService {
             List<Notification> notificationList = new ArrayList<>();
             if(requests != null && !requests.isEmpty()){
                 for (Request request: requests) {
+                    Date dateToReject = new Date();
                     Date date = new Date();
-                    date.setTime(date.getTime() - CommonConstant.MILLISECOND_7_HOURS);
+                    dateToReject.setTime(dateToReject.getTime() - CommonConstant.MILLISECOND_7_HOURS);
                     request.setStatus("Rejected");
-                    request.setMaximumTimeToRollback(date);
+                    request.setMaximumTimeToRollback(dateToReject);
                     requestRepository.save(request);
-                    date.setTime(date.getTime() + CommonConstant.MILLISECOND_7_HOURS * 2);
+                    date.setTime(date.getTime() + CommonConstant.MILLISECOND_7_HOURS);
 
                     Notification notificationToEmp = new Notification("asks you to choose another device type because the device you requested no longer exists!",
                             0, null, 0, currentUser.getPersonId(), request.getPersonId(), date);
