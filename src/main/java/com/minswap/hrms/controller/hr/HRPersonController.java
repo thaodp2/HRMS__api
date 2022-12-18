@@ -151,6 +151,11 @@ public class HRPersonController {
         InputStream inputStream = new FileInputStream(new File(localDir));
         Workbook workbook = new XSSFWorkbook(inputStream);
         Sheet sheet = workbook.getSheetAt(1);
+        for (int i = 1; i < sheet.getLastRowNum(); i++) {
+            Row row = sheet.getRow(i);
+            sheet.removeRow(row);
+        }
+
         int rowCount = 1;
         for (int i = 0; i < maxRow; i++) {
             Row row = sheet.createRow(rowCount++);
