@@ -6,26 +6,30 @@ import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.repsotories.NotificationRepository;
 import com.minswap.hrms.response.NotificationResponse;
 import com.minswap.hrms.response.dto.NotificationDto;
+import com.minswap.hrms.security.UserPrincipal;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.codec.ServerSentEvent;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.scheduler.Schedulers;
 
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
+@AllArgsConstructor
 @Slf4j
 public class NotificationServiceImpl implements NotificationService {
-
-    @Autowired
-    NotificationRepository notificationRepository;
+    private final SimpMessagingTemplate template;
+    private final NotificationRepository notificationRepository;
 
     @Override
     public ResponseEntity<BaseResponse<NotificationResponse, Pagination>> getNotificationsByUserID(Integer page, Integer limit, Long userID) {
@@ -98,11 +102,24 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public void changeNotifStatusToRead(Long notifID) {
+    public void changeNotifStatusToRead(UserPrincipal user, Long notifID) {
         Notification notification = notificationRepository.findById(notifID).orElse(null);
         if (notification != null) {
             notification.setIsRead(1);
             notificationRepository.save(notification);
+            this.send(notification);
+        }
+    }
+
+    @Override
+    public void send(Notification... notifs) {
+        Long userTo = notifs[0].getUserTo();
+        if (userTo == null) {
+            List<Notification> notifications = Arrays.stream(notifs).filter(x -> x.getUserTo() == null).collect(Collectors.toList());
+            template.convertAndSend("/notification/all", notifications);
+        } else {
+            List<Notification> notifications = Arrays.stream(notifs).filter(x -> x.getUserTo().equals(userTo)).collect(Collectors.toList());
+            template.convertAndSend("/notification/" + userTo, notifications);
         }
     }
 }

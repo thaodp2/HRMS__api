@@ -37,7 +37,7 @@ import static com.minswap.hrms.constants.CommonConstant.*;
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private final OAuth2UserServiceImpl oAuth2UserService;
     private static final String LOGIN_PATH = "https://ms-hrms.software/login";
-    private static final List<String> ALLOWED_METHOD = Arrays.asList(
+    private static final List<String> ALLOWED_METHOD = List.of(
             HttpMethod.GET.name(),
             HttpMethod.POST.name(),
             HttpMethod.DELETE.name(),
@@ -48,7 +48,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private static final String[] MANAGER_URL_PATTERNS = {MANAGER + "/**"};
     private static final String[] HR_URL_PATTERNS = {HR + "/**"};
     private static final String[] IT_SUPPORT_URL_PATTERNS = {ITSUPPORT + "/**"};
-    private static final String[] WHITE_LIST_URL_PATTERNS = {"/oauth2/**", TimeCheckController.TIME_CHECK + "/**", "/push-notifications/**"};
+    private static final String[] WHITE_LIST_URL_PATTERNS = {"/oauth2/**", TimeCheckController.TIME_CHECK + "/**", "/push-notifications/**", "/ws/**"};
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
@@ -61,6 +61,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             .exceptionHandling()
                 .authenticationEntryPoint(new RestAuthenticationEntryPoint())
             .and().authorizeRequests()
+                .antMatchers("/ws/**").permitAll()
             .antMatchers(WHITE_LIST_URL_PATTERNS).permitAll()
             .antMatchers(HR_URL_PATTERNS).hasAnyAuthority("HR", "Admin")
             .antMatchers(MANAGER_URL_PATTERNS).hasAnyAuthority("Manager", "Admin")
@@ -89,6 +90,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     public CorsConfiguration corsConfiguration()
     {
         CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(List.of("*"));
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowCredentials(true);
         configuration.setAllowedMethods(ALLOWED_METHOD);
         configuration.applyPermitDefaultValues();
         return configuration;
