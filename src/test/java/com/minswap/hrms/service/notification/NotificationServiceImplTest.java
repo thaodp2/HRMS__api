@@ -6,6 +6,7 @@ import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.repsotories.NotificationRepository;
 import com.minswap.hrms.response.NotificationResponse;
 import com.minswap.hrms.response.dto.NotificationDto;
+import com.minswap.hrms.security.UserPrincipal;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -71,7 +72,7 @@ public class NotificationServiceImplTest {
 
     @Test
     public void testChangeNotifStatusToRead() throws Exception {
-        notificationServiceImpl.changeNotifStatusToRead(Long.valueOf(1));
+        notificationServiceImpl.changeNotifStatusToRead(new UserPrincipal(), Long.valueOf(1));
     }
 }
 

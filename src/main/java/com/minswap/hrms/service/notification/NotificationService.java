@@ -4,14 +4,14 @@ import com.minswap.hrms.entities.Notification;
 import com.minswap.hrms.exception.model.Pagination;
 import com.minswap.hrms.model.BaseResponse;
 import com.minswap.hrms.response.NotificationResponse;
-import com.minswap.hrms.response.dto.NotificationDto;
+import com.minswap.hrms.security.UserPrincipal;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.codec.ServerSentEvent;
 import reactor.core.publisher.Flux;
 
-import java.util.List;
-
 public interface NotificationService {
+
+    void changeNotifStatusToRead(UserPrincipal user, Long notifID);
 
     ResponseEntity<BaseResponse<NotificationResponse, Pagination>> getNotificationsByUserID(Integer page, Integer limit,Long userID);
 
@@ -21,5 +21,5 @@ public interface NotificationService {
 
     Flux<ServerSentEvent<NotificationResponse>> getNotificationsByUserToID(Long userID);
 
-    void changeNotifStatusToRead(Long notifID);
+    void send(Notification... notif);
 }

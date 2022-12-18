@@ -164,5 +164,21 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
             "where r.requestId=:requestId")
     Integer getDeviceTypeStatus(@Param("requestId") Long requestId);
 
-    List<Request> findByRequestTypeIdAndIsAssignedAndStatus(Long requestTypeId, Integer isAssigned, String status);
+    @Query("select new com.minswap.hrms.entities.Request(r.requestId as requestId," +
+            " r.requestTypeId as requestTypeId, " +
+            "r.personId as personId," +
+            " r.deviceTypeId as deviceTypeId," +
+            "r.startTime as startTime, " +
+            "r.endTime as endTime," +
+            "r.reason as reason" +
+            ", r.createDate as createDate," +
+            " r.approvalDate as approvalDate, " +
+            "r.status as status," +
+            " r.isAssigned as isAssigned, " +
+            "r.maximumTimeToRollback as maximumTimeToRollback) " +
+            "from Request r " +
+            "where r.requestTypeId = 11 " +
+            "and (r.status = 'Pending' or (r.status = 'Approved' and r.isAssigned = 0))" +
+            " and r.deviceTypeId =:deviceTypeId")
+    List<Request> getListRequestWhenDeviceTypeDelete(@Param("deviceTypeId") Long deviceTypeId);
 }
