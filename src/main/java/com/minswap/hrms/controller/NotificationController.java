@@ -62,15 +62,15 @@ public class NotificationController {
         Long userID = personService.getPersonInforByEmail(userPrincipal.getEmail()).getPersonId();
         return notificationService.getTotalUnreadNotifs(userID);
     }
-
+    @Autowired NotificationRepository notificationRepository;
     @PostMapping("/push-notifications/sample")
-    public void send(@Autowired NotificationRepository notificationRepository) throws Exception {
+    public void send() {
         Notification[] notif = notificationRepository.findByUserTo(1L).toArray(new Notification[0]);
         notificationService.send(notif);
     }
 
     @PostMapping("/push-notifications/all")
-    public void sendAll(@Autowired NotificationRepository notificationRepository) throws Exception {
+    public void sendAll() {
         Notification[] notif = notificationRepository.findByUserToIsNull().toArray(new Notification[0]);
         notificationService.send(notif);
     }
