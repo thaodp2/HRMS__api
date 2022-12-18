@@ -71,9 +71,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public void send(Notification... notifs) {
         Arrays.stream(notifs).forEach(notif -> {
-            personRepository.findById(
-                    notif.getUserTo()).ifPresent(person ->
-                    template.convertAndSend("/topic/notification/" + person.getPersonId(), toDto(notif)));
+                    template.convertAndSend("/topic/notification/" + notif.getUserTo(), toDto(notif));
         });
     }
 
