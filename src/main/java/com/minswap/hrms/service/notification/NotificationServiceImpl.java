@@ -8,7 +8,6 @@ import com.minswap.hrms.repsotories.NotificationRepository;
 import com.minswap.hrms.repsotories.PersonRepository;
 import com.minswap.hrms.response.NotificationResponse;
 import com.minswap.hrms.response.dto.NotificationDto;
-import com.minswap.hrms.security.UserPrincipal;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -60,7 +59,7 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public void changeNotifStatusToRead(UserPrincipal user, Long notifID) {
+    public void changeNotifStatusToRead(Long notifID) {
         Notification notification = notificationRepository.findById(notifID).orElse(null);
         log.debug("##DEBUG## Notification: {}", notification);
         if (notification != null) {
@@ -71,20 +70,11 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public void send(Notification... notifs) {
-        Long userTo = notifs[0].getUserTo();
-        if (userTo == null) {
-            List<NotificationDto> notifications = Arrays.stream(notifs)
-                    .filter(x -> x.getUserTo() == null)
-                    .map(this::toDto)
-                    .collect(Collectors.toList());
-            template.convertAndSend("/notification/all", notifications);
-        } else {
-            List<NotificationDto> notifications = Arrays.stream(notifs)
-                    .filter(x -> x.getUserTo().equals(userTo))
-                    .map(this::toDto)
-                    .collect(Collectors.toList());
-            template.convertAndSend("/notification/" + userTo, notifications);
-        }
+        Arrays.stream(notifs).forEach(notif -> {
+            personRepository.findById(
+                    notif.getUserTo()).ifPresent(person ->
+                    template.convertAndSend("/topic/notification/" + person.getPersonId(), toDto(notif)));
+        });
     }
 
     private NotificationDto toDto(Notification notification) {

@@ -1,5 +1,6 @@
 package com.minswap.hrms.service.officeTime;
 
+import com.minswap.hrms.controller.NotificationController;
 import com.minswap.hrms.entities.Notification;
 import com.minswap.hrms.entities.OfficeTime;
 import com.minswap.hrms.model.BaseResponse;
@@ -8,6 +9,7 @@ import com.minswap.hrms.repsotories.OfficeTimeRepository;
 import com.minswap.hrms.repsotories.PersonRepository;
 import com.minswap.hrms.request.OfficeTimeRequest;
 import com.minswap.hrms.response.OfficeTimeResponse;
+import com.minswap.hrms.service.notification.NotificationService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -32,6 +34,9 @@ public class OfficeTimeServiceImpl implements OfficeTimeService{
     NotificationRepository notificationRepository;
     @Autowired
     OfficeTimeRepository officeTimeRepository;
+    @Autowired
+    private NotificationService notificationService;
+
     @Override
     public ResponseEntity<BaseResponse<HttpStatus, Void>> updateOfficeTime(OfficeTimeRequest officeTimeRequest) throws Exception {
         try{
@@ -64,6 +69,7 @@ public class OfficeTimeServiceImpl implements OfficeTimeService{
             Notification notification = new Notification("Office time have just been updated!",
                     0,"system-company/office-time",0, null, item, officeTime.getCreateDate());
             notificationRepository.save(notification);
+            notificationService.send(notification);
         }
 
         }catch (Exception ex){
