@@ -5,7 +5,9 @@ import com.minswap.hrms.request.TimeCheckInRequest;
 import com.minswap.hrms.response.TimeCheckResponse;
 import com.minswap.hrms.response.dto.TimeCheckEachSubordinateDto;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -38,4 +40,6 @@ public interface TimeCheckService {
                                                            String endDate) throws Exception;
 
     ResponseEntity<BaseResponse<Void, Void>> logTimeCheck(TimeCheckInRequest timeCheckInRequest);
+
+    ResponseEntity<BaseResponse<HttpStatus, Void>> importExcel(MultipartFile file);
 }
