@@ -793,7 +793,7 @@ public class RequestServiceImpl implements RequestService {
             if (calendarStart.get(Calendar.DAY_OF_MONTH) == calendarEnd.get(Calendar.DAY_OF_MONTH)
                     && calendarEnd.get(Calendar.MONTH) == calendarStart.get(Calendar.MONTH)) {
                 double otTimeReturn = calculateHoursBetweenTwoDateTime(startTime, endTime);
-                Double otTime = timeCheckRepository.getOTTimeByDay(getDayOfDate(startTime), personId, getMonthOfDate(startTime));
+                Double otTime = timeCheckRepository.getOtTimeInDate(personId, startTime);
                 double newOTTime = Double.parseDouble(decimalFormat.format(otTime - otTimeReturn));
                 timeCheckRepository.updateOTTime(getDayOfDate(startTime), personId, newOTTime, getMonthOfDate(startTime));
             }
@@ -802,8 +802,8 @@ public class RequestServiceImpl implements RequestService {
                                                                     formatTimeToKnownDate(startTime, TIME_END_OF_DAY));
                 otTimeOfEndDay = calculateHoursBetweenTwoDateTime(formatTimeToKnownDate(endTime, TIME_START_OF_DAY),
                                                                   endTime);
-                Double otTimeInDBOfStartDay = timeCheckRepository.getOTTimeByDay(getDayOfDate(startTime), personId, getMonthOfDate(startTime));
-                Double otTimeInDBOfEndDay = timeCheckRepository.getOTTimeByDay(getDayOfDate(endTime), personId, getMonthOfDate(endTime));
+                Double otTimeInDBOfStartDay = timeCheckRepository.getOtTimeInDate(personId, startTime);
+                Double otTimeInDBOfEndDay = timeCheckRepository.getOtTimeInDate(personId, endTime);
                 double newOTTimeInStartDay = Double.parseDouble(decimalFormat.format(otTimeInDBOfStartDay - otTimeOfStartDay));
                 double newOTTimeInEndDay = Double.parseDouble(decimalFormat.format(otTimeInDBOfEndDay - otTimeOfEndDay));
                 timeCheckRepository.updateOTTime(getDayOfDate(startTime), personId, newOTTimeInStartDay, getMonthOfDate(startTime));
