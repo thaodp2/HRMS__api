@@ -530,7 +530,7 @@ public class RequestServiceImpl implements RequestService {
             }
             List<String> listImage = editRequest.getListEvidence();
             evidenceRepository.deleteImageByRequestId(id);
-            if (!listImage.isEmpty()) {
+            if (listImage != null) {
                 for (String image : listImage) {
                     Evidence evidence = new Evidence(id, image);
                     evidenceRepository.save(evidence);
@@ -793,7 +793,9 @@ public class RequestServiceImpl implements RequestService {
             if (calendarStart.get(Calendar.DAY_OF_MONTH) == calendarEnd.get(Calendar.DAY_OF_MONTH)
                     && calendarEnd.get(Calendar.MONTH) == calendarStart.get(Calendar.MONTH)) {
                 double otTimeReturn = calculateHoursBetweenTwoDateTime(startTime, endTime);
+                startTime.setTime(startTime.getTime() + appConfig.getMillisecondSevenHours());
                 Double otTime = timeCheckRepository.getOtTimeInDate(personId, startTime);
+                startTime.setTime(startTime.getTime() - appConfig.getMillisecondSevenHours());
                 double newOTTime = Double.parseDouble(decimalFormat.format(otTime - otTimeReturn));
                 timeCheckRepository.updateOTTime(getDayOfDate(startTime), personId, newOTTime, getMonthOfDate(startTime));
             }
@@ -802,8 +804,12 @@ public class RequestServiceImpl implements RequestService {
                                                                     formatTimeToKnownDate(startTime, TIME_END_OF_DAY));
                 otTimeOfEndDay = calculateHoursBetweenTwoDateTime(formatTimeToKnownDate(endTime, TIME_START_OF_DAY),
                                                                   endTime);
-                Double otTimeInDBOfStartDay = timeCheckRepository.getOtTimeInDate(personId, startTime);
-                Double otTimeInDBOfEndDay = timeCheckRepository.getOtTimeInDate(personId, endTime);
+                startTime.setTime(startTime.getTime() + appConfig.getMillisecondSevenHours());
+                endTime.setTime(endTime.getTime() + appConfig.getMillisecondSevenHours());
+                Double otTimeInDBOfStartDay = timeCheckRepository.getOTTimeByDay(getDayOfDate(startTime), personId, getMonthOfDate(startTime));
+                Double otTimeInDBOfEndDay = timeCheckRepository.getOTTimeByDay(getDayOfDate(endTime), personId, getMonthOfDate(endTime));
+                startTime.setTime(startTime.getTime() - appConfig.getMillisecondSevenHours());
+                endTime.setTime(endTime.getTime() - appConfig.getMillisecondSevenHours());
                 double newOTTimeInStartDay = Double.parseDouble(decimalFormat.format(otTimeInDBOfStartDay - otTimeOfStartDay));
                 double newOTTimeInEndDay = Double.parseDouble(decimalFormat.format(otTimeInDBOfEndDay - otTimeOfEndDay));
                 timeCheckRepository.updateOTTime(getDayOfDate(startTime), personId, newOTTimeInStartDay, getMonthOfDate(startTime));
