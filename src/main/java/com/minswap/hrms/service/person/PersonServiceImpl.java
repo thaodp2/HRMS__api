@@ -154,9 +154,11 @@ public class PersonServiceImpl implements PersonService {
         }
 
         List<MasterDataDto> masterDataDtos = new ArrayList<>();
-        for (int i = 0; i < personList.size(); i++) {
-            MasterDataDto masterDataDto = new MasterDataDto(personList.get(i).getFullName() + " - " + personList.get(i).getRollNumber(), personList.get(i).getPersonId());
-            masterDataDtos.add(masterDataDto);
+        if (personList != null && !personList.isEmpty()) {
+            for (int i = 0; i < personList.size(); i++) {
+                MasterDataDto masterDataDto = new MasterDataDto(personList.get(i).getFullName() + " - " + personList.get(i).getRollNumber(), personList.get(i).getPersonId());
+                masterDataDtos.add(masterDataDto);
+            }
         }
         MasterDataResponse response = new MasterDataResponse(masterDataDtos);
         ResponseEntity<BaseResponse<MasterDataResponse, Pageable>> responseEntity
@@ -168,51 +170,55 @@ public class PersonServiceImpl implements PersonService {
 
     public List<Person> getMasterDataManagerToEdit(Long departmentId, String rollNumber, String search) {
         List<Person> personList = null;
-        HashMap<String, Object> params = new HashMap<>();
-        Person person = personRepository.findPersonByRollNumberEquals(rollNumber).orElse(null);
-        if (person != null) {
-            StringBuilder queryAllRequest = new StringBuilder("WITH RECURSIVE Subordinates AS " +
-                    "(" +
-                    "SELECT e.person_id , e.full_name , e.manager_id " +
-                    "FROM person AS e " +
-                    "WHERE e.manager_id =:personId " +
-                    "UNION ALL " +
-                    "SELECT e.person_id , e.full_name , e.manager_id " +
-                    "FROM person AS e " +
-                    "INNER JOIN Subordinates AS sub ON e.manager_id = sub.person_id " +
-                    ") " +
-                    "select p.person_id  as personId, p.full_name  as fullName, p.roll_number as rollNumber " +
-                    "from person p, person_role pr, role r " +
-                    "where p.person_id = pr.person_id and pr.role_id  = r.role_id " +
-                    "and r.role_id = :roleId " +
-                    "AND (:search IS NULL OR (p.roll_number like :search or p.full_name like :search)) " +
-                    "AND (:departmentId IS NULL OR p.department_id =:departmentId) " +
-                    "and p.person_id not in(" +
-                    "SELECT DISTINCT s.person_id " +
-                    "FROM Subordinates AS s) " +
-                    "and p.person_id not in (" +
-                    "select p.person_id from person p where p.roll_number =:rollNumber)");
-            params.put("personId", person.getPersonId());
-            params.put("roleId", CommonConstant.ROLE_ID_OF_MANAGER);
-            if (search != null) {
-                params.put("search", "%" + search + "%");
-            } else {
-                params.put("search", search);
+        try {
+            HashMap<String, Object> params = new HashMap<>();
+            Person person = personRepository.findPersonByRollNumberEquals(rollNumber).orElse(null);
+            if (person != null) {
+                StringBuilder queryAllRequest = new StringBuilder("WITH RECURSIVE Subordinates AS " +
+                        "(" +
+                        "SELECT e.person_id , e.full_name , e.manager_id " +
+                        "FROM person AS e " +
+                        "WHERE e.manager_id =:personId " +
+                        "UNION ALL " +
+                        "SELECT e.person_id , e.full_name , e.manager_id " +
+                        "FROM person AS e " +
+                        "INNER JOIN Subordinates AS sub ON e.manager_id = sub.person_id " +
+                        ") " +
+                        "select p.person_id  as personId, p.full_name  as fullName, p.roll_number as rollNumber " +
+                        "from person p, person_role pr, role r " +
+                        "where p.person_id = pr.person_id and pr.role_id  = r.role_id " +
+                        "and r.role_id = :roleId " +
+                        "AND (:search IS NULL OR (p.roll_number like :search or p.full_name like :search)) " +
+                        "AND (:departmentId IS NULL OR p.department_id =:departmentId) " +
+                        "and p.person_id not in(" +
+                        "SELECT DISTINCT s.person_id " +
+                        "FROM Subordinates AS s) " +
+                        "and p.person_id not in (" +
+                        "select p.person_id from person p where p.roll_number =:rollNumber)");
+                params.put("personId", person.getPersonId());
+                params.put("roleId", CommonConstant.ROLE_ID_OF_MANAGER);
+                if (search != null) {
+                    params.put("search", "%" + search + "%");
+                } else {
+                    params.put("search", search);
 
+                }
+                params.put("departmentId", departmentId);
+                params.put("rollNumber", rollNumber);
+
+                Session session = entityManager.unwrap(Session.class);
+
+                Query query = session.createNativeQuery(queryAllRequest.toString())
+                        .addScalar("personId", LongType.INSTANCE)
+                        .addScalar("fullName", StringType.INSTANCE)
+                        .addScalar("rollNumber", StringType.INSTANCE)
+                        .setResultTransformer(Transformers.aliasToBean(Person.class));
+
+                params.forEach(query::setParameter);
+                personList = query.getResultList();
             }
-            params.put("departmentId", departmentId);
-            params.put("rollNumber", rollNumber);
-
-            Session session = entityManager.unwrap(Session.class);
-
-            Query query = session.createNativeQuery(queryAllRequest.toString())
-                    .addScalar("personId", LongType.INSTANCE)
-                    .addScalar("fullName", StringType.INSTANCE)
-                    .addScalar("rollNumber", StringType.INSTANCE)
-                    .setResultTransformer(Transformers.aliasToBean(Person.class));
-
-            params.forEach(query::setParameter);
-            personList = query.getResultList();
+        } catch (Exception e) {
+            return null;
         }
         return personList;
     }
@@ -225,7 +231,7 @@ public class PersonServiceImpl implements PersonService {
             employeeDetailDto.setIsManager(1);
         }
         if (employeeDetailDto != null) {
-        	employeeDetailDto.setUserName(getUserName(employeeDetailDto.getEmail()));
+            employeeDetailDto.setUserName(getUserName(employeeDetailDto.getEmail()));
             EmployeeInfoResponse employeeListDtos = new EmployeeInfoResponse(null, employeeDetailDto);
             ResponseEntity<BaseResponse<EmployeeInfoResponse, Void>> responseEntity = BaseResponse
                     .ofSucceeded(employeeListDtos);
@@ -258,8 +264,8 @@ public class PersonServiceImpl implements PersonService {
         Page<EmployeeListDto> pageInfo = personRepository.getSearchListPerson((fullName == null || fullName.trim().isEmpty()) ? null : fullName.trim(), (email == null || email.trim().isEmpty()) ? null : email.trim(), departmentId, (rollNumber == null || rollNumber.trim().isEmpty()) ? null : rollNumber.trim(), positionId, managerId, status == null ? null : status, PageRequest.of(page - 1, limit, dirSort == null ? Sort.unsorted() : Sort.by(dirSort, sort)));
         List<EmployeeListDto> employeeListDtos = pageInfo.getContent();
         for (EmployeeListDto employeeListDto : employeeListDtos) {
-			employeeListDto.setUserName(getUserName(employeeListDto.getEmail()));
-		}
+            employeeListDto.setUserName(getUserName(employeeListDto.getEmail()));
+        }
         pagination.setTotalRecords(pageInfo);
         ResponseEntity<BaseResponse<EmployeeInfoResponse, Pageable>> responseEntity = BaseResponse
                 .ofSucceededOffset(EmployeeInfoResponse.of(employeeListDtos), pagination);
@@ -631,6 +637,14 @@ public class PersonServiceImpl implements PersonService {
         }
     }
 
+    public boolean checkIsActive(String isActive) {
+        if (isActive.equals("0") || isActive.equals("1")) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     @Override
     public ResponseEntity<BaseResponse<HttpStatus, Void>> importExcel(MultipartFile file) {
         int countRecordSuccess = 0;
@@ -744,33 +758,20 @@ public class PersonServiceImpl implements PersonService {
                                             //update
                                             Person person = personRepository.findPersonByRollNumberEquals(rollNumber.trim()).orElse(null);
                                             if (person != null) {
-                                                if (isManager != null && isManager != 0 && isManager != 1) {
-                                                    throw new BaseException(INVALID_PARAMETERS);
-                                                } else if (gender != null && gender != 0 && gender != 1) {
-                                                    throw new BaseException(INVALID_PARAMETERS);
-                                                } else if (gender != null && !isActive.equals("0") && !isActive.equals("1")) {
-                                                    throw new BaseException(INVALID_PARAMETERS);
-                                                } else if (salaryBonus != null && !checkSalaryValid(salaryBonus)) {
-                                                    throw new BaseException(INVALID_PARAMETERS);
-                                                } else if (salaryBasic != null && !checkSalaryValid(salaryBasic)) {
-                                                    throw new BaseException(INVALID_PARAMETERS);
-                                                } else if (phoneNumber != null && !checkPhoneValid(phoneNumber)) {
-                                                    throw new BaseException(INVALID_PARAMETERS);
-                                                } else if (citizenIdentification != null && !checkCCCDValid(citizenIdentification)) {
-                                                    throw new BaseException(INVALID_PARAMETERS);
-                                                } else if (onBoardDate != null && !checkFormatDate(onBoardDate)) {
-                                                    throw new BaseException(INVALID_PARAMETERS);
-                                                } else if (dateOfBirth != null && !checkFormatDate(dateOfBirth)) {
-                                                    throw new BaseException(INVALID_PARAMETERS);
-                                                } else if (departmentId != null && !departmentService.checkDepartmentExist(departmentId)) {
-                                                    throw new BaseException(INVALID_PARAMETERS);
-                                                } else if (rankId != null && !rankService.checkRankExist(rankId)) {
-                                                    throw new BaseException(INVALID_PARAMETERS);
-                                                } else if (managerId != null && !checkManagerByDepartmentValid(managerId, departmentId) && !checkManagerToEdit(departmentId, rollNumber, managerId)) {
-                                                    throw new BaseException(INVALID_PARAMETERS);
-                                                } else if (positionId != null && !positionService.checkPositionByDepartment(positionId, departmentId)) {
-                                                    throw new BaseException(INVALID_PARAMETERS);
-                                                } else if (departmentId != null && positionId == null) {
+                                                if (fullName == null || fullName.trim().isEmpty()
+                                                        || dateOfBirth == null || dateOfBirth.trim().isEmpty()
+                                                        || !checkFormatDate(dateOfBirth) || !checkManagerByDepartmentValid(managerId, departmentId)
+                                                        || !departmentService.checkDepartmentExist(departmentId)
+                                                        || !positionService.checkPositionByDepartment(positionId, departmentId)
+                                                        || !rankService.checkRankExist(rankId)
+                                                        || !checkFormatDate(onBoardDate)
+                                                        || !checkCCCDValid(citizenIdentification)
+                                                        || !checkPhoneValid(phoneNumber)
+                                                        || !checkGenderValid(gender)
+                                                        || !checkIsManagerValid(isManager)
+                                                        || !checkSalaryValid(salaryBasic)
+                                                        || !checkSalaryValid(salaryBonus)
+                                                        || !checkIsActive(isActive)) {
                                                     throw new BaseException(INVALID_PARAMETERS);
                                                 } else {
                                                     EmployeeUpdateRequest employeeUpdateRequest = new EmployeeUpdateRequest(fullName, dateOfBirth, managerId, departmentId
@@ -877,10 +878,13 @@ public class PersonServiceImpl implements PersonService {
     private String convertMail(String fullName, String rollNumber) {
         String removeName = removeAccent(fullName);
         String[] split = removeName.split("\\s");
-        rollNumber = rollNumber.substring(rollNumber.length() - 2, rollNumber.length());
-        String fMailName = split[0];
-        String lMailName = split[split.length - 1];
-        return lMailName + "." + fMailName + rollNumber + "@minswap.com";
+        String fMailName = split[split.length - 1];
+        for (String string : split) {
+        	fMailName += string.charAt(0);
+		}
+        fMailName = fMailName.substring(0, fMailName.length() - 1);
+        Integer countPersonByMail = personRepository.getCountPersonByMail(fMailName);
+        return fMailName + countPersonByMail + "@minswap.com";
     }
 
     private Double convertAnnualLeaveBudget(Long rankId) {
@@ -928,20 +932,19 @@ public class PersonServiceImpl implements PersonService {
     private void updatePersonRole(EmployeeDetailDto employeeDetailDto, EmployeeUpdateRequest employeeRequest) {
         PersonRole personRole = new PersonRole();
         personRole.setPersonId(employeeDetailDto.getPersonId());
+        PersonRole pr = personRoleRepository.findByPersonIdAndAndRoleId(employeeDetailDto.getPersonId(), CommonConstant.ROLE_ID_OF_MANAGER).orElse(null);
         if (employeeRequest.getIsManager() != null) {
             personRole.setRoleId(MANAGER_ROLE);
-            PersonRole pr = personRoleRepository.findByPersonIdAndAndRoleId(employeeDetailDto.getPersonId(), CommonConstant.ROLE_ID_OF_MANAGER).orElse(null);
             if (pr != null) {
                 if (employeeRequest.getIsManager() == 0) {
-                    personRoleRepository.delete(personRole);
+                    personRoleRepository.delete(pr);
                 }
             } else {
                 personRoleRepository.save(personRole);
             }
-        }else {
-            PersonRole pr = personRoleRepository.findByPersonIdAndAndRoleId(employeeDetailDto.getPersonId(), CommonConstant.ROLE_ID_OF_MANAGER).orElse(null);
+        } else {
             if (pr != null) {
-                personRoleRepository.delete(personRole);
+                personRoleRepository.delete(pr);
             }
         }
         if (employeeRequest.getDepartmentId() != null) {
@@ -954,16 +957,17 @@ public class PersonServiceImpl implements PersonService {
                 personRole1.setRoleId(IT_SUPPORT_ROLE);
                 personRoleRepository.save(personRole1);
                 if (prHr != null) {
-                	personRoleRepository.delete(prHr);
+                    personRoleRepository.delete(prHr);
                 }
             } else if (employeeRequest.getDepartmentId() == 2 && prHr == null) {
                 PersonRole personRole2 = new PersonRole();
                 personRole2.setPersonId(employeeDetailDto.getPersonId());
                 personRole2.setRoleId(HR_ROLE);
                 personRoleRepository.save(personRole2);
-                if(prItSp != null) {
-                	personRoleRepository.delete(prItSp);                }
-            } 
+                if (prItSp != null) {
+                    personRoleRepository.delete(prItSp);
+                }
+            }
         }
     }
 
@@ -977,8 +981,9 @@ public class PersonServiceImpl implements PersonService {
             throw new BaseException(ErrorCode.DATE_FAIL_FOMART);
         }
     }
+
     private String getUserName(String gmail) {
-    	String[] userNameArr = gmail.split("@");
-    	return userNameArr[0];
+        String[] userNameArr = gmail.split("@");
+        return userNameArr[0];
     }
 }
