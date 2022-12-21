@@ -271,18 +271,25 @@ public class DeviceServiceImpl implements DeviceService {
                     device.setStatus(0);
                     deviceRepository.save(device);
 
-                    //notification to all it-support
-                    List<Person> allITSupport = personRepository.getMasterDataPersonByRole(CommonConstant.ROLE_ID_OF_IT_SUPPORT, null);
+//                    //notification to all it-support
+//                    List<Person> allITSupport = personRepository.getMasterDataPersonByRole(CommonConstant.ROLE_ID_OF_IT_SUPPORT, null);
 //                    Long currentUser = Long.valueOf(2);
                     Long currentUser = personService.getPersonInforByEmail(userPrincipal.getEmail()).getPersonId();
-                    for (Person person : allITSupport) {
-                        currentDate = DateTimeUtil.getCurrentTime();
-                        currentDate.setTime(currentDate.getTime() + CommonConstant.MILLISECOND_7_HOURS);
-                        Notification notification = new Notification("retunred device " + device.getDeviceName() + " - " + device.getDeviceCode(),
-                                0, "human-resource/borrow-device-history/detail/" + borrowHistoryId, 0, currentUser, person.getPersonId(), currentDate);
-                        notificationRepository.save(notification);
-                        notificationService.send(notification);
-                    }
+//                    for (Person person : allITSupport) {
+//                        currentDate = DateTimeUtil.getCurrentTime();
+//                        currentDate.setTime(currentDate.getTime() + CommonConstant.MILLISECOND_7_HOURS);
+//                        Notification notification = new Notification("retunred device " + device.getDeviceName() + " - " + device.getDeviceCode(),
+//                                0, "human-resource/borrow-device-history/detail/" + borrowHistoryId, 0, currentUser, person.getPersonId(), currentDate);
+//                        notificationRepository.save(notification);
+//                        notificationService.send(notification);
+//                    }
+                    currentDate = DateTimeUtil.getCurrentTime();
+                    currentDate.setTime(currentDate.getTime() + CommonConstant.MILLISECOND_7_HOURS);
+                    Notification notification = new Notification("confirms you have successfully returned the " + device.getDeviceName() + " - " + device.getDeviceCode() + " device",
+                            0, "human-resource/borrow-device-history/detail/" + borrowHistoryId, 0, currentUser, borrowHistory.getPersonId(), currentDate);
+                    notificationRepository.save(notification);
+                    notificationService.send(notification);
+
                     responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.OK, null);
                 }else {
                     throw new BaseException(ErrorCode.INVALID_DATA);
