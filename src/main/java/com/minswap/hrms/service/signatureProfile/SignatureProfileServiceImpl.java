@@ -1,5 +1,6 @@
 package com.minswap.hrms.service.signatureProfile;
 
+import com.minswap.hrms.configuration.AppConfig;
 import com.minswap.hrms.constants.CommonConstant;
 import com.minswap.hrms.constants.ErrorCode;
 import com.minswap.hrms.entities.Person;
@@ -25,6 +26,7 @@ import com.minswap.hrms.response.SignatureProfileResponse;
 import com.minswap.hrms.response.dto.MasterDataDto;
 import com.minswap.hrms.response.dto.SignatureMasterDataDto;
 import com.minswap.hrms.response.dto.SignatureProfileDto;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -33,12 +35,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class SignatureProfileServiceImpl implements SignatureProfileService{
     @Autowired
     private SignatureProfileRepository signatureProfileRepository;
 
     @Autowired
     private PersonRepository personRepository;
+
+    private final AppConfig appConfig;
 
     @Override
     public ResponseEntity<BaseResponse<Void, Void>> updateSignatureRegister(SignatureProfileRequest signatureProfileRequest) {
@@ -106,9 +111,10 @@ public class SignatureProfileServiceImpl implements SignatureProfileService{
         List<SignatureMasterDataDto> signatureMasterDataDtos = new ArrayList<>();
         for (SignatureProfile signatureProfile : listSignatureProfile) {
             Date registerDate = signatureProfile.getRegisteredDate();
-            registerDate.setTime(registerDate.getTime() - CommonConstant.MILLISECOND_7_HOURS);
-            SignatureMasterDataDto signatureMasterDataDto = new SignatureMasterDataDto(registerDate + "",
-                                                                                       registerDate + "");
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            registerDate.setTime(registerDate.getTime() - appConfig.getMillisecondSevenHours());
+            SignatureMasterDataDto signatureMasterDataDto = new SignatureMasterDataDto(simpleDateFormat.format(registerDate),
+                                                                                       simpleDateFormat.format(registerDate));
             signatureMasterDataDtos.add(signatureMasterDataDto);
         }
         SignatureMasterDataResponse response = new SignatureMasterDataResponse(signatureMasterDataDtos);
