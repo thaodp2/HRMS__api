@@ -40,19 +40,19 @@ public class PayrollServiceImpl implements PayrollService{
     PersonService personService;
 
     @Override
-    public ResponseEntity<BaseResponse<PayrollResponse, Void>> getDetailPayroll(int month, int year, Long personId) {
+    public ResponseEntity<BaseResponse<PayrollResponse, Void>> getDetailPayroll(int month, int year, Long personId, String currentCode) {
 
-        Optional<Salary> salaryFromDB = payrollRepository.findByPersonIdAndMonthAndYear(personId, month, Year.of(year));
-        if(!salaryFromDB.isPresent()){
-            throw new BaseException(ErrorCode.newErrorCode(404,
-                                                        "Salary not found!",
-                                                                httpStatus.NOT_FOUND));
-        }
         Optional<Person> person = personRepository.findById(personId);
         if(!person.isPresent()){
-            throw new BaseException(ErrorCode.newErrorCode(404,
-                    "Person not found!",
-                    httpStatus.NOT_FOUND));
+            throw new BaseException(ErrorCode.PERSON_NOT_EXIST);
+        }
+        String pinCode = person.get().getPinCode() == null ? "" : person.get().getPinCode();
+        if (!pinCode.equalsIgnoreCase(currentCode)) {
+            throw new BaseException(ErrorCode.HAVE_NO_PERMISSION);
+        }
+        Optional<Salary> salaryFromDB = payrollRepository.findByPersonIdAndMonthAndYear(personId, month, Year.of(year));
+        if(!salaryFromDB.isPresent()){
+            throw new BaseException(ErrorCode.PAYSLIP_NOT_EXIST);
         }
         PayrollDisplayDto payrollDisplayDto = new PayrollDisplayDto();
         Salary salary = salaryFromDB.get();
@@ -75,22 +75,23 @@ public class PayrollServiceImpl implements PayrollService{
     }
 
     @Override
-    public ResponseEntity<BaseResponse<HttpStatus, Void>> sendPayrollToEmail(UserPrincipal userPrincipal, int month, int year) {
+    public ResponseEntity<BaseResponse<HttpStatus, Void>> sendPayrollToEmail(UserPrincipal userPrincipal, int month, int year, String currentCode) {
         ResponseEntity<BaseResponse<HttpStatus, Void>> responseEntity = null;
         try {
             Long personId = personService.getPersonInforByEmail(userPrincipal.getEmail()).getPersonId();
-            Optional<Salary> salaryFromDB = payrollRepository.findByPersonIdAndMonthAndYear(personId, month, Year.of(year));
-            if(!salaryFromDB.isPresent()){
-                throw new BaseException(ErrorCode.newErrorCode(404,
-                        "Salary not found!",
-                        httpStatus.NOT_FOUND));
-            }
             Optional<Person> person = personRepository.findById(personId);
             if(!person.isPresent()){
-                throw new BaseException(ErrorCode.newErrorCode(404,
-                        "Person not found!",
-                        httpStatus.NOT_FOUND));
+                throw new BaseException(ErrorCode.PERSON_NOT_EXIST);
             }
+            String pinCode = person.get().getPinCode() == null ? "" : person.get().getPinCode();
+            if (!pinCode.equalsIgnoreCase(currentCode)) {
+                throw new BaseException(ErrorCode.HAVE_NO_PERMISSION);
+            }
+            Optional<Salary> salaryFromDB = payrollRepository.findByPersonIdAndMonthAndYear(personId, month, Year.of(year));
+            if(!salaryFromDB.isPresent()){
+                throw new BaseException(ErrorCode.PAYSLIP_NOT_EXIST);
+            }
+
             PayrollDisplayDto payrollDisplayDto = new PayrollDisplayDto();
             Salary salary = salaryFromDB.get();
             payrollDisplayDto.setPersonId(personId);
