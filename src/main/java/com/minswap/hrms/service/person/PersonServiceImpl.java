@@ -225,6 +225,7 @@ public class PersonServiceImpl implements PersonService {
             employeeDetailDto.setIsManager(1);
         }
         if (employeeDetailDto != null) {
+        	employeeDetailDto.setUserName(getUserName(employeeDetailDto.getEmail()));
             EmployeeInfoResponse employeeListDtos = new EmployeeInfoResponse(null, employeeDetailDto);
             ResponseEntity<BaseResponse<EmployeeInfoResponse, Void>> responseEntity = BaseResponse
                     .ofSucceeded(employeeListDtos);
@@ -256,6 +257,9 @@ public class PersonServiceImpl implements PersonService {
         }
         Page<EmployeeListDto> pageInfo = personRepository.getSearchListPerson((fullName == null || fullName.trim().isEmpty()) ? null : fullName.trim(), (email == null || email.trim().isEmpty()) ? null : email.trim(), departmentId, (rollNumber == null || rollNumber.trim().isEmpty()) ? null : rollNumber.trim(), positionId, managerId, status == null ? null : status, PageRequest.of(page - 1, limit, dirSort == null ? Sort.unsorted() : Sort.by(dirSort, sort)));
         List<EmployeeListDto> employeeListDtos = pageInfo.getContent();
+        for (EmployeeListDto employeeListDto : employeeListDtos) {
+			employeeListDto.setUserName(getUserName(employeeListDto.getEmail()));
+		}
         pagination.setTotalRecords(pageInfo);
         ResponseEntity<BaseResponse<EmployeeInfoResponse, Pageable>> responseEntity = BaseResponse
                 .ofSucceededOffset(EmployeeInfoResponse.of(employeeListDtos), pagination);
@@ -970,5 +974,9 @@ public class PersonServiceImpl implements PersonService {
         } catch (Exception e) {
             throw new BaseException(ErrorCode.DATE_FAIL_FOMART);
         }
+    }
+    private String getUserName(String gmail) {
+    	String[] userNameArr = gmail.split("@");
+    	return userNameArr[0];
     }
 }
