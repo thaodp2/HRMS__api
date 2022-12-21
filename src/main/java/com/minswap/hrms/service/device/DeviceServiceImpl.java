@@ -286,7 +286,7 @@ public class DeviceServiceImpl implements DeviceService {
                     currentDate = DateTimeUtil.getCurrentTime();
                     currentDate.setTime(currentDate.getTime() + CommonConstant.MILLISECOND_7_HOURS);
                     Notification notification = new Notification("confirms you have successfully returned the " + device.getDeviceName() + " - " + device.getDeviceCode() + " device",
-                            0, "human-resource/borrow-device-history/detail/" + borrowHistoryId, 0, currentUser, borrowHistory.getPersonId(), currentDate);
+                            0, "emp-self-service/device-history/detail/" + borrowHistoryId, 0, currentUser, borrowHistory.getPersonId(), currentDate);
                     notificationRepository.save(notification);
                     notificationService.send(notification);
 
