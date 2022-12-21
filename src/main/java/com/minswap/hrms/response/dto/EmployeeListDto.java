@@ -38,7 +38,22 @@ public class EmployeeListDto {
     @JsonProperty("positionName")
     private String positionName;
     
+    @JsonProperty("userName")
+    private String userName;
+    
     public int getActive() {
     	return active == null ? 0 : Integer.parseInt(active);
     }
+
+	public EmployeeListDto(Long personId, String fullName, String email, String departmentName, String rollNumber,
+			String active, String positionName) {
+		super();
+		this.personId = personId;
+		this.fullName = fullName;
+		this.email = email;
+		this.departmentName = departmentName;
+		this.rollNumber = rollNumber;
+		this.active = active;
+		this.positionName = positionName;
+	}
 }

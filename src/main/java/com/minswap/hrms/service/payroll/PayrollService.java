@@ -8,7 +8,7 @@ import org.springframework.http.ResponseEntity;
 
 public interface PayrollService {
 
-    ResponseEntity<BaseResponse<PayrollResponse, Void>> getDetailPayroll(int month, int year, Long personId);
+    ResponseEntity<BaseResponse<PayrollResponse, Void>> getDetailPayroll(int month, int year, Long personId, String currentCode);
 
-    ResponseEntity<BaseResponse<HttpStatus, Void>> sendPayrollToEmail(UserPrincipal userPrincipal,int month, int year);
+    ResponseEntity<BaseResponse<HttpStatus, Void>> sendPayrollToEmail(UserPrincipal userPrincipal,int month, int year, String currentCode);
 }
