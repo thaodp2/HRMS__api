@@ -154,9 +154,11 @@ public class PersonServiceImpl implements PersonService {
         }
 
         List<MasterDataDto> masterDataDtos = new ArrayList<>();
-        for (int i = 0; i < personList.size(); i++) {
-            MasterDataDto masterDataDto = new MasterDataDto(personList.get(i).getFullName() + " - " + personList.get(i).getRollNumber(), personList.get(i).getPersonId());
-            masterDataDtos.add(masterDataDto);
+        if(personList != null && !personList.isEmpty()) {
+            for (int i = 0; i < personList.size(); i++) {
+                MasterDataDto masterDataDto = new MasterDataDto(personList.get(i).getFullName() + " - " + personList.get(i).getRollNumber(), personList.get(i).getPersonId());
+                masterDataDtos.add(masterDataDto);
+            }
         }
         MasterDataResponse response = new MasterDataResponse(masterDataDtos);
         ResponseEntity<BaseResponse<MasterDataResponse, Pageable>> responseEntity
@@ -168,51 +170,55 @@ public class PersonServiceImpl implements PersonService {
 
     public List<Person> getMasterDataManagerToEdit(Long departmentId, String rollNumber, String search) {
         List<Person> personList = null;
-        HashMap<String, Object> params = new HashMap<>();
-        Person person = personRepository.findPersonByRollNumberEquals(rollNumber).orElse(null);
-        if (person != null) {
-            StringBuilder queryAllRequest = new StringBuilder("WITH RECURSIVE Subordinates AS " +
-                    "(" +
-                    "SELECT e.person_id , e.full_name , e.manager_id " +
-                    "FROM person AS e " +
-                    "WHERE e.manager_id =:personId " +
-                    "UNION ALL " +
-                    "SELECT e.person_id , e.full_name , e.manager_id " +
-                    "FROM person AS e " +
-                    "INNER JOIN Subordinates AS sub ON e.manager_id = sub.person_id " +
-                    ") " +
-                    "select p.person_id  as personId, p.full_name  as fullName, p.roll_number as rollNumber " +
-                    "from person p, person_role pr, role r " +
-                    "where p.person_id = pr.person_id and pr.role_id  = r.role_id " +
-                    "and r.role_id = :roleId " +
-                    "AND (:search IS NULL OR (p.roll_number like :search or p.full_name like :search)) " +
-                    "AND (:departmentId IS NULL OR p.department_id =:departmentId) " +
-                    "and p.person_id not in(" +
-                    "SELECT DISTINCT s.person_id " +
-                    "FROM Subordinates AS s) " +
-                    "and p.person_id not in (" +
-                    "select p.person_id from person p where p.roll_number =:rollNumber)");
-            params.put("personId", person.getPersonId());
-            params.put("roleId", CommonConstant.ROLE_ID_OF_MANAGER);
-            if (search != null) {
-                params.put("search", "%" + search + "%");
-            } else {
-                params.put("search", search);
+        try {
+            HashMap<String, Object> params = new HashMap<>();
+            Person person = personRepository.findPersonByRollNumberEquals(rollNumber).orElse(null);
+            if (person != null) {
+                StringBuilder queryAllRequest = new StringBuilder("WITH RECURSIVE Subordinates AS " +
+                        "(" +
+                        "SELECT e.person_id , e.full_name , e.manager_id " +
+                        "FROM person AS e " +
+                        "WHERE e.manager_id =:personId " +
+                        "UNION ALL " +
+                        "SELECT e.person_id , e.full_name , e.manager_id " +
+                        "FROM person AS e " +
+                        "INNER JOIN Subordinates AS sub ON e.manager_id = sub.person_id " +
+                        ") " +
+                        "select p.person_id  as personId, p.full_name  as fullName, p.roll_number as rollNumber " +
+                        "from person p, person_role pr, role r " +
+                        "where p.person_id = pr.person_id and pr.role_id  = r.role_id " +
+                        "and r.role_id = :roleId " +
+                        "AND (:search IS NULL OR (p.roll_number like :search or p.full_name like :search)) " +
+                        "AND (:departmentId IS NULL OR p.department_id =:departmentId) " +
+                        "and p.person_id not in(" +
+                        "SELECT DISTINCT s.person_id " +
+                        "FROM Subordinates AS s) " +
+                        "and p.person_id not in (" +
+                        "select p.person_id from person p where p.roll_number =:rollNumber)");
+                params.put("personId", person.getPersonId());
+                params.put("roleId", CommonConstant.ROLE_ID_OF_MANAGER);
+                if (search != null) {
+                    params.put("search", "%" + search + "%");
+                } else {
+                    params.put("search", search);
 
+                }
+                params.put("departmentId", departmentId);
+                params.put("rollNumber", rollNumber);
+
+                Session session = entityManager.unwrap(Session.class);
+
+                Query query = session.createNativeQuery(queryAllRequest.toString())
+                        .addScalar("personId", LongType.INSTANCE)
+                        .addScalar("fullName", StringType.INSTANCE)
+                        .addScalar("rollNumber", StringType.INSTANCE)
+                        .setResultTransformer(Transformers.aliasToBean(Person.class));
+
+                params.forEach(query::setParameter);
+                personList = query.getResultList();
             }
-            params.put("departmentId", departmentId);
-            params.put("rollNumber", rollNumber);
-
-            Session session = entityManager.unwrap(Session.class);
-
-            Query query = session.createNativeQuery(queryAllRequest.toString())
-                    .addScalar("personId", LongType.INSTANCE)
-                    .addScalar("fullName", StringType.INSTANCE)
-                    .addScalar("rollNumber", StringType.INSTANCE)
-                    .setResultTransformer(Transformers.aliasToBean(Person.class));
-
-            params.forEach(query::setParameter);
-            personList = query.getResultList();
+        }catch (Exception e){
+            return null;
         }
         return personList;
     }
