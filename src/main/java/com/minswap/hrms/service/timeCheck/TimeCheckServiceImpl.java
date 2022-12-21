@@ -87,8 +87,8 @@ public class TimeCheckServiceImpl implements TimeCheckService {
             Map<Date, List<TimeCheckDto>> timeCheckPerDateMap = new HashMap<>();
 
             for (TimeCheckDto timeCheckDto : timeCheckDtos) {
-                timeCheckDto.setInLate(timeCheckDto.getInLate()*60);
-                timeCheckDto.setOutEarly(timeCheckDto.getOutEarly()*60);
+                timeCheckDto.setInLate(timeCheckDto.getInLate() * 60);
+                timeCheckDto.setOutEarly(timeCheckDto.getOutEarly() * 60);
                 timeCheckDto.setRequestTypeName(null);
                 Date timeCheckDate = TIME_EXCLUDED_DATE_FORMAT.parse(timeCheckDto.getDate().toString()); // get the date with the format of yyyy-MM-dd
                 List<TimeCheckDto> timeCheckListOfThisDate = Optional.ofNullable(timeCheckPerDateMap.get(timeCheckDate)).orElse(new ArrayList<>());
@@ -108,16 +108,16 @@ public class TimeCheckServiceImpl implements TimeCheckService {
                     Double otTime = otTimeDB == null ? null : otTimeDB;
                     timeCheckPerDateMap.put(date, Arrays.asList(
                             TimeCheckDto.builder().
-                            personId(personId).
-                            personName(personFromDB.get().getFullName()).
-                            rollNumber(personFromDB.get().getRollNumber()).
-                            date(dateAdd).
-                            workingTime(null).
-                            inLate(null).
-                            outEarly(null).
-                            requestTypeName(reason).
-                            ot(otTime).
-                            build()));
+                                    personId(personId).
+                                    personName(personFromDB.get().getFullName()).
+                                    rollNumber(personFromDB.get().getRollNumber()).
+                                    date(dateAdd).
+                                    workingTime(null).
+                                    inLate(null).
+                                    outEarly(null).
+                                    requestTypeName(reason).
+                                    ot(otTime).
+                                    build()));
                 }
             });
 
@@ -423,7 +423,8 @@ public class TimeCheckServiceImpl implements TimeCheckService {
         int countRecordFail = 0;
         String message = "";
         String rowFail = "";
-
+        SimpleDateFormat sm = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS);
+        SimpleDateFormat smd = new SimpleDateFormat(CommonConstant.YYYY_MM_DD);
 
         try {
             if (!file.isEmpty()) {
@@ -453,16 +454,27 @@ public class TimeCheckServiceImpl implements TimeCheckService {
                                             timeLog = row.getCell(1).getStringCellValue();
                                         }
                                         Person person = personRepository.findPersonByRollNumberEquals(rollNumber).orElse(null);
-                                        if(person != null){
+                                        if (person != null) {
                                             personId = person.getPersonId();
-                                        }else {
+                                        } else {
                                             countRecordFail++;
                                             rowFail += (row.getRowNum() + 1) + ", ";
                                         }
-                                        if(personId == null || timeLog == null){
+                                        if (personId == null || timeLog == null) {
                                             countRecordFail++;
                                             rowFail += (row.getRowNum() + 1) + ", ";
-                                        }else {
+                                            continue;
+                                        } else {
+                                            //check
+                                            Date checkFutureDate = smd.parse(timeLog);
+                                            Date currentDate = new Date();
+                                            String currentDateString = smd.format(currentDate);
+                                            currentDate = smd.parse(currentDateString);
+                                            if (currentDate.compareTo(checkFutureDate) != 0) {
+                                                countRecordFail++;
+                                                rowFail += (row.getRowNum() + 1) + ", ";
+                                                continue;
+                                            }
                                             //
                                             TimeCheck timeCheck = new TimeCheck();
                                             //check time in exsit
@@ -472,12 +484,13 @@ public class TimeCheckServiceImpl implements TimeCheckService {
                                                 //show dòng bị fail
                                                 countRecordFail++;
                                                 rowFail += (row.getRowNum() + 1) + ", ";
+                                                continue;
                                                 //throw new BaseException(ErrorCode.INVALID_DATE);
                                             }
                                             OfficeTime officeTime = officeTimeDb.get();
                                             if (dailyTimeCheckDto == null) {
 
-                                                SimpleDateFormat sm = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS);
+
                                                 Date date = sm.parse(timeLog);
                                                 date.setTime(date.getTime() + appConfig.getMillisecondSevenHours());
 
@@ -494,7 +507,6 @@ public class TimeCheckServiceImpl implements TimeCheckService {
                                                 //time check update when log time ot
                                                 if (dailyTimeCheckDto.getTimeIn() == null) {
 
-                                                    SimpleDateFormat sm = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS);
                                                     Date date = sm.parse(timeLog);
                                                     date.setTime(date.getTime() + appConfig.getMillisecondSevenHours());
                                                     timeCheck.setTimeIn(date);
@@ -507,7 +519,6 @@ public class TimeCheckServiceImpl implements TimeCheckService {
                                                 //update time out
                                                 timeCheck.setPersonId(personId);
 
-                                                SimpleDateFormat sm = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS);
                                                 Date date = sm.parse(timeLog);
                                                 date.setTime(date.getTime() + appConfig.getMillisecondSevenHours());
                                                 timeCheck.setTimeOut(date);
@@ -559,10 +570,10 @@ public class TimeCheckServiceImpl implements TimeCheckService {
         long timein = timeIn.getTime();
         long timeOffice = dateOfficeStr.getTime();
         if (timeIn.getTime() > dateOfficeStr.getTime() && isInTime == 0) {
-            return requestService.calculateNumOfHoursWorkedInADay(dateOfficeStr,timeIn);
+            return requestService.calculateNumOfHoursWorkedInADay(dateOfficeStr, timeIn);
             //return ((timeIn.getTime() - dateOfficeStr.getTime()) / (60 * 60 * 1000));
         } else if (timeIn.getTime() < dateOfficeStr.getTime() && isInTime == 1) {
-            return requestService.calculateNumOfHoursWorkedInADay(timeIn,dateOfficeStr);
+            return requestService.calculateNumOfHoursWorkedInADay(timeIn, dateOfficeStr);
             //return ((dateOfficeStr.getTime() - timeIn.getTime()) / (60 * 60 * 1000));
         }
         return 0;
