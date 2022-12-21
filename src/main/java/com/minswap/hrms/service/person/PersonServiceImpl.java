@@ -878,10 +878,13 @@ public class PersonServiceImpl implements PersonService {
     private String convertMail(String fullName, String rollNumber) {
         String removeName = removeAccent(fullName);
         String[] split = removeName.split("\\s");
-        rollNumber = rollNumber.substring(rollNumber.length() - 2, rollNumber.length());
-        String fMailName = split[0];
-        String lMailName = split[split.length - 1];
-        return lMailName + "." + fMailName + rollNumber + "@minswap.com";
+        String fMailName = split[split.length - 1];
+        for (String string : split) {
+        	fMailName += string.charAt(0);
+		}
+        fMailName = fMailName.substring(0, fMailName.length() - 1);
+        Integer countPersonByMail = personRepository.getCountPersonByMail(fMailName);
+        return fMailName + countPersonByMail + "@minswap.com";
     }
 
     private Double convertAnnualLeaveBudget(Long rankId) {
@@ -929,20 +932,19 @@ public class PersonServiceImpl implements PersonService {
     private void updatePersonRole(EmployeeDetailDto employeeDetailDto, EmployeeUpdateRequest employeeRequest) {
         PersonRole personRole = new PersonRole();
         personRole.setPersonId(employeeDetailDto.getPersonId());
+        PersonRole pr = personRoleRepository.findByPersonIdAndAndRoleId(employeeDetailDto.getPersonId(), CommonConstant.ROLE_ID_OF_MANAGER).orElse(null);
         if (employeeRequest.getIsManager() != null) {
             personRole.setRoleId(MANAGER_ROLE);
-            PersonRole pr = personRoleRepository.findByPersonIdAndAndRoleId(employeeDetailDto.getPersonId(), CommonConstant.ROLE_ID_OF_MANAGER).orElse(null);
             if (pr != null) {
                 if (employeeRequest.getIsManager() == 0) {
-                    personRoleRepository.delete(personRole);
+                    personRoleRepository.delete(pr);
                 }
             } else {
                 personRoleRepository.save(personRole);
             }
         } else {
-            PersonRole pr = personRoleRepository.findByPersonIdAndAndRoleId(employeeDetailDto.getPersonId(), CommonConstant.ROLE_ID_OF_MANAGER).orElse(null);
             if (pr != null) {
-                personRoleRepository.delete(personRole);
+                personRoleRepository.delete(pr);
             }
         }
         if (employeeRequest.getDepartmentId() != null) {
