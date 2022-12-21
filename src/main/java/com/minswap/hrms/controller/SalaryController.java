@@ -27,17 +27,17 @@ public class SalaryController {
     public ResponseEntity<BaseResponse<PayrollResponse, Void>> getPayroll(@CurrentUser UserPrincipal userPrincipal,
                                                                           @RequestParam int month,
                                                                           @RequestParam int year,
-                                                                          @RequestBody UpdateSecureCodeRequest secureCodeRequest){
+                                                                          @RequestParam String currentSecureCode){
         Long personId = personService.getPersonInforByEmail(userPrincipal.getEmail()).getPersonId();
-        return payrollService.getDetailPayroll(month, year, personId,secureCodeRequest.getCurrentSecureCode());
+        return payrollService.getDetailPayroll(month, year, personId, currentSecureCode);
     }
 
     @GetMapping("/send")
     public ResponseEntity<BaseResponse<HttpStatus, Void>> sendPayrollToEmail(@RequestParam int month,
                                                                              @RequestParam int year,
                                                                              @CurrentUser UserPrincipal userPrincipal,
-                                                                             @RequestBody UpdateSecureCodeRequest secureCodeRequest) {
-        return payrollService.sendPayrollToEmail(userPrincipal,month, year, secureCodeRequest.getCurrentSecureCode());
+                                                                             @RequestParam String currentSecureCode) {
+        return payrollService.sendPayrollToEmail(userPrincipal,month, year, currentSecureCode);
     }
 
 }
