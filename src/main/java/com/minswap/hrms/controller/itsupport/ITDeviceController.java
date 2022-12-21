@@ -75,4 +75,8 @@ public class ITDeviceController {
         return deviceService.getDetailDevice(deviceId);
     }
 
+    @PutMapping("/return-device/{id}")
+    public ResponseEntity<BaseResponse<HttpStatus, Void>> returnDevice(@PathVariable Long id, @CurrentUser UserPrincipal userPrincipal) {
+        return deviceService.returnDevice(id, userPrincipal);
+    }
 }

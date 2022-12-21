@@ -22,6 +22,7 @@ import com.minswap.hrms.response.TimeCheckResponse;
 import com.minswap.hrms.response.dto.DailyTimeCheckDto;
 import com.minswap.hrms.response.dto.TimeCheckDto;
 import com.minswap.hrms.response.dto.TimeCheckEachSubordinateDto;
+import com.minswap.hrms.service.request.RequestServiceImpl;
 import com.minswap.hrms.util.CommonUtil;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -56,6 +57,9 @@ public class TimeCheckServiceImpl implements TimeCheckService {
 
     @Autowired
     TimeCheckRepository timeCheckRepository;
+
+    @Autowired
+    RequestServiceImpl requestService;
 
     @Autowired
     PersonRepository personRepository;
@@ -469,21 +473,47 @@ public class TimeCheckServiceImpl implements TimeCheckService {
                                             }
                                             OfficeTime officeTime = officeTimeDb.get();
                                             if (dailyTimeCheckDto == null) {
+
+                                                SimpleDateFormat sm = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS);
+                                                Date date = sm.parse(timeLog);
+                                                date.setTime(date.getTime() + CommonConstant.MILLISECOND_7_HOURS);
+
                                                 timeCheck.setPersonId(personId);
-                                                timeCheck.setTimeIn(convertDateInput(timeLog));
-                                                timeCheck.setInLate(processTimeCome(officeTime.getTimeStart(), timeCheck.getTimeIn(), 0));
+                                                timeCheck.setTimeIn(date);
+                                                Date date1 = sm.parse(timeLog);
+                                                timeCheck.setInLate(processTimeCome(officeTime.getTimeStart(), date1, 0));
+
+                                                //timeCheck.setTimeIn(convertDateInput(timeLog));
+                                                //timeCheck.setInLate(processTimeCome(officeTime.getTimeStart(), timeCheck.getTimeIn(), 0));
                                                 timeCheckRepository.save(timeCheck);
                                                 countRecordSuccess++;
                                             } else {
                                                 //time check update when log time ot
                                                 if (dailyTimeCheckDto.getTimeIn() == null) {
-                                                    timeCheck.setTimeIn(convertDateInput(timeLog));
-                                                    timeCheck.setInLate(processTimeCome(officeTime.getTimeStart(), timeCheck.getTimeIn(), 0));
+
+                                                    SimpleDateFormat sm = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS);
+                                                    Date date = sm.parse(timeLog);
+                                                    date.setTime(date.getTime() + CommonConstant.MILLISECOND_7_HOURS);
+                                                    timeCheck.setTimeIn(date);
+                                                    Date date1 = sm.parse(timeLog);
+                                                    timeCheck.setInLate(processTimeCome(officeTime.getTimeStart(), date1, 0));
+
+//                                                    timeCheck.setTimeIn(convertDateInput(timeLog));
+//                                                    timeCheck.setInLate(processTimeCome(officeTime.getTimeStart(), timeCheck.getTimeIn(), 0));
                                                 }
                                                 //update time out
                                                 timeCheck.setPersonId(personId);
-                                                timeCheck.setTimeOut(convertDateInput(timeLog));
-                                                timeCheck.setOutEarly(processTimeCome(officeTime.getTimeFinish(), timeCheck.getTimeOut(), 1));
+
+                                                SimpleDateFormat sm = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS);
+                                                Date date = sm.parse(timeLog);
+                                                date.setTime(date.getTime() + CommonConstant.MILLISECOND_7_HOURS);
+                                                timeCheck.setTimeOut(date);
+                                                Date date1 = sm.parse(timeLog);
+                                                timeCheck.setOutEarly(processTimeCome(officeTime.getTimeFinish(), date1, 1));
+
+//                                                timeCheck.setTimeOut(convertDateInput(timeLog));
+//                                                timeCheck.setOutEarly(processTimeCome(officeTime.getTimeFinish(), timeCheck.getTimeOut(), 1));
+
                                                 timeCheck.setWorkingTime(processWorkingTime(dailyTimeCheckDto.getTimeIn(), timeCheck.getTimeOut(), dailyTimeCheckDto.getInLate(), timeCheck.getOutEarly()));
                                                 timeCheckRepository.updateTimeCheck(timeCheck.getTimeOut(), timeCheck.getOutEarly(), timeCheck.getWorkingTime(), timeCheck.getPersonId());
                                                 countRecordUpdateSuccess++;
@@ -526,9 +556,11 @@ public class TimeCheckServiceImpl implements TimeCheckService {
         long timein = timeIn.getTime();
         long timeOffice = dateOfficeStr.getTime();
         if (timeIn.getTime() > dateOfficeStr.getTime() && isInTime == 0) {
-            return ((timeIn.getTime() - dateOfficeStr.getTime()) / (60 * 60 * 1000));
+            return requestService.calculateNumOfHoursWorkedInADay(dateOfficeStr,timeIn);
+            //return ((timeIn.getTime() - dateOfficeStr.getTime()) / (60 * 60 * 1000));
         } else if (timeIn.getTime() < dateOfficeStr.getTime() && isInTime == 1) {
-            return ((dateOfficeStr.getTime() - timeIn.getTime()) / (60 * 60 * 1000));
+            return requestService.calculateNumOfHoursWorkedInADay(timeIn,dateOfficeStr);
+            //return ((dateOfficeStr.getTime() - timeIn.getTime()) / (60 * 60 * 1000));
         }
         return 0;
     }

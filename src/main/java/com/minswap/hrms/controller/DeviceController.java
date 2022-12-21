@@ -27,8 +27,5 @@ public class DeviceController {
         return deviceService.isRemainDeviceByDeviceTye(deviceTypeId);
     }
 
-    @PutMapping("/return-device/{id}")
-    public ResponseEntity<BaseResponse<HttpStatus, Void>> returnDevice(@PathVariable Long id, @CurrentUser UserPrincipal userPrincipal) {
-        return deviceService.returnDevice(id, userPrincipal);
-    }
+
 }
