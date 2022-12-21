@@ -437,7 +437,8 @@ public class PersonServiceImpl implements PersonService {
         if (!person.isPresent()) {
             throw new BaseException(ErrorCode.NO_DATA);
         }
-        if (person.get().getPinCode().equalsIgnoreCase(secureCodeRequest.getCurrentSecureCode())) {
+        String pinCode = person.get().getPinCode() == null ? "" : person.get().getPinCode();
+        if (pinCode.equalsIgnoreCase(secureCodeRequest.getCurrentSecureCode())) {
             return BaseResponse.ofSucceeded(true);
         }
         return BaseResponse.ofSucceeded(false);
