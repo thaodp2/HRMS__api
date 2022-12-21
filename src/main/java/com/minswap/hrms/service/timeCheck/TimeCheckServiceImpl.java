@@ -1,5 +1,6 @@
 package com.minswap.hrms.service.timeCheck;
 
+import com.minswap.hrms.configuration.AppConfig;
 import com.minswap.hrms.constants.CommonConstant;
 import com.minswap.hrms.constants.ErrorCode;
 import com.minswap.hrms.entities.OfficeTime;
@@ -24,6 +25,7 @@ import com.minswap.hrms.response.dto.TimeCheckDto;
 import com.minswap.hrms.response.dto.TimeCheckEachSubordinateDto;
 import com.minswap.hrms.service.request.RequestServiceImpl;
 import com.minswap.hrms.util.CommonUtil;
+import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -50,11 +52,12 @@ import static com.minswap.hrms.constants.ErrorCode.*;
 import static com.minswap.hrms.constants.ErrorCode.INVALID_PARAMETERS;
 
 @Service
+@RequiredArgsConstructor
 public class TimeCheckServiceImpl implements TimeCheckService {
 
     private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private static final DateFormat TIME_EXCLUDED_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
-
+    private final AppConfig appConfig;
     @Autowired
     TimeCheckRepository timeCheckRepository;
 
@@ -476,7 +479,7 @@ public class TimeCheckServiceImpl implements TimeCheckService {
 
                                                 SimpleDateFormat sm = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS);
                                                 Date date = sm.parse(timeLog);
-                                                date.setTime(date.getTime() + CommonConstant.MILLISECOND_7_HOURS);
+                                                date.setTime(date.getTime() + appConfig.getMillisecondSevenHours());
 
                                                 timeCheck.setPersonId(personId);
                                                 timeCheck.setTimeIn(date);
@@ -493,7 +496,7 @@ public class TimeCheckServiceImpl implements TimeCheckService {
 
                                                     SimpleDateFormat sm = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS);
                                                     Date date = sm.parse(timeLog);
-                                                    date.setTime(date.getTime() + CommonConstant.MILLISECOND_7_HOURS);
+                                                    date.setTime(date.getTime() + appConfig.getMillisecondSevenHours());
                                                     timeCheck.setTimeIn(date);
                                                     Date date1 = sm.parse(timeLog);
                                                     timeCheck.setInLate(processTimeCome(officeTime.getTimeStart(), date1, 0));
@@ -506,7 +509,7 @@ public class TimeCheckServiceImpl implements TimeCheckService {
 
                                                 SimpleDateFormat sm = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS);
                                                 Date date = sm.parse(timeLog);
-                                                date.setTime(date.getTime() + CommonConstant.MILLISECOND_7_HOURS);
+                                                date.setTime(date.getTime() + appConfig.getMillisecondSevenHours());
                                                 timeCheck.setTimeOut(date);
                                                 Date date1 = sm.parse(timeLog);
                                                 timeCheck.setOutEarly(processTimeCome(officeTime.getTimeFinish(), date1, 1));
