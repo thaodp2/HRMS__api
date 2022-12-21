@@ -16,10 +16,10 @@ public class ErrorCode {
             ErrorCodeEnum.INVALID_DATE.getValue(), "StartTime must be before EndTime", HttpStatus.BAD_REQUEST);
 
     public static final BusinessCode PAYSLIP_NOT_EXIST = new BusinessCode(
-            ErrorCodeEnum.PAYSLIP_NOT_EXIST.getValue(), "That month there was no payslip", HttpStatus.BAD_REQUEST);
+            ErrorCodeEnum.PAYSLIP_NOT_EXIST.getValue(), "You have no payslip in this month", HttpStatus.BAD_REQUEST);
 
     public static final BusinessCode HAVE_NO_PERMISSION = new BusinessCode(
-            ErrorCodeEnum.HAVE_NO_PERMISSION.getValue(), "Do not have permission to view payroll", HttpStatus.BAD_REQUEST);
+            ErrorCodeEnum.HAVE_NO_PERMISSION.getValue(), "The security code entered is wrong", HttpStatus.BAD_REQUEST);
     public static final BusinessCode RESULT_NOT_FOUND = new BusinessCode(
             ErrorCodeEnum.RESULT_NOT_FOUND.getValue(), "Result not found", HttpStatus.NOT_FOUND);
 
