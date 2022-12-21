@@ -24,7 +24,7 @@ public class SignatureProfileDto {
 
     private Long personId;
     private String employeeName;
-
+    private String rollNumber;
     @JsonFormat(pattern = CommonConstant.YYYY_MM_DD_HH_MM_SS, shape = JsonFormat.Shape.STRING)
     private Date registeredDate;
 }

@@ -317,7 +317,7 @@ public class RequestServiceImpl implements RequestService {
         if (personIdByRequestId == currentUserId) {
             personId = currentUserId;
         } else {
-            if (listRoleOfPerson.contains(Long.valueOf(ROLE_HR))) {
+            if (listRoleOfPerson.contains(Long.valueOf(ROLE_HR)) || listRoleOfPerson.contains(Long.valueOf(ROLE_IT_SUPPORT))) {
                 personId = personIdByRequestId;
             } else {
                 // current user là manager
@@ -806,8 +806,8 @@ public class RequestServiceImpl implements RequestService {
                                                                   endTime);
                 startTime.setTime(startTime.getTime() + appConfig.getMillisecondSevenHours());
                 endTime.setTime(endTime.getTime() + appConfig.getMillisecondSevenHours());
-                Double otTimeInDBOfStartDay = timeCheckRepository.getOTTimeByDay(getDayOfDate(startTime), personId, getMonthOfDate(startTime));
-                Double otTimeInDBOfEndDay = timeCheckRepository.getOTTimeByDay(getDayOfDate(endTime), personId, getMonthOfDate(endTime));
+                Double otTimeInDBOfStartDay = timeCheckRepository.getOtTimeInDate(personId, startTime);
+                Double otTimeInDBOfEndDay = timeCheckRepository.getOtTimeInDate(personId, endTime);
                 startTime.setTime(startTime.getTime() - appConfig.getMillisecondSevenHours());
                 endTime.setTime(endTime.getTime() - appConfig.getMillisecondSevenHours());
                 double newOTTimeInStartDay = Double.parseDouble(decimalFormat.format(otTimeInDBOfStartDay - otTimeOfStartDay));

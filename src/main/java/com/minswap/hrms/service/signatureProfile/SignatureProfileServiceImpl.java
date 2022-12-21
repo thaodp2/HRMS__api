@@ -11,13 +11,19 @@ import com.minswap.hrms.repsotories.PersonRepository;
 import com.minswap.hrms.repsotories.SignatureProfileRepository;
 import com.minswap.hrms.request.SignatureProfileRequest;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.minswap.hrms.response.MasterDataResponse;
+import com.minswap.hrms.response.SignatureMasterDataResponse;
 import com.minswap.hrms.response.SignatureProfileResponse;
+import com.minswap.hrms.response.dto.MasterDataDto;
+import com.minswap.hrms.response.dto.SignatureMasterDataDto;
 import com.minswap.hrms.response.dto.SignatureProfileDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -68,11 +74,9 @@ public class SignatureProfileServiceImpl implements SignatureProfileService{
     @Override
     public ResponseEntity<BaseResponse<SignatureProfileResponse, Pageable>> listSignatureRegister(Integer isRegistered, String search, int page,int limit) {
         List<SignatureProfile> list = signatureProfileRepository.findAll(Sort.by(Sort.Direction.DESC, "registeredDate"));
-        if (isRegistered != null) {
-            list = list.stream()
-                    .filter(sp -> (isRegistered == 1) == (sp.getPersonId() != -1))
-                    .collect(Collectors.toList());
-        }
+        list = list.stream()
+                .filter(sp -> (sp.getPersonId() != -1))
+                .collect(Collectors.toList());
         List<SignatureProfileDto> items = list.stream()
                 .map(this::SignatureProfileToDTO)
                 .collect(Collectors.toList());
@@ -85,16 +89,46 @@ public class SignatureProfileServiceImpl implements SignatureProfileService{
         return BaseResponse.ofSucceededOffset(new SignatureProfileResponse(items), pagination);
     }
 
+    @Override
+    public ResponseEntity<BaseResponse<SignatureMasterDataResponse, Pageable>> getMasterDataSignature(String search) {
+        List<SignatureProfile> listSignatureProfile = new ArrayList<>();
+        if (search != null) {
+            Optional<SignatureProfile> signatureProfileOptional =
+                    signatureProfileRepository.findSignatureProfileByRegisteredDate(convertDateInput(search));
+            SignatureProfile signatureProfile = signatureProfileOptional.get();
+            if (signatureProfile != null) {
+                listSignatureProfile.add(signatureProfile);
+            }
+        }
+        else {
+            listSignatureProfile = signatureProfileRepository.findSignatureProfilesByPersonId(Long.valueOf(-1));
+        }
+        List<SignatureMasterDataDto> signatureMasterDataDtos = new ArrayList<>();
+        for (SignatureProfile signatureProfile : listSignatureProfile) {
+            Date registerDate = signatureProfile.getRegisteredDate();
+            registerDate.setTime(registerDate.getTime() - CommonConstant.MILLISECOND_7_HOURS);
+            SignatureMasterDataDto signatureMasterDataDto = new SignatureMasterDataDto(registerDate + "",
+                                                                                       registerDate + "");
+            signatureMasterDataDtos.add(signatureMasterDataDto);
+        }
+        SignatureMasterDataResponse response = new SignatureMasterDataResponse(signatureMasterDataDtos);
+        ResponseEntity<BaseResponse<SignatureMasterDataResponse, Pageable>> responseEntity
+                = BaseResponse.ofSucceededOffset(response, null);
+        return responseEntity;
+    }
+
     private SignatureProfileDto SignatureProfileToDTO(SignatureProfile signatureProfile) {
         Optional<Person> personByPersonId = personRepository.findPersonByPersonId(signatureProfile.getPersonId());
         return personByPersonId.map(person -> new SignatureProfileDto(
                 1,
                 signatureProfile.getPersonId(),
                 person.getFullName(),
+                person.getRollNumber(),
                 signatureProfile.getRegisteredDate())
         ).orElse(new SignatureProfileDto(
                 0,
                 signatureProfile.getPersonId(),
+                "",
                 "",
                 signatureProfile.getRegisteredDate())
         );
