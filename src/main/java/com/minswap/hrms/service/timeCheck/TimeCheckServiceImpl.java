@@ -80,9 +80,10 @@ public class TimeCheckServiceImpl implements TimeCheckService {
             Map<Date, List<TimeCheckDto>> timeCheckPerDateMap = new HashMap<>();
 
             for (TimeCheckDto timeCheckDto : timeCheckDtos) {
-                timeCheckDto.setInLate(timeCheckDto.getInLate()*60);
-                timeCheckDto.setOutEarly(timeCheckDto.getOutEarly()*60);
+                timeCheckDto.setInLate(timeCheckDto.getInLate() == 0 ? null : timeCheckDto.getInLate()*60);
+                timeCheckDto.setOutEarly(timeCheckDto.getOutEarly() == 0 ? null : timeCheckDto.getOutEarly()*60);
                 timeCheckDto.setRequestTypeName(null);
+                timeCheckDto.setWorkingTime(timeCheckDto.getWorkingTime() < 0 ? 0 : timeCheckDto.getWorkingTime());
                 Date timeCheckDate = TIME_EXCLUDED_DATE_FORMAT.parse(timeCheckDto.getDate().toString()); // get the date with the format of yyyy-MM-dd
                 List<TimeCheckDto> timeCheckListOfThisDate = Optional.ofNullable(timeCheckPerDateMap.get(timeCheckDate)).orElse(new ArrayList<>());
                 timeCheckListOfThisDate.add(timeCheckDto);
