@@ -1,5 +1,6 @@
 package com.minswap.hrms.service.timeCheck;
 
+import com.minswap.hrms.configuration.AppConfig;
 import com.minswap.hrms.constants.CommonConstant;
 import com.minswap.hrms.constants.ErrorCode;
 import com.minswap.hrms.entities.OfficeTime;
@@ -22,7 +23,9 @@ import com.minswap.hrms.response.TimeCheckResponse;
 import com.minswap.hrms.response.dto.DailyTimeCheckDto;
 import com.minswap.hrms.response.dto.TimeCheckDto;
 import com.minswap.hrms.response.dto.TimeCheckEachSubordinateDto;
+import com.minswap.hrms.service.request.RequestServiceImpl;
 import com.minswap.hrms.util.CommonUtil;
+import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -49,13 +52,17 @@ import static com.minswap.hrms.constants.ErrorCode.*;
 import static com.minswap.hrms.constants.ErrorCode.INVALID_PARAMETERS;
 
 @Service
+@RequiredArgsConstructor
 public class TimeCheckServiceImpl implements TimeCheckService {
 
     private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private static final DateFormat TIME_EXCLUDED_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
-
+    private final AppConfig appConfig;
     @Autowired
     TimeCheckRepository timeCheckRepository;
+
+    @Autowired
+    RequestServiceImpl requestService;
 
     @Autowired
     PersonRepository personRepository;
@@ -102,16 +109,16 @@ public class TimeCheckServiceImpl implements TimeCheckService {
                     Double otTime = otTimeDB == null ? null : otTimeDB;
                     timeCheckPerDateMap.put(date, Arrays.asList(
                             TimeCheckDto.builder().
-                            personId(personId).
-                            personName(personFromDB.get().getFullName()).
-                            rollNumber(personFromDB.get().getRollNumber()).
-                            date(dateAdd).
-                            workingTime(null).
-                            inLate(null).
-                            outEarly(null).
-                            requestTypeName(reason).
-                            ot(otTime).
-                            build()));
+                                    personId(personId).
+                                    personName(personFromDB.get().getFullName()).
+                                    rollNumber(personFromDB.get().getRollNumber()).
+                                    date(dateAdd).
+                                    workingTime(null).
+                                    inLate(null).
+                                    outEarly(null).
+                                    requestTypeName(reason).
+                                    ot(otTime).
+                                    build()));
                 }
             });
 
@@ -417,7 +424,8 @@ public class TimeCheckServiceImpl implements TimeCheckService {
         int countRecordFail = 0;
         String message = "";
         String rowFail = "";
-
+        SimpleDateFormat sm = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS);
+        SimpleDateFormat smd = new SimpleDateFormat(CommonConstant.YYYY_MM_DD);
 
         try {
             if (!file.isEmpty()) {
@@ -447,16 +455,27 @@ public class TimeCheckServiceImpl implements TimeCheckService {
                                             timeLog = row.getCell(1).getStringCellValue();
                                         }
                                         Person person = personRepository.findPersonByRollNumberEquals(rollNumber).orElse(null);
-                                        if(person != null){
+                                        if (person != null) {
                                             personId = person.getPersonId();
-                                        }else {
+                                        } else {
                                             countRecordFail++;
                                             rowFail += (row.getRowNum() + 1) + ", ";
                                         }
-                                        if(personId == null || timeLog == null){
+                                        if (personId == null || timeLog == null) {
                                             countRecordFail++;
                                             rowFail += (row.getRowNum() + 1) + ", ";
-                                        }else {
+                                            continue;
+                                        } else {
+                                            //check
+                                            Date checkFutureDate = smd.parse(timeLog);
+                                            Date currentDate = new Date();
+                                            String currentDateString = smd.format(currentDate);
+                                            currentDate = smd.parse(currentDateString);
+                                            if (currentDate.compareTo(checkFutureDate) != 0) {
+                                                countRecordFail++;
+                                                rowFail += (row.getRowNum() + 1) + ", ";
+                                                continue;
+                                            }
                                             //
                                             TimeCheck timeCheck = new TimeCheck();
                                             //check time in exsit
@@ -466,26 +485,52 @@ public class TimeCheckServiceImpl implements TimeCheckService {
                                                 //show dòng bị fail
                                                 countRecordFail++;
                                                 rowFail += (row.getRowNum() + 1) + ", ";
+                                                continue;
                                                 //throw new BaseException(ErrorCode.INVALID_DATE);
                                             }
                                             OfficeTime officeTime = officeTimeDb.get();
                                             if (dailyTimeCheckDto == null) {
+
+
+                                                Date date = sm.parse(timeLog);
+                                                date.setTime(date.getTime() + appConfig.getMillisecondSevenHours());
+
                                                 timeCheck.setPersonId(personId);
-                                                timeCheck.setTimeIn(convertDateInput(timeLog));
-                                                timeCheck.setInLate(processTimeCome(officeTime.getTimeStart(), timeCheck.getTimeIn(), 0));
+                                                timeCheck.setTimeIn(date);
+                                                Date date1 = sm.parse(timeLog);
+                                                timeCheck.setInLate(processTimeCome(officeTime.getTimeStart(), date1, 0));
+
+                                                //timeCheck.setTimeIn(convertDateInput(timeLog));
+                                                //timeCheck.setInLate(processTimeCome(officeTime.getTimeStart(), timeCheck.getTimeIn(), 0));
                                                 timeCheckRepository.save(timeCheck);
                                                 countRecordSuccess++;
                                             } else {
                                                 //time check update when log time ot
                                                 if (dailyTimeCheckDto.getTimeIn() == null) {
-                                                    timeCheck.setTimeIn(convertDateInput(timeLog));
-                                                    timeCheck.setInLate(processTimeCome(officeTime.getTimeStart(), timeCheck.getTimeIn(), 0));
+
+                                                    Date date = sm.parse(timeLog);
+                                                    date.setTime(date.getTime() + appConfig.getMillisecondSevenHours());
+                                                    timeCheck.setTimeIn(date);
+                                                    Date date1 = sm.parse(timeLog);
+                                                    timeCheck.setInLate(processTimeCome(officeTime.getTimeStart(), date1, 0));
+
+//                                                    timeCheck.setTimeIn(convertDateInput(timeLog));
+//                                                    timeCheck.setInLate(processTimeCome(officeTime.getTimeStart(), timeCheck.getTimeIn(), 0));
                                                 }
                                                 //update time out
                                                 timeCheck.setPersonId(personId);
-                                                timeCheck.setTimeOut(convertDateInput(timeLog));
-                                                timeCheck.setOutEarly(processTimeCome(officeTime.getTimeFinish(), timeCheck.getTimeOut(), 1));
-                                                timeCheck.setWorkingTime(processWorkingTime(dailyTimeCheckDto.getTimeIn(), timeCheck.getTimeOut(), dailyTimeCheckDto.getInLate(), timeCheck.getOutEarly()));
+
+                                                Date date = sm.parse(timeLog);
+                                                date.setTime(date.getTime() + appConfig.getMillisecondSevenHours());
+                                                timeCheck.setTimeOut(date);
+                                                Date date1 = sm.parse(timeLog);
+                                                timeCheck.setOutEarly(processTimeCome(officeTime.getTimeFinish(), date1, 1));
+
+//                                                timeCheck.setTimeOut(convertDateInput(timeLog));
+//                                                timeCheck.setOutEarly(processTimeCome(officeTime.getTimeFinish(), timeCheck.getTimeOut(), 1));
+                                                timeCheck.setWorkingTime(requestService.calculateNumOfHoursWorkedInADay(dailyTimeCheckDto.getTimeIn(), timeCheck.getTimeOut()));
+
+                                                //timeCheck.setWorkingTime(processWorkingTime(dailyTimeCheckDto.getTimeIn(), timeCheck.getTimeOut(), dailyTimeCheckDto.getInLate(), timeCheck.getOutEarly()));
                                                 timeCheckRepository.updateTimeCheck(timeCheck.getTimeOut(), timeCheck.getOutEarly(), timeCheck.getWorkingTime(), timeCheck.getPersonId());
                                                 countRecordUpdateSuccess++;
                                             }
@@ -527,9 +572,11 @@ public class TimeCheckServiceImpl implements TimeCheckService {
         long timein = timeIn.getTime();
         long timeOffice = dateOfficeStr.getTime();
         if (timeIn.getTime() > dateOfficeStr.getTime() && isInTime == 0) {
-            return ((timeIn.getTime() - dateOfficeStr.getTime()) / (60 * 60 * 1000));
+            return requestService.calculateNumOfHoursWorkedInADay(dateOfficeStr, timeIn);
+            //return ((timeIn.getTime() - dateOfficeStr.getTime()) / (60 * 60 * 1000));
         } else if (timeIn.getTime() < dateOfficeStr.getTime() && isInTime == 1) {
-            return ((dateOfficeStr.getTime() - timeIn.getTime()) / (60 * 60 * 1000));
+            return requestService.calculateNumOfHoursWorkedInADay(timeIn, dateOfficeStr);
+            //return ((dateOfficeStr.getTime() - timeIn.getTime()) / (60 * 60 * 1000));
         }
         return 0;
     }

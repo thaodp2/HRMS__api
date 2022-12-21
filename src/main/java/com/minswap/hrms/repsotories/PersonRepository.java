@@ -204,4 +204,7 @@ public interface PersonRepository extends JpaRepository<Person, Long> {
 
     @Query("select pr.personId from PersonRole pr where pr.roleId=:roleId")
     List<Long> getListITSupportId(@Param("roleId") Long roleId);
+    
+    @Query("select COUNT(p.personId) from Person p where p.email like concat(:mail,'%@minswap.com%')")
+    Integer getCountPersonByMail(@Param("mail") String mail);
 }
