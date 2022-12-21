@@ -181,4 +181,10 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
             "and (r.status = 'Pending' or (r.status = 'Approved' and r.isAssigned = 0))" +
             " and r.deviceTypeId =:deviceTypeId")
     List<Request> getListRequestWhenDeviceTypeDelete(@Param("deviceTypeId") Long deviceTypeId);
+
+    @Modifying
+    @Transactional
+    @Query("update Request r set r.deviceTypeId=:deviceTypeId where r.requestId=:id")
+    Integer updateBorrowDeviceRequest(@Param("id") Long id,
+                                      @Param("deviceTypeId") Long deviceTypeId);
 }

@@ -92,6 +92,11 @@ public class CommonConstant {
             "Is Active"
     };
 
+    public static String[] TEMPLATE_HEADER_TIME_CHECK_TO_IMPORT = {
+            "Roll Number",
+            "Time Log"
+    };
+
     public static Long[] LIST_REQUEST_TYPE_ID_IN_LEAVE_BUDGET = {
             Long.valueOf(1),
             Long.valueOf(6),

@@ -638,22 +638,6 @@ public class PersonServiceImpl implements PersonService {
         String message = "";
         String rowFail = "";
 
-        Long managerId = null;
-        Long departmentId = null;
-        Long positionId = null;
-        Long rankId = null;
-        Integer gender = null;
-        Double salaryBasic = null;
-        Double salaryBonus = null;
-        Integer isManager = null;
-        String fullName = null;
-        String dateOfBirth = null;
-        String onBoardDate = null;
-        String citizenIdentification = null;
-        String phoneNumber = null;
-        String address = null;
-        String isActive = null;
-        String rollNumber = null;
 
         try {
             if (!file.isEmpty()) {
@@ -688,6 +672,23 @@ public class PersonServiceImpl implements PersonService {
                                         continue;
                                     }
                                     try {
+                                        Long managerId = null;
+                                        Long departmentId = null;
+                                        Long positionId = null;
+                                        Long rankId = null;
+                                        Integer gender = null;
+                                        Double salaryBasic = null;
+                                        Double salaryBonus = null;
+                                        Integer isManager = null;
+                                        String fullName = null;
+                                        String dateOfBirth = null;
+                                        String onBoardDate = null;
+                                        String citizenIdentification = null;
+                                        String phoneNumber = null;
+                                        String address = null;
+                                        String isActive = null;
+                                        String rollNumber = null;
+
                                         if (row.getCell(0) != null) {
                                             rollNumber = row.getCell(0).getStringCellValue();
                                         }

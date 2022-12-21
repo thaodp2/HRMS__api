@@ -509,8 +509,12 @@ public class RequestServiceImpl implements RequestService {
                 && (editRequest.getStartTime() == null || editRequest.getEndTime() == null)) {
             throw new BaseException(ErrorCode.DATE_INVALID_IN_LEAVE_REQUEST);
         } else {
-            Date startTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).parse(editRequest.getStartTime());
-            Date endTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).parse(editRequest.getEndTime());
+            Date startTime = null;
+            Date endTime = null;
+            if (requestTypeId != BORROW_REQUEST_TYPE_ID) {
+                 startTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).parse(editRequest.getStartTime());
+                 endTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).parse(editRequest.getEndTime());
+            }
             validateForCreateAndEditRequest(Long.valueOf(requestTypeId.intValue()),
                     startTime,
                     endTime,
@@ -519,11 +523,14 @@ public class RequestServiceImpl implements RequestService {
             if (requestTypeId != BORROW_REQUEST_TYPE_ID) {
                 startTime.setTime(startTime.getTime() + appConfig.getMillisecondSevenHours());
                 endTime.setTime(endTime.getTime() + appConfig.getMillisecondSevenHours());
+                requestRepository.updateNormalRequest(id, startTime, endTime, editRequest.getReason());
             }
-            requestRepository.updateNormalRequest(id, startTime, endTime, editRequest.getReason());
+            else {
+                requestRepository.updateBorrowDeviceRequest(id, editRequest.getDeviceTypeId());
+            }
             List<String> listImage = editRequest.getListEvidence();
             evidenceRepository.deleteImageByRequestId(id);
-            if (!listImage.isEmpty()) {
+            if (listImage != null) {
                 for (String image : listImage) {
                     Evidence evidence = new Evidence(id, image);
                     evidenceRepository.save(evidence);
@@ -786,7 +793,9 @@ public class RequestServiceImpl implements RequestService {
             if (calendarStart.get(Calendar.DAY_OF_MONTH) == calendarEnd.get(Calendar.DAY_OF_MONTH)
                     && calendarEnd.get(Calendar.MONTH) == calendarStart.get(Calendar.MONTH)) {
                 double otTimeReturn = calculateHoursBetweenTwoDateTime(startTime, endTime);
-                Double otTime = timeCheckRepository.getOTTimeByDay(getDayOfDate(startTime), personId, getMonthOfDate(startTime));
+                startTime.setTime(startTime.getTime() + appConfig.getMillisecondSevenHours());
+                Double otTime = timeCheckRepository.getOtTimeInDate(personId, startTime);
+                startTime.setTime(startTime.getTime() - appConfig.getMillisecondSevenHours());
                 double newOTTime = Double.parseDouble(decimalFormat.format(otTime - otTimeReturn));
                 timeCheckRepository.updateOTTime(getDayOfDate(startTime), personId, newOTTime, getMonthOfDate(startTime));
             }
@@ -795,8 +804,12 @@ public class RequestServiceImpl implements RequestService {
                                                                     formatTimeToKnownDate(startTime, TIME_END_OF_DAY));
                 otTimeOfEndDay = calculateHoursBetweenTwoDateTime(formatTimeToKnownDate(endTime, TIME_START_OF_DAY),
                                                                   endTime);
+                startTime.setTime(startTime.getTime() + appConfig.getMillisecondSevenHours());
+                endTime.setTime(endTime.getTime() + appConfig.getMillisecondSevenHours());
                 Double otTimeInDBOfStartDay = timeCheckRepository.getOTTimeByDay(getDayOfDate(startTime), personId, getMonthOfDate(startTime));
                 Double otTimeInDBOfEndDay = timeCheckRepository.getOTTimeByDay(getDayOfDate(endTime), personId, getMonthOfDate(endTime));
+                startTime.setTime(startTime.getTime() - appConfig.getMillisecondSevenHours());
+                endTime.setTime(endTime.getTime() - appConfig.getMillisecondSevenHours());
                 double newOTTimeInStartDay = Double.parseDouble(decimalFormat.format(otTimeInDBOfStartDay - otTimeOfStartDay));
                 double newOTTimeInEndDay = Double.parseDouble(decimalFormat.format(otTimeInDBOfEndDay - otTimeOfEndDay));
                 timeCheckRepository.updateOTTime(getDayOfDate(startTime), personId, newOTTimeInStartDay, getMonthOfDate(startTime));
@@ -1537,6 +1550,11 @@ public class RequestServiceImpl implements RequestService {
                 throw new BaseException(ErrorCode.newErrorCode(208,
                         "You can't approve this request because the device type borrowed in the request has " +
                                 "been removed. The request will automatically return to the reject status!",
+                        httpStatus.NOT_ACCEPTABLE));
+            }
+            else if (deviceTypeStatus == null) {
+                throw new BaseException(ErrorCode.newErrorCode(208,
+                        "Device type is not exist!",
                         httpStatus.NOT_ACCEPTABLE));
             }
         }
