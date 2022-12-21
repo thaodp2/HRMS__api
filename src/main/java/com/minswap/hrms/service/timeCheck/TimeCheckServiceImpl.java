@@ -527,8 +527,9 @@ public class TimeCheckServiceImpl implements TimeCheckService {
 
 //                                                timeCheck.setTimeOut(convertDateInput(timeLog));
 //                                                timeCheck.setOutEarly(processTimeCome(officeTime.getTimeFinish(), timeCheck.getTimeOut(), 1));
+                                                timeCheck.setWorkingTime(requestService.calculateNumOfHoursWorkedInADay(dailyTimeCheckDto.getTimeIn(), timeCheck.getTimeOut()));
 
-                                                timeCheck.setWorkingTime(processWorkingTime(dailyTimeCheckDto.getTimeIn(), timeCheck.getTimeOut(), dailyTimeCheckDto.getInLate(), timeCheck.getOutEarly()));
+                                                //timeCheck.setWorkingTime(processWorkingTime(dailyTimeCheckDto.getTimeIn(), timeCheck.getTimeOut(), dailyTimeCheckDto.getInLate(), timeCheck.getOutEarly()));
                                                 timeCheckRepository.updateTimeCheck(timeCheck.getTimeOut(), timeCheck.getOutEarly(), timeCheck.getWorkingTime(), timeCheck.getPersonId());
                                                 countRecordUpdateSuccess++;
                                             }
