@@ -11,4 +11,6 @@ public interface OfficeTimeService {
     ResponseEntity<BaseResponse<HttpStatus, Void>> updateOfficeTime(OfficeTimeRequest officeTimeRequest) throws Exception;
 
     ResponseEntity<BaseResponse<OfficeTimeResponse, Void>> getOfficeTime() throws Exception;
+
+    ResponseEntity<BaseResponse<HttpStatus, Void>> updateLunchBreak(OfficeTimeRequest officeTimeRequest);
 }

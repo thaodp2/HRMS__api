@@ -4,10 +4,13 @@ import com.minswap.hrms.entities.OfficeTime;
 import com.minswap.hrms.response.dto.OfficeTimeDto;
 import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Date;
 import java.util.Optional;
 
 @Repository
@@ -22,4 +25,13 @@ public interface OfficeTimeRepository extends JpaRepository<OfficeTime, Long> {
     @Query("select new com.minswap.hrms.response.dto.OfficeTimeDto(ot.timeStart, ot.timeFinish, " +
             "ot.lunchBreakStartTime, ot.lunchBreakEndTime) from OfficeTime ot")
     OfficeTimeDto getOfficeTime();
+
+    @Modifying
+    @Transactional
+    @Query("update OfficeTime ot " +
+            "set ot.lunchBreakStartTime=:startTime, ot.lunchBreakEndTime=:endTime, ot.createDate=:createDate " +
+            "where ot.officeTimeId = 1")
+    Integer updateLunchBreakTime(@Param("startTime") String startTime,
+                                 @Param("endTime") String endTime,
+                                 @Param("createDate") Date createDate);
 }
