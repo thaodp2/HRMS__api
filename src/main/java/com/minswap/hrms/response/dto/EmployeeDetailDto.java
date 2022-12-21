@@ -88,7 +88,10 @@ public class EmployeeDetailDto {
 
     @JsonProperty("isManager")
     private Integer isManager;
-
+    
+    @JsonProperty("userName")
+    private String userName;
+    
     public EmployeeDetailDto(Long personId, String fullName, Date dateOfBirth, int gender, String phoneNumber, String citizenIdentification, String address, String rollNumber, String email, Long departmentId, Long positionId, Long rankId, Date onBoardDate, String status, Long managerId, String avatarImg, Double salaryBasic, Double salaryBonus, String managerName,
                              String departmentName, String positionName, String rankingName) {
         this.personId = personId;

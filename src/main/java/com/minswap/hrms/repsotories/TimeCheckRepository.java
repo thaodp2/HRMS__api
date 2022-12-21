@@ -56,13 +56,17 @@ public interface TimeCheckRepository extends JpaRepository<TimeCheck, Long> {
     String getMissTimeCheckReason(@Param("personId") Long personId,
                                   @Param("absentDate") Date absentDate);
     
-    @Query(value = " SELECT TIME_TO_SEC(TIMEDIFF(r.end_time, r.start_time))/3600 " +
-            " FROM request r   " +
-            " WHERE date( :otDate ) BETWEEN date(r.start_time) and date(r.end_time)  " +
-            " and r.status  = 'Approved'  " +
-            " and r.request_type_id = 7  " +
-            " and r.person_id  = :personId " +
-            " limit 1 ", nativeQuery = true)
+    @Query(value = " SELECT   " +
+            " SUM( CASE when date(r.start_time) = date(r.end_time)  then TIME_TO_SEC(TIMEDIFF(r.end_time, r.start_time))/3600  " +
+            "     when date(r.start_time) = date( :otDate )  then TIME_TO_SEC(TIMEDIFF(CONCAT(date(r.end_time), \" 00:00:00\") , r.start_time))/3600  " +
+            "     when date(r.end_time) = date(  :otDate )  then TIME_TO_SEC(TIMEDIFF( r.end_time, CONCAT(date(r.end_time), \" 00:00:00\")))/3600  " +
+            " else 1  " +
+            " end )  " +
+            " FROM request r     " +
+            " WHERE date( :otDate ) BETWEEN date(r.start_time) and date(r.end_time)    " +
+            " and r.status  = 'Approved'    " +
+            " and r.request_type_id = 7    " +
+            " and r.person_id  = :personId ", nativeQuery = true)
     Double getOtTimeInDate(@Param("personId") Long personId,
                            @Param("otDate") Date otDate);
 

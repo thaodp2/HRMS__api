@@ -80,6 +80,9 @@ public class TimeCheckServiceImpl implements TimeCheckService {
             Map<Date, List<TimeCheckDto>> timeCheckPerDateMap = new HashMap<>();
 
             for (TimeCheckDto timeCheckDto : timeCheckDtos) {
+                timeCheckDto.setInLate(timeCheckDto.getInLate()*60);
+                timeCheckDto.setOutEarly(timeCheckDto.getOutEarly()*60);
+                timeCheckDto.setRequestTypeName(null);
                 Date timeCheckDate = TIME_EXCLUDED_DATE_FORMAT.parse(timeCheckDto.getDate().toString()); // get the date with the format of yyyy-MM-dd
                 List<TimeCheckDto> timeCheckListOfThisDate = Optional.ofNullable(timeCheckPerDateMap.get(timeCheckDate)).orElse(new ArrayList<>());
                 timeCheckListOfThisDate.add(timeCheckDto);
@@ -95,8 +98,19 @@ public class TimeCheckServiceImpl implements TimeCheckService {
                     dateAdd.setTime(dateAdd.getTime() + MILLISECOND_7_HOURS);
                     String reason = timeCheckRepository.getMissTimeCheckReason(personId, dateAdd);
                     Double otTimeDB = timeCheckRepository.getOtTimeInDate(personId, dateAdd);
-                    Double otTime = otTimeDB == null ? 0 : otTimeDB;
-                    timeCheckPerDateMap.put(date, Arrays.asList(TimeCheckDto.builder().personId(personId).personName(personFromDB.get().getFullName()).rollNumber(personFromDB.get().getRollNumber()).date(dateAdd).workingTime(0d).requestTypeName(reason).ot(otTime).build()));
+                    Double otTime = otTimeDB == null ? null : otTimeDB;
+                    timeCheckPerDateMap.put(date, Arrays.asList(
+                            TimeCheckDto.builder().
+                            personId(personId).
+                            personName(personFromDB.get().getFullName()).
+                            rollNumber(personFromDB.get().getRollNumber()).
+                            date(dateAdd).
+                            workingTime(null).
+                            inLate(null).
+                            outEarly(null).
+                            requestTypeName(reason).
+                            ot(otTime).
+                            build()));
                 }
             });
 
