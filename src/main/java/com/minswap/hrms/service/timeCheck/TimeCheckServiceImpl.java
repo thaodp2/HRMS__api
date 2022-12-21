@@ -77,7 +77,8 @@ public class TimeCheckServiceImpl implements TimeCheckService {
         ResponseEntity<BaseResponse<TimeCheckResponse.TimeCheckEachPersonResponse, Pageable>> responseEntity = null;
         try {
 
-            Pagination pagination = new Pagination(page - 1, limit);
+            //Pagination to get all record
+            Pagination pagination = new Pagination(0, 50);
             Date startDateFormat = DATE_FORMAT.parse(startDate);
             Date endDateFormat = DATE_FORMAT.parse(endDate);
 
@@ -126,8 +127,10 @@ public class TimeCheckServiceImpl implements TimeCheckService {
                 if (o1.getKey().before(o2.getKey())) {
                     return -1;
                 }
-                return 1;
-            }).map(Map.Entry<Date, List<TimeCheckDto>>::getValue).reduce(new ArrayList<>(), (cumulatedList, currentValues) -> {
+                return 1;}).
+                    skip((page - 1 ) * 10).
+                    limit(limit).
+                    map(Map.Entry<Date, List<TimeCheckDto>>::getValue).reduce(new ArrayList<>(), (cumulatedList, currentValues) -> {
                 cumulatedList.addAll(currentValues);
                 return cumulatedList;
             });
@@ -138,6 +141,7 @@ public class TimeCheckServiceImpl implements TimeCheckService {
             }
             pagination.setTotalRecords(timeCheckListAfterFillingUp.size());
             pagination.setPage(page);
+            pagination.setLimit(limit);
             responseEntity = BaseResponse.ofSucceededOffset(TimeCheckResponse.TimeCheckEachPersonResponse.of(timeCheckListAfterFillingUp), pagination);
         } catch (Exception ex) {
             throw new Exception(ex.getMessage());
