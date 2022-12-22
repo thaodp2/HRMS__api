@@ -101,6 +101,7 @@ public class TimeCheckServiceImpl implements TimeCheckService {
             if (!personFromDB.isPresent()) {
                 throw new Exception("Person not exist");
             }
+
             getDatesInRange(startDateFormat, endDateFormat).forEach((date) -> {
                 if (!Optional.ofNullable(timeCheckPerDateMap.get(date)).isPresent()) {
                     Date dateAdd = date;
@@ -128,7 +129,7 @@ public class TimeCheckServiceImpl implements TimeCheckService {
                     return -1;
                 }
                 return 1;}).
-                    skip((page - 1 ) * 10).
+                    skip((page - 1 ) * limit).
                     limit(limit).
                     map(Map.Entry<Date, List<TimeCheckDto>>::getValue).reduce(new ArrayList<>(), (cumulatedList, currentValues) -> {
                 cumulatedList.addAll(currentValues);
@@ -139,7 +140,8 @@ public class TimeCheckServiceImpl implements TimeCheckService {
                 item.setId(id);
                 id++;
             }
-            pagination.setTotalRecords(timeCheckListAfterFillingUp.size());
+            int totalPage = countDate(startDateFormat, endDateFormat);
+            pagination.setTotalRecords(totalPage);
             pagination.setPage(page);
             pagination.setLimit(limit);
             responseEntity = BaseResponse.ofSucceededOffset(TimeCheckResponse.TimeCheckEachPersonResponse.of(timeCheckListAfterFillingUp), pagination);
@@ -175,6 +177,21 @@ public class TimeCheckServiceImpl implements TimeCheckService {
 
         return dates;
     }
+
+    private static int countDate(Date startDate, Date endDate) {
+       int total = 0;
+        Date current = startDate;
+        while (current.before(endDate)) {
+            total++;
+            Date previous = current;
+            current = new Date();
+            current.setTime(previous.getTime() + MILLISECOND_PER_DAY); // go to the next day
+        }
+
+        return total;
+    }
+
+
 
 
     @Override

@@ -483,7 +483,7 @@ public class PersonServiceImpl implements PersonService {
             emailSenderService.sendEmail(person.getEmail(), "Update New Pin Code", body);
             return BaseResponse.ofSucceeded(true);
         } catch (Exception e) {
-            return BaseResponse.ofSucceeded(false);
+            throw new BaseException(ErrorCode.SEND_PIN_CODE_FAILED);
         }
     }
 
@@ -515,7 +515,7 @@ public class PersonServiceImpl implements PersonService {
 
             return BaseResponse.ofSucceeded(true);
         } catch (Exception e) {
-            return BaseResponse.ofSucceeded(false);
+            throw new BaseException(UPDATE_FAIL);
         }
     }
 
@@ -541,7 +541,7 @@ public class PersonServiceImpl implements PersonService {
 
             return BaseResponse.ofSucceeded(true);
         } catch (Exception e) {
-            return BaseResponse.ofSucceeded(false);
+            throw new BaseException(CREATE_FAIL);
         }
     }
 
