@@ -102,7 +102,10 @@ public class TimeCheckServiceImpl implements TimeCheckService {
                 throw new Exception("Person not exist");
             }
 
-            getDatesInRange(startDateFormat, endDateFormat).forEach((date) -> {
+            List<Date> totalDates = getDatesInRange(startDateFormat, endDateFormat);
+            // Count total date from startDate to endDate
+            int total = totalDates.size();
+            totalDates.forEach((date) -> {
                 if (!Optional.ofNullable(timeCheckPerDateMap.get(date)).isPresent()) {
                     Date dateAdd = date;
                     dateAdd.setTime(dateAdd.getTime() + MILLISECOND_7_HOURS);
@@ -140,8 +143,7 @@ public class TimeCheckServiceImpl implements TimeCheckService {
                 item.setId(id);
                 id++;
             }
-            int totalPage = countDate(startDateFormat, endDateFormat);
-            pagination.setTotalRecords(totalPage);
+            pagination.setTotalRecords(total);
             pagination.setPage(page);
             pagination.setLimit(limit);
             responseEntity = BaseResponse.ofSucceededOffset(TimeCheckResponse.TimeCheckEachPersonResponse.of(timeCheckListAfterFillingUp), pagination);
@@ -177,22 +179,6 @@ public class TimeCheckServiceImpl implements TimeCheckService {
 
         return dates;
     }
-
-    private static int countDate(Date startDate, Date endDate) {
-       int total = 0;
-        Date current = startDate;
-        while (current.before(endDate)) {
-            total++;
-            Date previous = current;
-            current = new Date();
-            current.setTime(previous.getTime() + MILLISECOND_PER_DAY); // go to the next day
-        }
-
-        return total;
-    }
-
-
-
 
     @Override
     public ResponseEntity<BaseResponse<TimeCheckResponse.TimeCheckEachSubordinateResponse, Pageable>> getListTimeCheck(String search, Long managerId, String startDate, String endDate, Integer page, Integer limit, String sort, String dir) throws Exception {
