@@ -60,18 +60,21 @@ public class OfficeTimeServiceImpl implements OfficeTimeService{
         }
 
         officeTimeRequest.setOfficeTimeId(officeTimeDB.get().getOfficeTimeId());
-        Instant instant = Instant.now();
-        officeTimeRequest.setCreateDate(Date.from(instant));
         OfficeTime officeTime = officeTimeDB.get();
+            validateWorkingTimeOfCompanyOneDay(officeTimeRequest.getTimeStart(),
+                    officeTimeRequest.getTimeFinish(),
+                    officeTime.getLunchBreakStartTime(),
+                    officeTime.getLunchBreakEndTime());
         if (officeTimeRequest.getTimeStart() == null){
             officeTimeRequest.setTimeStart(officeTime.getTimeStart());
         }
         if(officeTimeRequest.getTimeFinish() == null){
             officeTimeRequest.setTimeFinish(officeTime.getTimeFinish());
         }
-        java.util.Date dateAdd = officeTimeRequest.getCreateDate();
+        Instant instant = Instant.now();
+        java.util.Date dateAdd = Date.from(instant);
         dateAdd.setTime(dateAdd.getTime() + MILLISECOND_7_HOURS);
-            officeTimeRequest.setCreateDate(dateAdd);
+        officeTimeRequest.setCreateDate(dateAdd);
         modelMapper.map(officeTimeRequest, officeTime);
         officeTimeRepository.save(officeTime);
 
