@@ -77,19 +77,24 @@ public class CommonConstant {
             "Roll Number",
             "Full Name",
             "Date Of Birth",
-            "Manager Id",
+            "Manager Roll Number",
             "Department Id",
+            "Position",
             "Position Id",
+            "Rank",
             "Rank Id",
             "On Board Date",
             "Citizen Identification",
             "Phone Number",
             "Address",
             "Gender",
+            "Gender Code",
             "Salary Basic",
             "Salary Bonus",
             "Is Manager",
-            "Is Active"
+            "Is Manager Code",
+            "Is Active",
+            "Is Active Code"
     };
 
     public static String[] TEMPLATE_HEADER_TIME_CHECK_TO_IMPORT = {
