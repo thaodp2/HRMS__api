@@ -1211,12 +1211,12 @@ public class RequestServiceImpl implements RequestService {
             if (startTime.after(startOfficeTime)) {
                 inLate = calculateNumOfHoursWorkedInADay(startOfficeTime, startTime);
             }
-            workingTimeInFirstDay = calculateHoursBetweenTwoDateTime(startTime, finishOfficeTime);
+            workingTimeInFirstDay = calculateNumOfHoursWorkedInADay(startTime, finishOfficeTime);
             Date finishOfficeTimeByEndDay = formatTimeToKnownDate(endTime, officeTimeDto.getTimeEnd());
             if (endTime.before(finishOfficeTimeByEndDay)) {
-                startOfficeTime = formatTimeToKnownDate(endTime, officeTimeDto.getTimeStart());
                 outEarly = calculateNumOfHoursWorkedInADay(endTime, finishOfficeTimeByEndDay);
             }
+            startOfficeTime = formatTimeToKnownDate(endTime, officeTimeDto.getTimeStart());
             workingTimeInLastDay = calculateNumOfHoursWorkedInADay(startOfficeTime, endTime);
 
             saveTimeCheck(startTime, finishOfficeTime, personId, inLate, 0, workingTimeInFirstDay);
