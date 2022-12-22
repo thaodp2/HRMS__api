@@ -143,10 +143,10 @@ public class HRPersonController {
         String localDir =templateDir;
 
         //test
-        List<Department> departmentList = departmentRepository.findAll();
+//        List<Department> departmentList = departmentRepository.findAll();
         List<Position> positionList = positionRepository.findAll();
         List<Rank> rankList = rankRepository.findAll();
-        int maxRow = Math.max(departmentList.size(),Math.max(positionList.size(),rankList.size()));
+        int maxRow = Math.max(3,Math.max(positionList.size(),rankList.size()));
 
         InputStream inputStream = new FileInputStream(new File(localDir));
         Workbook workbook = new XSSFWorkbook(inputStream);
@@ -161,31 +161,65 @@ public class HRPersonController {
             Row row = sheet.createRow(rowCount++);
         }
 
-        for (int i = 0; i < departmentList.size(); i++) {
-            Row row = sheet.getRow(i+1);
-            Cell cell = row.createCell(0);
-            cell.setCellValue(departmentList.get(i).getDepartmentId());
-            cell = row.createCell(1);
-            cell.setCellValue(departmentList.get(i).getDepartmentName());
-        }
+//        for (int i = 0; i < departmentList.size(); i++) {
+//            Row row = sheet.getRow(i+1);
+//            Cell cell = row.createCell(0);
+//            cell.setCellValue(departmentList.get(i).getDepartmentId());
+//            cell = row.createCell(1);
+//            cell.setCellValue(departmentList.get(i).getDepartmentName());
+//        }
 
         for (int i = 0; i < positionList.size(); i++) {
             Row row = sheet.getRow(i+1);
-            Cell cell = row.createCell(3);
-            cell.setCellValue(positionList.get(i).getPositionId());
-            cell = row.createCell(4);
+            Cell cell = row.createCell(0);
             cell.setCellValue(positionList.get(i).getPositionName());
-            cell = row.createCell(5);
+            cell = row.createCell(1);
+            cell.setCellValue(positionList.get(i).getPositionId());
+            cell = row.createCell(2);
             cell.setCellValue(positionList.get(i).getDepartmentId());
         }
 
         for (int i = 0; i < rankList.size(); i++) {
             Row row = sheet.getRow(i+1);
-            Cell cell = row.createCell(7);
-            cell.setCellValue(rankList.get(i).getRankId());
-            cell = row.createCell(8);
+            Cell cell = row.createCell(4);
             cell.setCellValue(rankList.get(i).getRankName());
+            cell = row.createCell(5);
+            cell.setCellValue(rankList.get(i).getRankId());
         }
+
+        Row row = sheet.getRow(1);
+        Cell cell = row.createCell(7);
+        cell.setCellValue("Male");
+        cell = row.createCell(8);
+        cell.setCellValue(1);
+        cell = row.createCell(10);
+        cell.setCellValue("Yes");
+        cell = row.createCell(11);
+        cell.setCellValue(1);
+        cell = row.createCell(13);
+        cell.setCellValue("Active");
+        cell = row.createCell(14);
+        cell.setCellValue("1");
+
+        row = sheet.getRow(2);
+        cell = row.createCell(7);
+        cell.setCellValue("Female");
+        cell = row.createCell(8);
+        cell.setCellValue(0);
+        cell = row.createCell(10);
+        cell.setCellValue("No");
+        cell = row.createCell(11);
+        cell.setCellValue(0);
+        cell = row.createCell(13);
+        cell.setCellValue("InActive");
+        cell = row.createCell(14);
+        cell.setCellValue("0");
+
+        row = sheet.getRow(3);
+        cell = row.createCell(7);
+        cell.setCellValue("Other");
+        cell = row.createCell(8);
+        cell.setCellValue(-1);
 
 
         FileOutputStream fileOut = new FileOutputStream(localDir);

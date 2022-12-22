@@ -682,7 +682,12 @@ public class PersonServiceImpl implements PersonService {
                                             row.getCell(12) == null &&
                                             row.getCell(13) == null &&
                                             row.getCell(14) == null &&
-                                            row.getCell(15) == null
+                                            row.getCell(15) == null &&
+                                            row.getCell(16) == null &&
+                                            row.getCell(17) == null &&
+                                            row.getCell(18) == null &&
+                                            row.getCell(19) == null &&
+                                            row.getCell(20) == null
                                     ) {
                                         continue;
                                     }
@@ -713,45 +718,57 @@ public class PersonServiceImpl implements PersonService {
                                         if (row.getCell(2) != null) {
                                             dateOfBirth = row.getCell(2).getStringCellValue();
                                         }
-                                        if (row.getCell(7) != null) {
-                                            onBoardDate = row.getCell(7).getStringCellValue();
-                                        }
-                                        if (row.getCell(8) != null) {
-                                            citizenIdentification = row.getCell(8).getStringCellValue();
-                                        }
                                         if (row.getCell(9) != null) {
-                                            phoneNumber = row.getCell(9).getStringCellValue();
+                                            onBoardDate = row.getCell(9).getStringCellValue();
                                         }
                                         if (row.getCell(10) != null) {
-                                            address = row.getCell(10).getStringCellValue();
+                                            citizenIdentification = row.getCell(10).getStringCellValue();
                                         }
-                                        if (row.getCell(15) != null) {
-                                            isActive = row.getCell(15).getStringCellValue();
+                                        if (row.getCell(11) != null) {
+                                            phoneNumber = row.getCell(11).getStringCellValue();
+                                        }
+                                        if (row.getCell(12) != null) {
+                                            address = row.getCell(12).getStringCellValue();
+                                        }
+                                        if (row.getCell(20) != null) {
+                                            isActive = row.getCell(20).getStringCellValue();
+                                            if (isActive.equals("")) {
+                                                isActive = null;
+                                            }
                                         }
 
                                         if (row.getCell(3) != null) {
-                                            managerId = (long) row.getCell(3).getNumericCellValue();
+                                            Person person = personRepository.findPersonByRollNumberEquals(row.getCell(3).getStringCellValue()).orElse(null);
+                                            if(person != null){
+                                                managerId = person.getPersonId();
+                                            }
+                                            //managerId = (long) row.getCell(3).getNumericCellValue();
                                         }
                                         if (row.getCell(4) != null) {
                                             departmentId = (long) row.getCell(4).getNumericCellValue();
                                         }
-                                        if (row.getCell(5) != null) {
-                                            positionId = (long) row.getCell(5).getNumericCellValue();
-                                        }
+
                                         if (row.getCell(6) != null) {
-                                            rankId = (long) row.getCell(6).getNumericCellValue();
+                                            positionId = (long) row.getCell(6).getNumericCellValue();
                                         }
-                                        if (row.getCell(11) != null) {
-                                            gender = (int) row.getCell(11).getNumericCellValue();
+
+                                        if (row.getCell(8) != null) {
+                                            rankId = (long) row.getCell(8).getNumericCellValue();
                                         }
+
                                         if (row.getCell(14) != null) {
-                                            isManager = (int) row.getCell(14).getNumericCellValue();
+                                            gender = (int) row.getCell(14).getNumericCellValue();
                                         }
-                                        if (row.getCell(12) != null) {
-                                            salaryBasic = (double) row.getCell(12).getNumericCellValue();
+
+                                        if (row.getCell(18) != null) {
+                                            isManager = (int) row.getCell(18).getNumericCellValue();
                                         }
-                                        if (row.getCell(13) != null) {
-                                            salaryBonus = (double) row.getCell(13).getNumericCellValue();
+
+                                        if (row.getCell(15) != null) {
+                                            salaryBasic = row.getCell(15).getNumericCellValue();
+                                        }
+                                        if (row.getCell(16) != null) {
+                                            salaryBonus =row.getCell(16).getNumericCellValue();
                                         }
 
                                         if (rollNumber != null && !rollNumber.trim().isEmpty()) {
@@ -880,8 +897,8 @@ public class PersonServiceImpl implements PersonService {
         String[] split = removeName.split("\\s");
         String fMailName = split[split.length - 1];
         for (String string : split) {
-        	fMailName += string.charAt(0);
-		}
+            fMailName += string.charAt(0);
+        }
         fMailName = fMailName.substring(0, fMailName.length() - 1);
         Integer countPersonByMail = personRepository.getCountPersonByMail(fMailName);
         return fMailName + countPersonByMail + "@minswap.com";
