@@ -140,6 +140,10 @@ public class ErrorCode {
     }
     public static final BusinessCode CITIZEN_INDENTIFICATION_EXSIT = new BusinessCode(
             ErrorCodeEnum.CITIZEN_INDENTIFICATION_EXSIT.getValue(), "Citizen Identification exist!", HttpStatus.NOT_FOUND);
+
+    public static final BusinessCode SEND_PIN_CODE_FAILED = new BusinessCode(
+            ErrorCodeEnum.SEND_PIN_CODE_FAILED.getValue(), "Send pin code to your email failed!", HttpStatus.NOT_FOUND);
+
     public static final BusinessCode FINGERPRINT_INVALID = new BusinessCode(
             ErrorCodeEnum.FINGERPRINT_INVALID.getValue(), "Contact HR to register this fingerprint!", HttpStatus.NOT_FOUND);
     public static final BusinessCode UNAUTHORIZE = new BusinessCode(
