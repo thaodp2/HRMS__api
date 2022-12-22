@@ -1127,7 +1127,7 @@ public class RequestServiceImpl implements RequestService {
         end.setTime(end.getTime() - appConfig.getMillisecondSevenHours());
         if (listIdOfRequestAlreadyExistTime.size() > 0) {
             throw new BaseException(ErrorCode.newErrorCode(208,
-                    "You already have a same request within this time period!",
+                    "There has been request taking place during this time!",
                     httpStatus.NOT_ACCEPTABLE));
         }
     }
@@ -1144,7 +1144,7 @@ public class RequestServiceImpl implements RequestService {
         endTime.setTime(endTime.getTime() - appConfig.getMillisecondSevenHours());
         if (listOTRequestInPeriodTime.size() > 0) {
             throw new BaseException(ErrorCode.newErrorCode(208,
-                    "You already have a OT request within this time period!",
+                    "There has been OT request taking place during this time!",
                     httpStatus.NOT_ACCEPTABLE));
         }
     }
@@ -1211,12 +1211,12 @@ public class RequestServiceImpl implements RequestService {
             if (startTime.after(startOfficeTime)) {
                 inLate = calculateNumOfHoursWorkedInADay(startOfficeTime, startTime);
             }
-            workingTimeInFirstDay = calculateHoursBetweenTwoDateTime(startTime, finishOfficeTime);
+            workingTimeInFirstDay = calculateNumOfHoursWorkedInADay(startTime, finishOfficeTime);
             Date finishOfficeTimeByEndDay = formatTimeToKnownDate(endTime, officeTimeDto.getTimeEnd());
             if (endTime.before(finishOfficeTimeByEndDay)) {
-                startOfficeTime = formatTimeToKnownDate(endTime, officeTimeDto.getTimeStart());
                 outEarly = calculateNumOfHoursWorkedInADay(endTime, finishOfficeTimeByEndDay);
             }
+            startOfficeTime = formatTimeToKnownDate(endTime, officeTimeDto.getTimeStart());
             workingTimeInLastDay = calculateNumOfHoursWorkedInADay(startOfficeTime, endTime);
 
             saveTimeCheck(startTime, finishOfficeTime, personId, inLate, 0, workingTimeInFirstDay);

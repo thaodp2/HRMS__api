@@ -18,18 +18,25 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.validation.Valid;
 
 @RestController
-@RequestMapping(CommonConstant.HR + "/office-time")
+@RequestMapping(CommonConstant.HR)
 @Validated
 public class HROfficeTimeController {
 
     @Autowired
     OfficeTimeService officeTimeService;
 
-    @PutMapping("")
+    @PutMapping("/office-time")
     @ServiceProcessingValidateAnnotation
     public ResponseEntity<BaseResponse<HttpStatus, Void>> updateOfficeTime(@RequestBody
                                                                            @Valid OfficeTimeRequest officeTimeRequest,
                                                                            BindingResult bindingResult) throws Exception {
         return officeTimeService.updateOfficeTime(officeTimeRequest);
+    }
+    @PutMapping("/lunch-break-time")
+    @ServiceProcessingValidateAnnotation
+    public ResponseEntity<BaseResponse<HttpStatus, Void>> updateLunchBreak(@RequestBody
+                                                                           @Valid OfficeTimeRequest officeTimeRequest,
+                                                                           BindingResult bindingResult) throws Exception {
+        return officeTimeService.updateLunchBreak(officeTimeRequest);
     }
 }
