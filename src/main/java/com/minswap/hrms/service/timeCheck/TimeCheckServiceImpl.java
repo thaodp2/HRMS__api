@@ -101,7 +101,11 @@ public class TimeCheckServiceImpl implements TimeCheckService {
             if (!personFromDB.isPresent()) {
                 throw new Exception("Person not exist");
             }
-            getDatesInRange(startDateFormat, endDateFormat).forEach((date) -> {
+
+            List<Date> totalDates = getDatesInRange(startDateFormat, endDateFormat);
+            // Count total date from startDate to endDate
+            int total = totalDates.size();
+            totalDates.forEach((date) -> {
                 if (!Optional.ofNullable(timeCheckPerDateMap.get(date)).isPresent()) {
                     Date dateAdd = date;
                     dateAdd.setTime(dateAdd.getTime() + MILLISECOND_7_HOURS);
@@ -128,7 +132,7 @@ public class TimeCheckServiceImpl implements TimeCheckService {
                     return -1;
                 }
                 return 1;}).
-                    skip((page - 1 ) * 10).
+                    skip((page - 1 ) * limit).
                     limit(limit).
                     map(Map.Entry<Date, List<TimeCheckDto>>::getValue).reduce(new ArrayList<>(), (cumulatedList, currentValues) -> {
                 cumulatedList.addAll(currentValues);
@@ -139,7 +143,7 @@ public class TimeCheckServiceImpl implements TimeCheckService {
                 item.setId(id);
                 id++;
             }
-            pagination.setTotalRecords(timeCheckListAfterFillingUp.size());
+            pagination.setTotalRecords(total);
             pagination.setPage(page);
             pagination.setLimit(limit);
             responseEntity = BaseResponse.ofSucceededOffset(TimeCheckResponse.TimeCheckEachPersonResponse.of(timeCheckListAfterFillingUp), pagination);
@@ -175,7 +179,6 @@ public class TimeCheckServiceImpl implements TimeCheckService {
 
         return dates;
     }
-
 
     @Override
     public ResponseEntity<BaseResponse<TimeCheckResponse.TimeCheckEachSubordinateResponse, Pageable>> getListTimeCheck(String search, Long managerId, String startDate, String endDate, Integer page, Integer limit, String sort, String dir) throws Exception {
