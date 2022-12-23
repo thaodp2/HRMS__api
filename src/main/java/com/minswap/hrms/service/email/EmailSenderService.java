@@ -27,7 +27,7 @@ public class EmailSenderService {
 //        mailSender.send(message);
         MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, MimeMessageHelper.MULTIPART_MODE_MIXED_RELATED, StandardCharsets.UTF_8.name());
-            helper.setFrom("no-reply@ms-hrms.software");
+            helper.setFrom("hrmsminswap123@gmail.com");
             helper.setTo(toEmail);
             helper.setText(body,true);
             helper.setSubject(subject);
