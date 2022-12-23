@@ -5,6 +5,7 @@ import com.minswap.hrms.entities.Person;
 import com.minswap.hrms.entities.Salary;
 import com.minswap.hrms.exception.model.BaseException;
 import com.minswap.hrms.model.BaseResponse;
+import com.minswap.hrms.model.Meta;
 import com.minswap.hrms.repsotories.NotificationRepository;
 import com.minswap.hrms.repsotories.PayrollRepository;
 import com.minswap.hrms.repsotories.PersonRepository;
@@ -20,6 +21,9 @@ import org.springframework.stereotype.Service;
 
 import java.time.Year;
 import java.util.Optional;
+
+import static com.minswap.hrms.constants.ErrorCode.SEND_FAIL;
+import static com.minswap.hrms.constants.ErrorCode.UNAUTHORIZE;
 
 @Service
 public class PayrollServiceImpl implements PayrollService{
@@ -1268,7 +1272,7 @@ public class PayrollServiceImpl implements PayrollService{
             emailSenderService.sendEmail(toMail, "Payslip " + month + "/" + year, body);
             responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.OK, null);
         }catch (Exception e){
-            responseEntity = BaseResponse.ofSucceededOffset(HttpStatus.EXPECTATION_FAILED, null);
+            responseEntity = BaseResponse.ofFailedCustom(Meta.buildMeta(SEND_FAIL, null), null);
         }
         return responseEntity;
     }

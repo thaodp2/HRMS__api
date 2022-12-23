@@ -77,7 +77,9 @@ public enum ErrorCodeEnum {
   INVALID_FILE(681),
   UPLOAD_EXCEL(682),
   FINGERPRINT_INVALID(207),
+  SEND_FAIL(683),
   UNAUTHORIZE(HttpStatus.UNAUTHORIZED.value());
+
 
   /** The value. */
   private int value;
