@@ -53,7 +53,7 @@ public class ExportTimeCheck extends ExcelExporter{
                         cell.setCellValue((timeCheckList.get(j).getSun() == null ? "" : timeCheckList.get(j).getSun().getTimeIn()) + " - " + (timeCheckList.get(j).getSun() == null ? "" : timeCheckList.get(j).getSun().getTimeOut()));
                         break;
                 }
-//                getSheets().get(0).autoSizeColumn(i);
+                getSheets().get(0).autoSizeColumn(i);
             }
         }
     }
