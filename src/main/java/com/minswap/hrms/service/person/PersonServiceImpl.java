@@ -687,25 +687,26 @@ public class PersonServiceImpl implements PersonService {
                                 if (rowStart != 1) {
                                     if ((row.getCell(0) == null) &&
                                             row.getCell(1) == null &&
-                                            row.getCell(6) == null &&
+                                            //row.getCell(6) == null &&
                                             row.getCell(7) == null &&
-                                            row.getCell(8) == null &&
+                                            //row.getCell(8) == null &&
                                             row.getCell(9) == null &&
                                             row.getCell(2) == null &&
                                             row.getCell(3) == null &&
-                                            row.getCell(4) == null &&
+                                            //row.getCell(4) == null &&
                                             row.getCell(5) == null &&
                                             row.getCell(10) == null &&
                                             row.getCell(11) == null &&
                                             row.getCell(12) == null &&
                                             row.getCell(13) == null &&
-                                            row.getCell(14) == null &&
+                                            //row.getCell(14) == null &&
                                             row.getCell(15) == null &&
                                             row.getCell(16) == null &&
                                             row.getCell(17) == null &&
-                                            row.getCell(18) == null &&
-                                            row.getCell(19) == null &&
-                                            row.getCell(20) == null
+                                            //row.getCell(18) == null &&
+                                            row.getCell(19) == null
+                                            //&&
+                                            //row.getCell(20) == null
                                     ) {
                                         continue;
                                     }
