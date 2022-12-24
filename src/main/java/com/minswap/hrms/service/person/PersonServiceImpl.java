@@ -593,6 +593,24 @@ public class PersonServiceImpl implements PersonService {
         return false;
     }
 
+    public boolean checkManagerToCreate(Long departmentId, Long managerId) {
+        if (managerId != null) {
+            List<Person> personList = personRepository.getMasterDataManagerToCreate(CommonConstant.ROLE_ID_OF_MANAGER,null, departmentId);
+            if (personList != null && !personList.isEmpty()) {
+                for (Person person : personList) {
+                    if (person.getPersonId() == managerId) {
+                        return true;
+                    }
+                }
+            } else {
+                return false;
+            }
+        } else {
+            return true;
+        }
+        return false;
+    }
+
     @Override
     public boolean checkGenderValid(Integer gender) {
         if (gender == 0 || gender == 1) {
@@ -777,7 +795,9 @@ public class PersonServiceImpl implements PersonService {
                                             if (person != null) {
                                                 if (fullName == null || fullName.trim().isEmpty()
                                                         || dateOfBirth == null || dateOfBirth.trim().isEmpty()
-                                                        || !checkFormatDate(dateOfBirth) || !checkManagerByDepartmentValid(managerId, departmentId)
+                                                        || !checkFormatDate(dateOfBirth) ||
+                                                        !checkManagerToEdit(departmentId,rollNumber,managerId)
+                                                        //!checkManagerByDepartmentValid(managerId, departmentId)
                                                         || !departmentService.checkDepartmentExist(departmentId)
                                                         || !positionService.checkPositionByDepartment(positionId, departmentId)
                                                         || !rankService.checkRankExist(rankId)
@@ -802,7 +822,9 @@ public class PersonServiceImpl implements PersonService {
                                             //create employee
                                             if (fullName == null || fullName.trim().isEmpty()
                                                     || dateOfBirth == null || dateOfBirth.trim().isEmpty()
-                                                    || !checkFormatDate(dateOfBirth) || !checkManagerByDepartmentValid(managerId, departmentId)
+                                                    || !checkFormatDate(dateOfBirth) ||
+                                                    !checkManagerToCreate(departmentId,managerId)
+                                                    //!checkManagerByDepartmentValid(managerId, departmentId)
                                                     || !departmentService.checkDepartmentExist(departmentId)
                                                     || !positionService.checkPositionByDepartment(positionId, departmentId)
                                                     || !rankService.checkRankExist(rankId)
