@@ -28,8 +28,8 @@ public interface PayrollRepository extends JpaRepository<Salary, Long> {
 
     @Query(value =" SELECT   " +
                   " SUM( CASE when date(r.start_time) = date(r.end_time)  then TIME_TO_SEC(TIMEDIFF(r.end_time, r.start_time))/3600  " +
-                  "           when date(r.start_time) = date( :otDate )  then TIME_TO_SEC(TIMEDIFF(CONCAT(date(r.end_time), \" 00:00:00\") , r.start_time))/3600  " +
-                  "           when date(r.end_time) = date(  :otDate )  then TIME_TO_SEC(TIMEDIFF( r.end_time, CONCAT(date(r.end_time), \" 00:00:00\")))/3600  " +
+                  "           when date(r.start_time) = date( :date )  then TIME_TO_SEC(TIMEDIFF(CONCAT(date(r.end_time), \" 00:00:00\") , r.start_time))/3600  " +
+                  "           when date(r.end_time) = date(  :date )  then TIME_TO_SEC(TIMEDIFF( r.end_time, CONCAT(date(r.end_time), \" 00:00:00\")))/3600  " +
                   " else 1  " +
                   " end )  " +
                   " FROM request r  " +
