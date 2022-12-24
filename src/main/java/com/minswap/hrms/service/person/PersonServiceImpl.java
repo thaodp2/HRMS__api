@@ -816,8 +816,9 @@ public class PersonServiceImpl implements PersonService {
                                                     updateEmployee(employeeUpdateRequest, rollNumber.trim());
                                                     countRecordUpdateSuccess++;
                                                 }
+                                            }else {
+                                                throw new BaseException(INVALID_PARAMETERS);
                                             }
-
                                         } else {
                                             //create employee
                                             if (fullName == null || fullName.trim().isEmpty()
