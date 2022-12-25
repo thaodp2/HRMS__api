@@ -205,7 +205,7 @@ public class TimeCheckServiceImpl implements TimeCheckService {
                 eachSubordinateDto.setRollNumber(personFromDB.get().getRollNumber());
                 int dateCount = 2;
                 for (Date item : listDate) {
-                    Date dateAdd = item;
+                    Date dateAdd = new Date(item.getTime()) ;
                     dateAdd.setTime(dateAdd.getTime() + MILLISECOND_7_HOURS);
                     DailyTimeCheckDto timeCheckDto = timeCheckRepository.getDailyTimeCheck(personId, dateAdd);
 
@@ -272,7 +272,7 @@ public class TimeCheckServiceImpl implements TimeCheckService {
                 eachSubordinateDto.setRollNumber(personFromDB.get().getRollNumber());
                 int dateCount = 2;
                 for (Date item : listDate) {
-                    Date dateAdd = item;
+                    Date dateAdd = new Date(item.getTime());
                     dateAdd.setTime(dateAdd.getTime() + MILLISECOND_7_HOURS);
                     DailyTimeCheckDto timeCheckDto = timeCheckRepository.getDailyTimeCheck(personId, dateAdd);
 
@@ -332,7 +332,7 @@ public class TimeCheckServiceImpl implements TimeCheckService {
             eachSubordinateDto.setRollNumber(personFromDB.get().getRollNumber());
             int dateCount = 2;
             for (Date item : listDate) {
-                Date dateAdd = item;
+                Date dateAdd = new Date(item.getTime()) ;
                 dateAdd.setTime(dateAdd.getTime() + MILLISECOND_7_HOURS);
                 DailyTimeCheckDto timeCheckDto = timeCheckRepository.getDailyTimeCheck(personId, dateAdd);
 
