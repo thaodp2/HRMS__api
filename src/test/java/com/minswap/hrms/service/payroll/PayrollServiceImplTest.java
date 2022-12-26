@@ -49,7 +49,7 @@ public class PayrollServiceImplTest {
         when(personService.getPersonInforByEmail(anyString())).thenReturn(new Person(Long.valueOf(1), "fullName", "address", "citizenIdentification", "phoneNumber", "email", new GregorianCalendar(2022, Calendar.DECEMBER, 8, 19, 31).getTime(), Long.valueOf(1), Long.valueOf(1), Long.valueOf(1), 0, "rollNumber", new GregorianCalendar(2022, Calendar.DECEMBER, 8, 19, 31).getTime(), "status", Long.valueOf(1), Double.valueOf(0), Double.valueOf(0), "avatarImg", Double.valueOf(0), "pinCode"));
 
         ResponseEntity<BaseResponse<HttpStatus, Void>> result = payrollServiceImpl.sendPayrollToEmail(new UserPrincipal("email", "name", List.of(new Role(Long.valueOf(1), "roleName"))), 0, 0, "111qqq12");
-        Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
+        Assert.assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
     }
 }
 
