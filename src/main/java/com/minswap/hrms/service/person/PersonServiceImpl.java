@@ -62,7 +62,9 @@ import java.text.DecimalFormat;
 import java.text.Normalizer;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.Year;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -340,9 +342,6 @@ public class PersonServiceImpl implements PersonService {
         }
         //update role person 
         updatePersonRole(employeeDetailDto, employeeRequest);
-        if (employeeRequest.getOnBoardDate() == null) {
-            employeeRequest.setOnBoardDate(employeeDetailDto.getOnBoardDate().toString());
-        }
         if (employeeRequest.getActive() == null) {
             employeeRequest.setActive(employeeDetailDto.getStatus() + "");
         }
@@ -359,7 +358,6 @@ public class PersonServiceImpl implements PersonService {
                 rollNumber,
                 employeeRequest.getSalaryBasic(),
                 employeeRequest.getSalaryBonus(),
-                convertDateInput(employeeRequest.getOnBoardDate()),
                 employeeRequest.getActive());
 
         ResponseEntity<BaseResponse<Void, Void>> responseEntity = BaseResponse.ofSucceeded(null);
@@ -391,8 +389,8 @@ public class PersonServiceImpl implements PersonService {
         person.setSalaryBasic(employeeRequest.getSalaryBasic());
         person.setSalaryBonus(employeeRequest.getSalaryBonus());
         person.setDateOfBirth(convertDateInput(employeeRequest.getDateOfBirth()));
-        person.setOnBoardDate(convertDateInput(employeeRequest.getOnBoardDate()));
-
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("YYYY-MM-dd");
+        person.setOnBoardDate(convertDateInput(formatter.format(LocalDate.now())));
         try {
             personRepository.save(person);
         } catch (Exception e) {
@@ -926,7 +924,7 @@ public class PersonServiceImpl implements PersonService {
         }
         fMailName = fMailName.substring(0, fMailName.length() - 1);
         Integer countPersonByMail = personRepository.getCountPersonByMail(fMailName);
-        return fMailName + countPersonByMail + "@minswap.com";
+        return fMailName + countPersonByMail + "@ms-hrms.software";
     }
 
     private Double convertAnnualLeaveBudget(Long rankId) {

@@ -14,7 +14,6 @@ import javax.validation.constraints.Pattern;
 
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
 public class EmployeeUpdateRequest extends BasicRequest{
 
@@ -54,10 +53,6 @@ public class EmployeeUpdateRequest extends BasicRequest{
 	
 	@JsonProperty("rankId")
 	private Long rankId;
-	
-	@JsonProperty("onBoardDate")
-//	@Pattern(regexp = "((0[1-9]|[12]\\d|3[01])-(0[1-9]|1[0-2])-[12]\\d{3})", message = "601")
-	private String onBoardDate;
 	
 	@JsonProperty("citizenIdentification")
 	@Pattern(regexp = "^[0-9]{9}$|^[0-9]{12}$", message = "617")
