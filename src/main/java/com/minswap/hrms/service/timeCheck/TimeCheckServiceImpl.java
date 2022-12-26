@@ -452,22 +452,32 @@ public class TimeCheckServiceImpl implements TimeCheckService {
                                     }
                                     try {
                                         Long personId = null;
-                                        String rollNumber = null;
+                                        String privateKey = null;
                                         String timeLog = null;
 
                                         if (row.getCell(0) != null) {
-                                            rollNumber = row.getCell(0).getStringCellValue();
+                                            privateKey = row.getCell(0).getStringCellValue();
                                         }
                                         if (row.getCell(1) != null) {
                                             timeLog = row.getCell(1).getStringCellValue();
                                         }
-                                        Person person = personRepository.findPersonByRollNumberEquals(rollNumber).orElse(null);
-                                        if (person != null) {
-                                            personId = person.getPersonId();
-                                        } else {
+
+                                        SignatureProfile signatureProfileOptional = signatureProfileRepository.findSignatureProfileByPrivateKeySignature(privateKey).orElse(null);
+                                        if(signatureProfileOptional != null){
+                                            personId = signatureProfileOptional.getPersonId();
+                                        }else {
                                             countRecordFail++;
                                             rowFail += (row.getRowNum() + 1) + ", ";
+                                            continue;
                                         }
+
+//                                        Person person = personRepository.findPersonByRollNumberEquals(rollNumber).orElse(null);
+//                                        if (person != null) {
+//                                            personId = person.getPersonId();
+//                                        } else {
+//                                            countRecordFail++;
+//                                            rowFail += (row.getRowNum() + 1) + ", ";
+//                                        }
                                         if (personId == null || timeLog == null) {
                                             countRecordFail++;
                                             rowFail += (row.getRowNum() + 1) + ", ";
@@ -478,7 +488,7 @@ public class TimeCheckServiceImpl implements TimeCheckService {
                                             Date currentDate = new Date();
                                             String currentDateString = smd.format(currentDate);
                                             currentDate = smd.parse(currentDateString);
-                                            if (currentDate.compareTo(checkFutureDate) != 0) {
+                                            if (currentDate.compareTo(checkFutureDate) == -1) {
                                                 countRecordFail++;
                                                 rowFail += (row.getRowNum() + 1) + ", ";
                                                 continue;
