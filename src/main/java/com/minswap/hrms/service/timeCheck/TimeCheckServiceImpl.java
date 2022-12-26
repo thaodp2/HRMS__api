@@ -467,7 +467,7 @@ public class TimeCheckServiceImpl implements TimeCheckService {
                                             personId = signatureProfileOptional.getPersonId();
                                         }else {
                                             countRecordFail++;
-                                            rowFail += (row.getRowNum() + 1) + ", ";
+                                            rowFail += (row.getRowNum() + 1) + ": Private key invalid, ";
                                             continue;
                                         }
 
@@ -480,7 +480,7 @@ public class TimeCheckServiceImpl implements TimeCheckService {
 //                                        }
                                         if (personId == null || timeLog == null) {
                                             countRecordFail++;
-                                            rowFail += (row.getRowNum() + 1) + ", ";
+                                            rowFail += (row.getRowNum() + 1) + ": Time Log invalid, ";
                                             continue;
                                         } else {
                                             //check
@@ -555,7 +555,7 @@ public class TimeCheckServiceImpl implements TimeCheckService {
                                     } catch (Exception e) {
                                         //show dòng bị fail
                                         countRecordFail++;
-                                        rowFail += (row.getRowNum() + 1) + ", ";
+                                        rowFail += (row.getRowNum() + 1) + ": "+e.getMessage()+", ";
                                     }
                                 }
                                 rowStart++;

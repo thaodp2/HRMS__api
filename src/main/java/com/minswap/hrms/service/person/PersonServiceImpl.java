@@ -698,13 +698,14 @@ public class PersonServiceImpl implements PersonService {
                                             row.getCell(10) == null &&
                                             row.getCell(11) == null &&
                                             row.getCell(12) == null &&
-                                            row.getCell(13) == null &&
-                                            //row.getCell(14) == null &&
+                                            //row.getCell(13) == null &&
+                                            row.getCell(14) == null &&
                                             row.getCell(15) == null &&
                                             row.getCell(16) == null &&
-                                            row.getCell(17) == null &&
-                                            //row.getCell(18) == null &&
-                                            row.getCell(19) == null
+                                            //row.getCell(17) == null &&
+                                            row.getCell(18) == null
+                                            //&&
+                                            //row.getCell(19) == null
                                             //&&
                                             //row.getCell(20) == null
                                     ) {
@@ -737,20 +738,20 @@ public class PersonServiceImpl implements PersonService {
                                         if (row.getCell(2) != null) {
                                             dateOfBirth = row.getCell(2).getStringCellValue();
                                         }
+//                                        if (row.getCell(9) != null) {
+//                                            onBoardDate = row.getCell(9).getStringCellValue();
+//                                        }
                                         if (row.getCell(9) != null) {
-                                            onBoardDate = row.getCell(9).getStringCellValue();
+                                            citizenIdentification = row.getCell(9).getStringCellValue();
                                         }
                                         if (row.getCell(10) != null) {
-                                            citizenIdentification = row.getCell(10).getStringCellValue();
+                                            phoneNumber = row.getCell(10).getStringCellValue();
                                         }
                                         if (row.getCell(11) != null) {
-                                            phoneNumber = row.getCell(11).getStringCellValue();
+                                            address = row.getCell(11).getStringCellValue();
                                         }
-                                        if (row.getCell(12) != null) {
-                                            address = row.getCell(12).getStringCellValue();
-                                        }
-                                        if (row.getCell(20) != null) {
-                                            isActive = row.getCell(20).getStringCellValue();
+                                        if (row.getCell(19) != null) {
+                                            isActive = row.getCell(19).getStringCellValue();
                                             if (isActive.equals("")) {
                                                 isActive = null;
                                             }
@@ -775,19 +776,19 @@ public class PersonServiceImpl implements PersonService {
                                             rankId = (long) row.getCell(8).getNumericCellValue();
                                         }
 
+                                        if (row.getCell(13) != null) {
+                                            gender = (int) row.getCell(13).getNumericCellValue();
+                                        }
+
+                                        if (row.getCell(17) != null) {
+                                            isManager = (int) row.getCell(17).getNumericCellValue();
+                                        }
+
                                         if (row.getCell(14) != null) {
-                                            gender = (int) row.getCell(14).getNumericCellValue();
+                                            salaryBasic = row.getCell(14).getNumericCellValue();
                                         }
-
-                                        if (row.getCell(18) != null) {
-                                            isManager = (int) row.getCell(18).getNumericCellValue();
-                                        }
-
                                         if (row.getCell(15) != null) {
-                                            salaryBasic = row.getCell(15).getNumericCellValue();
-                                        }
-                                        if (row.getCell(16) != null) {
-                                            salaryBonus =row.getCell(16).getNumericCellValue();
+                                            salaryBonus =row.getCell(15).getNumericCellValue();
                                         }
 
                                         if (rollNumber != null && !rollNumber.trim().isEmpty()) {
@@ -802,7 +803,7 @@ public class PersonServiceImpl implements PersonService {
                                                         || !departmentService.checkDepartmentExist(departmentId)
                                                         || !positionService.checkPositionByDepartment(positionId, departmentId)
                                                         || !rankService.checkRankExist(rankId)
-                                                        || !checkFormatDate(onBoardDate)
+                                                        //|| !checkFormatDate(onBoardDate)
                                                         || !checkCCCDValid(citizenIdentification)
                                                         || !checkPhoneValid(phoneNumber)
                                                         || !checkGenderValid(gender)
@@ -813,7 +814,7 @@ public class PersonServiceImpl implements PersonService {
                                                     throw new BaseException(INVALID_PARAMETERS);
                                                 } else {
                                                     EmployeeUpdateRequest employeeUpdateRequest = new EmployeeUpdateRequest(fullName, dateOfBirth, managerId, departmentId
-                                                            , positionId, rankId, onBoardDate, citizenIdentification, phoneNumber, address, gender, isActive, salaryBasic, salaryBonus, isManager);
+                                                            , positionId, rankId, citizenIdentification, phoneNumber, address, gender, isActive, salaryBasic, salaryBonus, isManager);
                                                     updateEmployee(employeeUpdateRequest, rollNumber.trim());
                                                     countRecordUpdateSuccess++;
                                                 }
@@ -830,7 +831,7 @@ public class PersonServiceImpl implements PersonService {
                                                     || !departmentService.checkDepartmentExist(departmentId)
                                                     || !positionService.checkPositionByDepartment(positionId, departmentId)
                                                     || !rankService.checkRankExist(rankId)
-                                                    || !checkFormatDate(onBoardDate)
+                                                    //|| !checkFormatDate(onBoardDate)
                                                     || !checkCCCDValid(citizenIdentification)
                                                     || !checkPhoneValid(phoneNumber)
                                                     || !checkGenderValid(gender)
@@ -840,7 +841,7 @@ public class PersonServiceImpl implements PersonService {
                                                 throw new BaseException(INVALID_PARAMETERS);
                                             } else {
                                                 EmployeeRequest employeeRequest = new EmployeeRequest(fullName, dateOfBirth,
-                                                        managerId, departmentId, positionId, rankId, onBoardDate,
+                                                        managerId, departmentId, positionId, rankId,
                                                         citizenIdentification, phoneNumber,
                                                         address, gender, null, salaryBasic, salaryBonus, isManager
                                                 );

@@ -18,6 +18,23 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class EmployeeRequest extends BasicRequest{
+	public EmployeeRequest(String fullName, String dateOfBirth, Long managerId, Long departmentId, Long positionId, Long rankId, String citizenIdentification, String phoneNumber, String address, Integer gender, String active, Double salaryBasic, Double salaryBonus, Integer isManager) {
+		this.fullName = fullName;
+		this.dateOfBirth = dateOfBirth;
+		this.managerId = managerId;
+		this.departmentId = departmentId;
+		this.positionId = positionId;
+		this.rankId = rankId;
+		this.citizenIdentification = citizenIdentification;
+		this.phoneNumber = phoneNumber;
+		this.address = address;
+		this.gender = gender;
+		this.active = active;
+		this.salaryBasic = salaryBasic;
+		this.salaryBonus = salaryBonus;
+		this.isManager = isManager;
+	}
+
 	@JsonProperty("fullName")
 	@NotNull(message ="600")
 	@NotEmpty(message = "600")
