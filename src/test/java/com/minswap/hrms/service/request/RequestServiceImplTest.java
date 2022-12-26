@@ -47,7 +47,6 @@ public class RequestServiceImplTest {
     PersonRepository personRepository;
     @Mock
     NotificationRepository notificationRepository;
-    //Field httpStatus of type HttpStatus - was not mocked since Mockito doesn't mock a Final class when 'mock-maker-inline' option is not set
     @Mock
     Set<Integer> LEAVE_REQUEST_TYPE;
     @Mock
@@ -101,6 +100,18 @@ public class RequestServiceImplTest {
 
         ResponseEntity<BaseResponse<Void, Void>> result = requestServiceImpl.createRequest(new CreateRequest(Long.valueOf(1), Long.valueOf(1), "startTime", "endTime", "reason", List.of("String")), Long.valueOf(1));
         Assert.assertEquals(null, result);
+    }
+
+    @Test
+    public void testCalculateHoursBetweenTwoDateTime() throws Exception {
+        double result = requestServiceImpl.calculateHoursBetweenTwoDateTime(new GregorianCalendar(2022, Calendar.DECEMBER, 27, 0, 11).getTime(), new GregorianCalendar(2022, Calendar.DECEMBER, 27, 0, 11).getTime());
+        Assert.assertEquals(0d, result,0d);
+    }
+
+    @Test
+    public void testGetStringDateFromDateTime() throws Exception {
+        String result = requestServiceImpl.getStringDateFromDateTime(new GregorianCalendar(2022, Calendar.DECEMBER, 27, 0, 11).getTime());
+        Assert.assertEquals("2022-12-27", result);
     }
 
     @Test
@@ -160,6 +171,11 @@ public class RequestServiceImplTest {
         ResponseEntity<BaseResponse<Void, Void>> result = requestServiceImpl.updateRequestStatus("status", Long.valueOf(1), Long.valueOf(1));
         Assert.assertEquals(null, result);
     }
+    @Test
+    public void testGetDayOfDate() throws Exception {
+        int result = requestServiceImpl.getDayOfDate(new GregorianCalendar(2022, Calendar.DECEMBER, 27, 0, 11).getTime());
+        Assert.assertEquals(27, result);
+    }
 
 
     @Test
@@ -177,4 +193,52 @@ public class RequestServiceImplTest {
 
 
 
+
+
+    @Test
+    public void testGetMonthOfDate() throws Exception {
+        int result = requestServiceImpl.getMonthOfDate(new GregorianCalendar(2022, Calendar.DECEMBER, 27, 0, 11).getTime());
+        Assert.assertEquals(12, result);
+    }
+
+    @Test
+    public void testValidateOTTime() throws Exception {
+        requestServiceImpl.validateOTTime(0d, 0d, 0d, 0d);
+    }
+
+
+    @Test
+    public void testGetNotiContentWhenCreateRequest() throws Exception {
+        String result = requestServiceImpl.getNotiContentWhenCreateRequest();
+        Assert.assertEquals("send you a request", result);
+    }
+
+    @Test
+    public void testGetNotiContentWhenUpdateRequestStatus() throws Exception {
+        String result = requestServiceImpl.getNotiContentWhenUpdateRequestStatus("requestTypeName");
+        Assert.assertEquals("has processed your requestTypeName request", result);
+    }
+
+    @Test
+    public void testGetNotiRequestUrlForViewDetail() throws Exception {
+        String result = requestServiceImpl.getNotiRequestUrlForViewDetail(Long.valueOf(1));
+        Assert.assertEquals("emp-self-service/request/detail/1", result);
+    }
+
+    @Test
+    public void testGetNotiRequestUrlForUpdateStatus() throws Exception {
+        String result = requestServiceImpl.getNotiRequestUrlForUpdateStatus("type", Long.valueOf(1));
+        Assert.assertEquals("request-center/type/detail/1", result);
+    }
+
+    @Test
+    public void testGetNotiURLForITSupport() throws Exception {
+        String result = requestServiceImpl.getNotiURLForITSupport();
+        Assert.assertEquals("request-center/borrow-device", result);
+    }
+
+
+
+
+}
 

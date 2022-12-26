@@ -924,6 +924,9 @@ public class PersonServiceImpl implements PersonService {
         }
         fMailName = fMailName.substring(0, fMailName.length() - 1);
         Integer countPersonByMail = personRepository.getCountPersonByMail(fMailName);
+        if(countPersonByMail == 0) {
+        	 return fMailName + "@ms-hrms.software";
+        }
         return fMailName + countPersonByMail + "@ms-hrms.software";
     }
 
