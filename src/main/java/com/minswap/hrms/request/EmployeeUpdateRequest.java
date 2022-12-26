@@ -14,9 +14,26 @@ import javax.validation.constraints.Pattern;
 
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
 public class EmployeeUpdateRequest extends BasicRequest{
+
+	public EmployeeUpdateRequest(String fullName, String dateOfBirth, Long managerId, Long departmentId, Long positionId, Long rankId, String citizenIdentification, String phoneNumber, String address, Integer gender, String active, Double salaryBasic, Double salaryBonus, Integer isManager) {
+		this.fullName = fullName;
+		this.dateOfBirth = dateOfBirth;
+		this.managerId = managerId;
+		this.departmentId = departmentId;
+		this.positionId = positionId;
+		this.rankId = rankId;
+		this.citizenIdentification = citizenIdentification;
+		this.phoneNumber = phoneNumber;
+		this.address = address;
+		this.gender = gender;
+		this.active = active;
+		this.salaryBasic = salaryBasic;
+		this.salaryBonus = salaryBonus;
+		this.isManager = isManager;
+	}
+
 	@JsonProperty("fullName")
 //	@Pattern(regexp = "^[a-zA-Z0-9 ]{3,20}$", message = "600")
 	private String fullName;
@@ -36,10 +53,6 @@ public class EmployeeUpdateRequest extends BasicRequest{
 	
 	@JsonProperty("rankId")
 	private Long rankId;
-	
-	@JsonProperty("onBoardDate")
-//	@Pattern(regexp = "((0[1-9]|[12]\\d|3[01])-(0[1-9]|1[0-2])-[12]\\d{3})", message = "601")
-	private String onBoardDate;
 	
 	@JsonProperty("citizenIdentification")
 	@Pattern(regexp = "^[0-9]{9}$|^[0-9]{12}$", message = "617")

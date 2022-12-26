@@ -140,8 +140,15 @@ public class ErrorCode {
     }
     public static final BusinessCode CITIZEN_INDENTIFICATION_EXSIT = new BusinessCode(
             ErrorCodeEnum.CITIZEN_INDENTIFICATION_EXSIT.getValue(), "Citizen Identification exist!", HttpStatus.NOT_FOUND);
+
+    public static final BusinessCode SEND_PIN_CODE_FAILED = new BusinessCode(
+            ErrorCodeEnum.SEND_PIN_CODE_FAILED.getValue(), "Send pin code to your email failed!", HttpStatus.NOT_FOUND);
+
     public static final BusinessCode FINGERPRINT_INVALID = new BusinessCode(
             ErrorCodeEnum.FINGERPRINT_INVALID.getValue(), "Contact HR to register this fingerprint!", HttpStatus.NOT_FOUND);
     public static final BusinessCode UNAUTHORIZE = new BusinessCode(
             ErrorCodeEnum.UNAUTHORIZE.getValue(), "Sorry! We've got an Unauthorized Redirect URI and can't proceed with the authentication", HttpStatus.UNAUTHORIZED);
+
+    public static final BusinessCode SEND_FAIL = new BusinessCode(
+            ErrorCodeEnum.SEND_FAIL.getValue(), "Send email fail", HttpStatus.EXPECTATION_FAILED);
 }

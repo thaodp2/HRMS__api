@@ -62,7 +62,9 @@ import java.text.DecimalFormat;
 import java.text.Normalizer;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.Year;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -340,9 +342,6 @@ public class PersonServiceImpl implements PersonService {
         }
         //update role person 
         updatePersonRole(employeeDetailDto, employeeRequest);
-        if (employeeRequest.getOnBoardDate() == null) {
-            employeeRequest.setOnBoardDate(employeeDetailDto.getOnBoardDate().toString());
-        }
         if (employeeRequest.getActive() == null) {
             employeeRequest.setActive(employeeDetailDto.getStatus() + "");
         }
@@ -359,7 +358,6 @@ public class PersonServiceImpl implements PersonService {
                 rollNumber,
                 employeeRequest.getSalaryBasic(),
                 employeeRequest.getSalaryBonus(),
-                convertDateInput(employeeRequest.getOnBoardDate()),
                 employeeRequest.getActive());
 
         ResponseEntity<BaseResponse<Void, Void>> responseEntity = BaseResponse.ofSucceeded(null);
@@ -391,8 +389,8 @@ public class PersonServiceImpl implements PersonService {
         person.setSalaryBasic(employeeRequest.getSalaryBasic());
         person.setSalaryBonus(employeeRequest.getSalaryBonus());
         person.setDateOfBirth(convertDateInput(employeeRequest.getDateOfBirth()));
-        person.setOnBoardDate(convertDateInput(employeeRequest.getOnBoardDate()));
-
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("YYYY-MM-dd");
+        person.setOnBoardDate(convertDateInput(formatter.format(LocalDate.now())));
         try {
             personRepository.save(person);
         } catch (Exception e) {
@@ -483,7 +481,7 @@ public class PersonServiceImpl implements PersonService {
             emailSenderService.sendEmail(person.getEmail(), "Update New Pin Code", body);
             return BaseResponse.ofSucceeded(true);
         } catch (Exception e) {
-            return BaseResponse.ofSucceeded(false);
+            throw new BaseException(ErrorCode.SEND_PIN_CODE_FAILED);
         }
     }
 
@@ -515,7 +513,7 @@ public class PersonServiceImpl implements PersonService {
 
             return BaseResponse.ofSucceeded(true);
         } catch (Exception e) {
-            return BaseResponse.ofSucceeded(false);
+            throw new BaseException(UPDATE_FAIL);
         }
     }
 
@@ -541,7 +539,7 @@ public class PersonServiceImpl implements PersonService {
 
             return BaseResponse.ofSucceeded(true);
         } catch (Exception e) {
-            return BaseResponse.ofSucceeded(false);
+            throw new BaseException(CREATE_FAIL);
         }
     }
 
@@ -578,6 +576,24 @@ public class PersonServiceImpl implements PersonService {
     public boolean checkManagerToEdit(Long departmentId, String rollNumber, Long managerId) {
         if (managerId != null) {
             List<Person> personList = getMasterDataManagerToEdit(departmentId, rollNumber, null);
+            if (personList != null && !personList.isEmpty()) {
+                for (Person person : personList) {
+                    if (person.getPersonId() == managerId) {
+                        return true;
+                    }
+                }
+            } else {
+                return false;
+            }
+        } else {
+            return true;
+        }
+        return false;
+    }
+
+    public boolean checkManagerToCreate(Long departmentId, Long managerId) {
+        if (managerId != null) {
+            List<Person> personList = personRepository.getMasterDataManagerToCreate(CommonConstant.ROLE_ID_OF_MANAGER,null, departmentId);
             if (personList != null && !personList.isEmpty()) {
                 for (Person person : personList) {
                     if (person.getPersonId() == managerId) {
@@ -669,20 +685,27 @@ public class PersonServiceImpl implements PersonService {
                                 if (rowStart != 1) {
                                     if ((row.getCell(0) == null) &&
                                             row.getCell(1) == null &&
-                                            row.getCell(6) == null &&
+                                            //row.getCell(6) == null &&
                                             row.getCell(7) == null &&
-                                            row.getCell(8) == null &&
+                                            //row.getCell(8) == null &&
                                             row.getCell(9) == null &&
                                             row.getCell(2) == null &&
                                             row.getCell(3) == null &&
-                                            row.getCell(4) == null &&
+                                            //row.getCell(4) == null &&
                                             row.getCell(5) == null &&
                                             row.getCell(10) == null &&
                                             row.getCell(11) == null &&
                                             row.getCell(12) == null &&
-                                            row.getCell(13) == null &&
+                                            //row.getCell(13) == null &&
                                             row.getCell(14) == null &&
-                                            row.getCell(15) == null
+                                            row.getCell(15) == null &&
+                                            row.getCell(16) == null &&
+                                            //row.getCell(17) == null &&
+                                            row.getCell(18) == null
+                                            //&&
+                                            //row.getCell(19) == null
+                                            //&&
+                                            //row.getCell(20) == null
                                     ) {
                                         continue;
                                     }
@@ -713,45 +736,57 @@ public class PersonServiceImpl implements PersonService {
                                         if (row.getCell(2) != null) {
                                             dateOfBirth = row.getCell(2).getStringCellValue();
                                         }
-                                        if (row.getCell(7) != null) {
-                                            onBoardDate = row.getCell(7).getStringCellValue();
-                                        }
-                                        if (row.getCell(8) != null) {
-                                            citizenIdentification = row.getCell(8).getStringCellValue();
-                                        }
+//                                        if (row.getCell(9) != null) {
+//                                            onBoardDate = row.getCell(9).getStringCellValue();
+//                                        }
                                         if (row.getCell(9) != null) {
-                                            phoneNumber = row.getCell(9).getStringCellValue();
+                                            citizenIdentification = row.getCell(9).getStringCellValue();
                                         }
                                         if (row.getCell(10) != null) {
-                                            address = row.getCell(10).getStringCellValue();
+                                            phoneNumber = row.getCell(10).getStringCellValue();
                                         }
-                                        if (row.getCell(15) != null) {
-                                            isActive = row.getCell(15).getStringCellValue();
+                                        if (row.getCell(11) != null) {
+                                            address = row.getCell(11).getStringCellValue();
+                                        }
+                                        if (row.getCell(19) != null) {
+                                            isActive = row.getCell(19).getStringCellValue();
+                                            if (isActive.equals("")) {
+                                                isActive = null;
+                                            }
                                         }
 
                                         if (row.getCell(3) != null) {
-                                            managerId = (long) row.getCell(3).getNumericCellValue();
+                                            Person person = personRepository.findPersonByRollNumberEquals(row.getCell(3).getStringCellValue()).orElse(null);
+                                            if(person != null){
+                                                managerId = person.getPersonId();
+                                            }
+                                            //managerId = (long) row.getCell(3).getNumericCellValue();
                                         }
                                         if (row.getCell(4) != null) {
                                             departmentId = (long) row.getCell(4).getNumericCellValue();
                                         }
-                                        if (row.getCell(5) != null) {
-                                            positionId = (long) row.getCell(5).getNumericCellValue();
-                                        }
+
                                         if (row.getCell(6) != null) {
-                                            rankId = (long) row.getCell(6).getNumericCellValue();
+                                            positionId = (long) row.getCell(6).getNumericCellValue();
                                         }
-                                        if (row.getCell(11) != null) {
-                                            gender = (int) row.getCell(11).getNumericCellValue();
+
+                                        if (row.getCell(8) != null) {
+                                            rankId = (long) row.getCell(8).getNumericCellValue();
                                         }
-                                        if (row.getCell(14) != null) {
-                                            isManager = (int) row.getCell(14).getNumericCellValue();
-                                        }
-                                        if (row.getCell(12) != null) {
-                                            salaryBasic = (double) row.getCell(12).getNumericCellValue();
-                                        }
+
                                         if (row.getCell(13) != null) {
-                                            salaryBonus = (double) row.getCell(13).getNumericCellValue();
+                                            gender = (int) row.getCell(13).getNumericCellValue();
+                                        }
+
+                                        if (row.getCell(17) != null) {
+                                            isManager = (int) row.getCell(17).getNumericCellValue();
+                                        }
+
+                                        if (row.getCell(14) != null) {
+                                            salaryBasic = row.getCell(14).getNumericCellValue();
+                                        }
+                                        if (row.getCell(15) != null) {
+                                            salaryBonus =row.getCell(15).getNumericCellValue();
                                         }
 
                                         if (rollNumber != null && !rollNumber.trim().isEmpty()) {
@@ -760,11 +795,13 @@ public class PersonServiceImpl implements PersonService {
                                             if (person != null) {
                                                 if (fullName == null || fullName.trim().isEmpty()
                                                         || dateOfBirth == null || dateOfBirth.trim().isEmpty()
-                                                        || !checkFormatDate(dateOfBirth) || !checkManagerByDepartmentValid(managerId, departmentId)
+                                                        || !checkFormatDate(dateOfBirth) ||
+                                                        !checkManagerToEdit(departmentId,rollNumber,managerId)
+                                                        //!checkManagerByDepartmentValid(managerId, departmentId)
                                                         || !departmentService.checkDepartmentExist(departmentId)
                                                         || !positionService.checkPositionByDepartment(positionId, departmentId)
                                                         || !rankService.checkRankExist(rankId)
-                                                        || !checkFormatDate(onBoardDate)
+                                                        //|| !checkFormatDate(onBoardDate)
                                                         || !checkCCCDValid(citizenIdentification)
                                                         || !checkPhoneValid(phoneNumber)
                                                         || !checkGenderValid(gender)
@@ -775,21 +812,24 @@ public class PersonServiceImpl implements PersonService {
                                                     throw new BaseException(INVALID_PARAMETERS);
                                                 } else {
                                                     EmployeeUpdateRequest employeeUpdateRequest = new EmployeeUpdateRequest(fullName, dateOfBirth, managerId, departmentId
-                                                            , positionId, rankId, onBoardDate, citizenIdentification, phoneNumber, address, gender, isActive, salaryBasic, salaryBonus, isManager);
+                                                            , positionId, rankId, citizenIdentification, phoneNumber, address, gender, isActive, salaryBasic, salaryBonus, isManager);
                                                     updateEmployee(employeeUpdateRequest, rollNumber.trim());
                                                     countRecordUpdateSuccess++;
                                                 }
+                                            }else {
+                                                throw new BaseException(INVALID_PARAMETERS);
                                             }
-
                                         } else {
                                             //create employee
                                             if (fullName == null || fullName.trim().isEmpty()
                                                     || dateOfBirth == null || dateOfBirth.trim().isEmpty()
-                                                    || !checkFormatDate(dateOfBirth) || !checkManagerByDepartmentValid(managerId, departmentId)
+                                                    || !checkFormatDate(dateOfBirth) ||
+                                                    !checkManagerToCreate(departmentId,managerId)
+                                                    //!checkManagerByDepartmentValid(managerId, departmentId)
                                                     || !departmentService.checkDepartmentExist(departmentId)
                                                     || !positionService.checkPositionByDepartment(positionId, departmentId)
                                                     || !rankService.checkRankExist(rankId)
-                                                    || !checkFormatDate(onBoardDate)
+                                                    //|| !checkFormatDate(onBoardDate)
                                                     || !checkCCCDValid(citizenIdentification)
                                                     || !checkPhoneValid(phoneNumber)
                                                     || !checkGenderValid(gender)
@@ -799,7 +839,7 @@ public class PersonServiceImpl implements PersonService {
                                                 throw new BaseException(INVALID_PARAMETERS);
                                             } else {
                                                 EmployeeRequest employeeRequest = new EmployeeRequest(fullName, dateOfBirth,
-                                                        managerId, departmentId, positionId, rankId, onBoardDate,
+                                                        managerId, departmentId, positionId, rankId,
                                                         citizenIdentification, phoneNumber,
                                                         address, gender, null, salaryBasic, salaryBonus, isManager
                                                 );
@@ -880,11 +920,11 @@ public class PersonServiceImpl implements PersonService {
         String[] split = removeName.split("\\s");
         String fMailName = split[split.length - 1];
         for (String string : split) {
-        	fMailName += string.charAt(0);
-		}
+            fMailName += string.charAt(0);
+        }
         fMailName = fMailName.substring(0, fMailName.length() - 1);
         Integer countPersonByMail = personRepository.getCountPersonByMail(fMailName);
-        return fMailName + countPersonByMail + "@minswap.com";
+        return fMailName + countPersonByMail + "@ms-hrms.software";
     }
 
     private Double convertAnnualLeaveBudget(Long rankId) {

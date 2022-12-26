@@ -15,9 +15,25 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
 public class EmployeeRequest extends BasicRequest{
+	public EmployeeRequest(String fullName, String dateOfBirth, Long managerId, Long departmentId, Long positionId, Long rankId, String citizenIdentification, String phoneNumber, String address, Integer gender, String active, Double salaryBasic, Double salaryBonus, Integer isManager) {
+		this.fullName = fullName;
+		this.dateOfBirth = dateOfBirth;
+		this.managerId = managerId;
+		this.departmentId = departmentId;
+		this.positionId = positionId;
+		this.rankId = rankId;
+		this.citizenIdentification = citizenIdentification;
+		this.phoneNumber = phoneNumber;
+		this.address = address;
+		this.gender = gender;
+		this.active = active;
+		this.salaryBasic = salaryBasic;
+		this.salaryBonus = salaryBonus;
+		this.isManager = isManager;
+	}
+
 	@JsonProperty("fullName")
 	@NotNull(message ="600")
 	@NotEmpty(message = "600")
@@ -43,12 +59,6 @@ public class EmployeeRequest extends BasicRequest{
 	@JsonProperty("rankId")
 	@NotNull(message ="605")
 	private Long rankId;
-	
-	@JsonProperty("onBoardDate")
-	@NotNull(message ="606")
-	@NotEmpty(message = "606")
-//	@Pattern(regexp = "((0[1-9]|[12]\\d|3[01])-(0[1-9]|1[0-2])-[12]\\d{3})", message = "601")
-	private String onBoardDate;
 	
 	@JsonProperty("citizenIdentification")
 	@NotNull(message ="607")

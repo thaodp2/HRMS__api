@@ -16,6 +16,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.slf4j.Logger;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import javax.persistence.EntityManager;
@@ -159,7 +160,7 @@ public class RequestServiceImplTest {
         ResponseEntity<BaseResponse<Void, Void>> result = requestServiceImpl.updateRequestStatus("status", Long.valueOf(1), Long.valueOf(1));
         Assert.assertEquals(null, result);
     }
-    
+
 
     @Test
     public void testCancelRequest() throws Exception {

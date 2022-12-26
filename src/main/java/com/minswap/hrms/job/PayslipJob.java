@@ -59,7 +59,8 @@ public class PayslipJob {
 
             Double tax = 0D;
             Double basicSalary = payrollDto.getBasicSalary() == null ? 0 : payrollDto.getBasicSalary();
-            if (payrollDto.getBasicSalary() <= 5000000D) {
+            basicSalary = (basicSalary/totalWorks) * actualWorks;
+            if (basicSalary <= 5000000D) {
                 tax = (basicSalary * 5) / 100;
             } else if (basicSalary <= 10000000D) {
                 tax = (basicSalary * 10) / 100 - 250000D;

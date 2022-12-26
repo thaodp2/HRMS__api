@@ -53,7 +53,7 @@ public class ExportBenefitBudget extends ExcelExporter {
                         cell.setCellValue(benefitBudgetDtoList.get(j).getRemainOfYear());
                         break;
                 }
-//                getSheets().get(0).autoSizeColumn(i);
+                getSheets().get(0).autoSizeColumn(i);
             }
         }
     }

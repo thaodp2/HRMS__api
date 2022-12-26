@@ -65,7 +65,7 @@ public class DeviceTypeServiceImplTest {
         when(deviceTypeRepository.findByDeviceTypeNameIgnoreCase(anyString())).thenReturn(List.of(new DeviceType("deviceTypeName")));
 
         boolean result = deviceTypeServiceImpl.checkDuplicateDeviceType(List.of("String"));
-        Assert.assertEquals(true, result);
+        Assert.assertEquals(false, result);
     }
 
     @Test

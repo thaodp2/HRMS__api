@@ -101,7 +101,11 @@ public class TimeCheckServiceImpl implements TimeCheckService {
             if (!personFromDB.isPresent()) {
                 throw new Exception("Person not exist");
             }
-            getDatesInRange(startDateFormat, endDateFormat).forEach((date) -> {
+
+            List<Date> totalDates = getDatesInRange(startDateFormat, endDateFormat);
+            // Count total date from startDate to endDate
+            int total = totalDates.size();
+            totalDates.forEach((date) -> {
                 if (!Optional.ofNullable(timeCheckPerDateMap.get(date)).isPresent()) {
                     Date dateAdd = date;
                     dateAdd.setTime(dateAdd.getTime() + MILLISECOND_7_HOURS);
@@ -128,7 +132,7 @@ public class TimeCheckServiceImpl implements TimeCheckService {
                     return -1;
                 }
                 return 1;}).
-                    skip((page - 1 ) * 10).
+                    skip((page - 1 ) * limit).
                     limit(limit).
                     map(Map.Entry<Date, List<TimeCheckDto>>::getValue).reduce(new ArrayList<>(), (cumulatedList, currentValues) -> {
                 cumulatedList.addAll(currentValues);
@@ -139,7 +143,7 @@ public class TimeCheckServiceImpl implements TimeCheckService {
                 item.setId(id);
                 id++;
             }
-            pagination.setTotalRecords(timeCheckListAfterFillingUp.size());
+            pagination.setTotalRecords(total);
             pagination.setPage(page);
             pagination.setLimit(limit);
             responseEntity = BaseResponse.ofSucceededOffset(TimeCheckResponse.TimeCheckEachPersonResponse.of(timeCheckListAfterFillingUp), pagination);
@@ -176,7 +180,6 @@ public class TimeCheckServiceImpl implements TimeCheckService {
         return dates;
     }
 
-
     @Override
     public ResponseEntity<BaseResponse<TimeCheckResponse.TimeCheckEachSubordinateResponse, Pageable>> getListTimeCheck(String search, Long managerId, String startDate, String endDate, Integer page, Integer limit, String sort, String dir) throws Exception {
 
@@ -202,7 +205,7 @@ public class TimeCheckServiceImpl implements TimeCheckService {
                 eachSubordinateDto.setRollNumber(personFromDB.get().getRollNumber());
                 int dateCount = 2;
                 for (Date item : listDate) {
-                    Date dateAdd = item;
+                    Date dateAdd = new Date(item.getTime()) ;
                     dateAdd.setTime(dateAdd.getTime() + MILLISECOND_7_HOURS);
                     DailyTimeCheckDto timeCheckDto = timeCheckRepository.getDailyTimeCheck(personId, dateAdd);
 
@@ -269,7 +272,7 @@ public class TimeCheckServiceImpl implements TimeCheckService {
                 eachSubordinateDto.setRollNumber(personFromDB.get().getRollNumber());
                 int dateCount = 2;
                 for (Date item : listDate) {
-                    Date dateAdd = item;
+                    Date dateAdd = new Date(item.getTime());
                     dateAdd.setTime(dateAdd.getTime() + MILLISECOND_7_HOURS);
                     DailyTimeCheckDto timeCheckDto = timeCheckRepository.getDailyTimeCheck(personId, dateAdd);
 
@@ -329,7 +332,7 @@ public class TimeCheckServiceImpl implements TimeCheckService {
             eachSubordinateDto.setRollNumber(personFromDB.get().getRollNumber());
             int dateCount = 2;
             for (Date item : listDate) {
-                Date dateAdd = item;
+                Date dateAdd = new Date(item.getTime()) ;
                 dateAdd.setTime(dateAdd.getTime() + MILLISECOND_7_HOURS);
                 DailyTimeCheckDto timeCheckDto = timeCheckRepository.getDailyTimeCheck(personId, dateAdd);
 
@@ -449,25 +452,35 @@ public class TimeCheckServiceImpl implements TimeCheckService {
                                     }
                                     try {
                                         Long personId = null;
-                                        String rollNumber = null;
+                                        String privateKey = null;
                                         String timeLog = null;
 
                                         if (row.getCell(0) != null) {
-                                            rollNumber = row.getCell(0).getStringCellValue();
+                                            privateKey = row.getCell(0).getStringCellValue();
                                         }
                                         if (row.getCell(1) != null) {
                                             timeLog = row.getCell(1).getStringCellValue();
                                         }
-                                        Person person = personRepository.findPersonByRollNumberEquals(rollNumber).orElse(null);
-                                        if (person != null) {
-                                            personId = person.getPersonId();
-                                        } else {
+
+                                        SignatureProfile signatureProfileOptional = signatureProfileRepository.findSignatureProfileByPrivateKeySignature(privateKey).orElse(null);
+                                        if(signatureProfileOptional != null){
+                                            personId = signatureProfileOptional.getPersonId();
+                                        }else {
                                             countRecordFail++;
-                                            rowFail += (row.getRowNum() + 1) + ", ";
+                                            rowFail += (row.getRowNum() + 1) + ": Private key invalid, ";
+                                            continue;
                                         }
+
+//                                        Person person = personRepository.findPersonByRollNumberEquals(rollNumber).orElse(null);
+//                                        if (person != null) {
+//                                            personId = person.getPersonId();
+//                                        } else {
+//                                            countRecordFail++;
+//                                            rowFail += (row.getRowNum() + 1) + ", ";
+//                                        }
                                         if (personId == null || timeLog == null) {
                                             countRecordFail++;
-                                            rowFail += (row.getRowNum() + 1) + ", ";
+                                            rowFail += (row.getRowNum() + 1) + ": Time Log invalid, ";
                                             continue;
                                         } else {
                                             //check
@@ -475,7 +488,7 @@ public class TimeCheckServiceImpl implements TimeCheckService {
                                             Date currentDate = new Date();
                                             String currentDateString = smd.format(currentDate);
                                             currentDate = smd.parse(currentDateString);
-                                            if (currentDate.compareTo(checkFutureDate) != 0) {
+                                            if (currentDate.compareTo(checkFutureDate) == -1) {
                                                 countRecordFail++;
                                                 rowFail += (row.getRowNum() + 1) + ", ";
                                                 continue;
@@ -542,7 +555,7 @@ public class TimeCheckServiceImpl implements TimeCheckService {
                                     } catch (Exception e) {
                                         //show dòng bị fail
                                         countRecordFail++;
-                                        rowFail += (row.getRowNum() + 1) + ", ";
+                                        rowFail += (row.getRowNum() + 1) + ": "+e.getMessage()+", ";
                                     }
                                 }
                                 rowStart++;
