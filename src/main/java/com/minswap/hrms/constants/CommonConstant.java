@@ -83,7 +83,6 @@ public class CommonConstant {
             "Position Id",
             "Rank",
             "Rank Id",
-            "On Board Date",
             "Citizen Identification",
             "Phone Number",
             "Address",
@@ -98,7 +97,7 @@ public class CommonConstant {
     };
 
     public static String[] TEMPLATE_HEADER_TIME_CHECK_TO_IMPORT = {
-            "Roll Number",
+            "Private Key",
             "Time Log"
     };
 

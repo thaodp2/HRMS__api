@@ -57,18 +57,18 @@ public class DeviceTypeServiceImpl implements DeviceTypeService {
         List<DeviceType> deviceTypes = null;
         List<DeviceTypeDto> deviceTypeDtos = new ArrayList<>();
         if (deviceTypeName != null) {
-            pagination.setTotalRecords(deviceTypeRepository.findByDeviceTypeNameContainsIgnoreCaseAndStatus(deviceTypeName.trim(),0).size());
-            deviceTypes = deviceTypeRepository.findByDeviceTypeNameContainsIgnoreCaseAndStatus(deviceTypeName.trim(),0, PageRequest.of(page - 1, limit, Sort.by(Sort.Direction.DESC, "deviceTypeId")));
+            pagination.setTotalRecords(deviceTypeRepository.findByDeviceTypeNameContainsIgnoreCaseAndStatus(deviceTypeName.trim(), 0).size());
+            deviceTypes = deviceTypeRepository.findByDeviceTypeNameContainsIgnoreCaseAndStatus(deviceTypeName.trim(), 0, PageRequest.of(page - 1, limit, Sort.by(Sort.Direction.DESC, "deviceTypeId")));
         } else {
             pagination.setTotalRecords(deviceTypeRepository.findByStatus(0).size());
-            deviceTypes = deviceTypeRepository.findByStatus(0,PageRequest.of(page - 1, limit, Sort.by(Sort.Direction.DESC, "deviceTypeId")));
+            deviceTypes = deviceTypeRepository.findByStatus(0, PageRequest.of(page - 1, limit, Sort.by(Sort.Direction.DESC, "deviceTypeId")));
         }
         if (deviceTypes != null && !deviceTypes.isEmpty()) {
             for (DeviceType deviceType : deviceTypes) {
                 if (checkIsAllowDelete(deviceType.getDeviceTypeId())) {
-                    deviceTypeDtos.add(new DeviceTypeDto(deviceType.getDeviceTypeId(), deviceType.getDeviceTypeName(),deviceType.getStatus(),1));
-                }else {
-                    deviceTypeDtos.add(new DeviceTypeDto(deviceType.getDeviceTypeId(), deviceType.getDeviceTypeName(),deviceType.getStatus(),0));
+                    deviceTypeDtos.add(new DeviceTypeDto(deviceType.getDeviceTypeId(), deviceType.getDeviceTypeName(), deviceType.getStatus(), 1));
+                } else {
+                    deviceTypeDtos.add(new DeviceTypeDto(deviceType.getDeviceTypeId(), deviceType.getDeviceTypeName(), deviceType.getStatus(), 0));
                 }
             }
         }
@@ -90,12 +90,13 @@ public class DeviceTypeServiceImpl implements DeviceTypeService {
     public boolean checkDuplicateDeviceType(List<String> deviceTypeName) {
         Set<String> store = new HashSet<>();
         for (String item : deviceTypeName) {
-            if (store.add(item.toLowerCase()) == false){
+            if (store.add(item.toLowerCase()) == false) {
                 return true;
             }
         }
         for (String item : deviceTypeName) {
-            List<DeviceType> deviceTypes = deviceTypeRepository.findByDeviceTypeNameIgnoreCase(item);
+//            List<DeviceType> deviceTypes = deviceTypeRepository.findByDeviceTypeNameIgnoreCase(item);
+            List<DeviceType> deviceTypes = deviceTypeRepository.findByDeviceTypeNameContainsIgnoreCaseAndStatus(item.trim(), 0);
             if (deviceTypes.size() != 0) {
                 return true;
             }
@@ -139,8 +140,11 @@ public class DeviceTypeServiceImpl implements DeviceTypeService {
         if (deviceTypeName != null && !deviceTypeName.trim().isEmpty()) {
             DeviceType deviceType = deviceTypeRepository.findById(id).orElse(null);
             if (deviceType != null) {
-                List<DeviceType> deviceTypes = deviceTypeRepository.findByDeviceTypeNameIgnoreCase(deviceTypeName.trim());
-                deviceTypes.remove(deviceType);
+                //List<DeviceType> deviceTypes = deviceTypeRepository.findByDeviceTypeNameIgnoreCase(deviceTypeName.trim());
+                List<DeviceType> deviceTypes = deviceTypeRepository.findByDeviceTypeNameContainsIgnoreCaseAndStatus(deviceTypeName.trim(), 0);
+                if (deviceTypes != null && !deviceTypes.isEmpty()) {
+                    deviceTypes.remove(deviceType);
+                }
                 if (deviceTypes.size() != 0) {
                     throw new BaseException(ErrorCode.DUPLICATE_DEVICE_TYPE);
                 } else {
@@ -165,8 +169,8 @@ public class DeviceTypeServiceImpl implements DeviceTypeService {
             deviceType.setStatus(1);
             deviceTypeRepository.save(deviceType);
             List<Device> deviceList = deviceRepository.findByDeviceTypeId(id);
-            if(deviceList != null && !deviceList.isEmpty()){
-                for (Device device: deviceList) {
+            if (deviceList != null && !deviceList.isEmpty()) {
+                for (Device device : deviceList) {
                     device.setStatus(2);
                     deviceRepository.save(device);
                 }
@@ -175,8 +179,8 @@ public class DeviceTypeServiceImpl implements DeviceTypeService {
             List<Request> requests = requestRepository.getListRequestWhenDeviceTypeDelete(deviceType.getDeviceTypeId());
             Person currentUser = personService.getPersonInforByEmail(userPrincipal.getEmail());
             List<Notification> notificationList = new ArrayList<>();
-            if(requests != null && !requests.isEmpty()){
-                for (Request request: requests) {
+            if (requests != null && !requests.isEmpty()) {
+                for (Request request : requests) {
                     Date dateToReject = new Date();
                     Date date = new Date();
                     dateToReject.setTime(dateToReject.getTime() - CommonConstant.MILLISECOND_7_HOURS);
@@ -189,8 +193,8 @@ public class DeviceTypeServiceImpl implements DeviceTypeService {
                             0, null, 0, currentUser.getPersonId(), request.getPersonId(), date);
                     notificationList.add(notificationToEmp);
                     Person person = personRepository.findById(request.getPersonId()).orElse(null);
-                    if(person != null && person.getManagerId() != null) {
-                        Notification notificationToManager = new Notification("informs that the device type you requested to borrow to "+person.getFullName() +" - "+person.getRollNumber()  +" staff no longer exists!",
+                    if (person != null && person.getManagerId() != null) {
+                        Notification notificationToManager = new Notification("informs that the device type you requested to borrow to " + person.getFullName() + " - " + person.getRollNumber() + " staff no longer exists!",
                                 0, null, 0, currentUser.getPersonId(), person.getManagerId(), date);
                         notificationList.add(notificationToManager);
                     }
