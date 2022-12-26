@@ -17,6 +17,24 @@ import javax.validation.constraints.Pattern;
 @AllArgsConstructor
 @NoArgsConstructor
 public class EmployeeUpdateRequest extends BasicRequest{
+
+	public EmployeeUpdateRequest(String fullName, String dateOfBirth, Long managerId, Long departmentId, Long positionId, Long rankId, String citizenIdentification, String phoneNumber, String address, Integer gender, String active, Double salaryBasic, Double salaryBonus, Integer isManager) {
+		this.fullName = fullName;
+		this.dateOfBirth = dateOfBirth;
+		this.managerId = managerId;
+		this.departmentId = departmentId;
+		this.positionId = positionId;
+		this.rankId = rankId;
+		this.citizenIdentification = citizenIdentification;
+		this.phoneNumber = phoneNumber;
+		this.address = address;
+		this.gender = gender;
+		this.active = active;
+		this.salaryBasic = salaryBasic;
+		this.salaryBonus = salaryBonus;
+		this.isManager = isManager;
+	}
+
 	@JsonProperty("fullName")
 //	@Pattern(regexp = "^[a-zA-Z0-9 ]{3,20}$", message = "600")
 	private String fullName;
