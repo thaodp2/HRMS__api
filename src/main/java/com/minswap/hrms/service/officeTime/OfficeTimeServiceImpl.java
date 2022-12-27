@@ -150,7 +150,17 @@ public class OfficeTimeServiceImpl implements OfficeTimeService{
                     parse("2022-01-01" + " " + lunchBreakTimeStart);
             java.util.Date endLunchBreakTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
                     parse("2022-01-01" + " " + lunchBreakTimeEnd);
-            if (calculateHoursBetweenTwoDateTime(startOfficeTime, finishOfficeTime) -
+            if (startOfficeTime.getTime() <= finishOfficeTime.getTime()) {
+                throw new BaseException(ErrorCode.newErrorCode(208,
+                        "Start office time must be before end office time",
+                        httpStatus.NOT_ACCEPTABLE));
+            }
+            else if (startLunchBreakTime.getTime() <= endLunchBreakTime.getTime()) {
+                throw new BaseException(ErrorCode.newErrorCode(208,
+                        "Lunch break start time must be before lunch break end time",
+                        httpStatus.NOT_ACCEPTABLE));
+            }
+            else if (calculateHoursBetweenTwoDateTime(startOfficeTime, finishOfficeTime) -
                     calculateHoursBetweenTwoDateTime(startLunchBreakTime, endLunchBreakTime) > 8) {
                 throw new BaseException(ErrorCode.newErrorCode(208,
                         "The company's working time in a day must be less than 8 hours",
