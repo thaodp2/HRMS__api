@@ -160,8 +160,16 @@ public class OfficeTimeServiceImpl implements OfficeTimeService{
                         "Lunch break start time must be before lunch break end time",
                         httpStatus.NOT_ACCEPTABLE));
             }
+            else if (startLunchBreakTime.getTime() <= startOfficeTime.getTime()
+                    || startLunchBreakTime.getTime() >= finishOfficeTime.getTime()
+                    || endLunchBreakTime.getTime() <= startOfficeTime.getTime()
+                    || endLunchBreakTime.getTime() >= finishOfficeTime.getTime()) {
+                throw new BaseException(ErrorCode.newErrorCode(208,
+                        "Lunch break must be within the company's working time",
+                        httpStatus.NOT_ACCEPTABLE));
+            }
             else if (calculateHoursBetweenTwoDateTime(startOfficeTime, finishOfficeTime) -
-                    calculateHoursBetweenTwoDateTime(startLunchBreakTime, endLunchBreakTime) > 8) {
+                    calculateHoursBetweenTwoDateTime(startLunchBreakTime, endLunchBreakTime) != 8) {
                 throw new BaseException(ErrorCode.newErrorCode(208,
                         "The company's working time in a day must be less than 8 hours",
                         httpStatus.NOT_ACCEPTABLE));
