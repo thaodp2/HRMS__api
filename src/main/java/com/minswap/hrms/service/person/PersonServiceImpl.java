@@ -415,10 +415,10 @@ public class PersonServiceImpl implements PersonService {
             } catch (Exception e) {
                 throw new BaseException(ErrorCode.newErrorCode(500, e.getMessage()));
             }
-            List<OTBudget> otBudgetList = new ArrayList<>();
-            otBudgetList.add(new OTBudget(person.getPersonId(), 40, 0, 40, 200, java.time.LocalDateTime.now().getMonthValue(), Year.now()));
-            otBudgetRepository.saveAll(otBudgetList);
         }
+        List<OTBudget> otBudgetList = new ArrayList<>();
+        otBudgetList.add(new OTBudget(person.getPersonId(), 40, 0, 40, 200, java.time.LocalDateTime.now().getMonthValue(), Year.now()));
+        otBudgetRepository.saveAll(otBudgetList);
         ResponseEntity<BaseResponse<Void, Void>> responseEntity = BaseResponse.ofSucceeded(null);
         return responseEntity;
     }
@@ -1018,7 +1018,7 @@ public class PersonServiceImpl implements PersonService {
         try {
             SimpleDateFormat sm = new SimpleDateFormat("yyyy-MM-dd");
             Date date = sm.parse(dateStr);
-            date.setTime(date.getTime() + MILLISECOND_PER_DAY);
+            date.setTime(date.getTime());
             return date;
         } catch (Exception e) {
             throw new BaseException(ErrorCode.DATE_FAIL_FOMART);
