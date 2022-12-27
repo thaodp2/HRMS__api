@@ -403,7 +403,8 @@ public class TimeCheckServiceImpl implements TimeCheckService {
             timeCheck.setPersonId(signatureProfile.getPersonId());
             timeCheck.setTimeOut(convertDateInput(timeCheckInRequest.getTimeLog().toString()));
             timeCheck.setOutEarly(processTimeCome(officeTime.getTimeFinish(), timeCheck.getTimeOut(), 1));
-            timeCheck.setWorkingTime(processWorkingTime(dailyTimeCheckDto.getTimeIn(), timeCheck.getTimeOut(), dailyTimeCheckDto.getInLate(), timeCheck.getOutEarly()));
+            timeCheck.setWorkingTime(requestService.calculateNumOfHoursWorkedInADay(dailyTimeCheckDto.getTimeIn(), timeCheck.getTimeOut()));
+            //timeCheck.setWorkingTime(processWorkingTime(dailyTimeCheckDto.getTimeIn(), timeCheck.getTimeOut(), dailyTimeCheckDto.getInLate(), timeCheck.getOutEarly()));
             timeCheckRepository.updateTimeCheck(timeCheck.getTimeOut(), timeCheck.getOutEarly(), timeCheck.getWorkingTime(), timeCheck.getPersonId());
         }
         timeCheck.setPersonId(signatureProfile.getPersonId());
@@ -484,11 +485,11 @@ public class TimeCheckServiceImpl implements TimeCheckService {
                                             continue;
                                         } else {
                                             //check
-                                            Date checkFutureDate = smd.parse(timeLog);
+                                            Date checkFutureDate = sm.parse(timeLog);
                                             Date currentDate = new Date();
-                                            String currentDateString = smd.format(currentDate);
-                                            currentDate = smd.parse(currentDateString);
-                                            if (currentDate.compareTo(checkFutureDate) == -1) {
+                                            String currentDateString = sm.format(currentDate);
+                                            currentDate = sm.parse(currentDateString);
+                                            if (currentDate.before(checkFutureDate)) {
                                                 countRecordFail++;
                                                 rowFail += (row.getRowNum() + 1) + ", ";
                                                 continue;
@@ -496,7 +497,11 @@ public class TimeCheckServiceImpl implements TimeCheckService {
                                             //
                                             TimeCheck timeCheck = new TimeCheck();
                                             //check time in exsit
-                                            DailyTimeCheckDto dailyTimeCheckDto = timeCheckRepository.getDailyTimeCheck(personId, convertDateInput(timeLog));
+                                            Date timeLog1 = convertDateInput(timeLog);
+                                            timeLog1.setTime(timeLog1.getTime() + appConfig.getMillisecondSevenHours());
+                                            DailyTimeCheckDto dailyTimeCheckDto = timeCheckRepository.getDailyTimeCheck(personId, timeLog1);
+
+                                            //DailyTimeCheckDto dailyTimeCheckDto = timeCheckRepository.getDailyTimeCheck(personId, convertDateInput(timeLog));
                                             Optional<OfficeTime> officeTimeDb = officeTimeRepository.findOfficeTimeByOfficeTimeId(1L);
                                             if (!officeTimeDb.isPresent()) {
                                                 //show dòng bị fail
@@ -545,7 +550,10 @@ public class TimeCheckServiceImpl implements TimeCheckService {
 
 //                                                timeCheck.setTimeOut(convertDateInput(timeLog));
 //                                                timeCheck.setOutEarly(processTimeCome(officeTime.getTimeFinish(), timeCheck.getTimeOut(), 1));
-                                                timeCheck.setWorkingTime(requestService.calculateNumOfHoursWorkedInADay(dailyTimeCheckDto.getTimeIn(), timeCheck.getTimeOut()));
+                                                String DateTimeIn=sm.format(dailyTimeCheckDto.getTimeIn().getTime() - appConfig.getMillisecondSevenHours());
+                                                Date date2 = sm.parse(DateTimeIn);
+                                                timeCheck.setWorkingTime(requestService.calculateNumOfHoursWorkedInADay(date2, date1));
+
 
                                                 //timeCheck.setWorkingTime(processWorkingTime(dailyTimeCheckDto.getTimeIn(), timeCheck.getTimeOut(), dailyTimeCheckDto.getInLate(), timeCheck.getOutEarly()));
                                                 timeCheckRepository.updateTimeCheck(timeCheck.getTimeOut(), timeCheck.getOutEarly(), timeCheck.getWorkingTime(), timeCheck.getPersonId());
