@@ -16,6 +16,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.slf4j.Logger;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import javax.persistence.EntityManager;
@@ -62,8 +63,6 @@ public class RequestServiceImplTest {
         MockitoAnnotations.initMocks(this);
     }
 
-
-
     @Test
     public void testCalculateHoursBetweenTwoDateTime() throws Exception {
         double result = requestServiceImpl.calculateHoursBetweenTwoDateTime(new GregorianCalendar(2022, Calendar.DECEMBER, 27, 0, 11).getTime(), new GregorianCalendar(2022, Calendar.DECEMBER, 27, 0, 11).getTime());
@@ -75,16 +74,11 @@ public class RequestServiceImplTest {
         String result = requestServiceImpl.getStringDateFromDateTime(new GregorianCalendar(2022, Calendar.DECEMBER, 27, 0, 11).getTime());
         Assert.assertEquals("2022-12-27", result);
     }
-
-
-
-
     @Test
     public void testGetDayOfDate() throws Exception {
         int result = requestServiceImpl.getDayOfDate(new GregorianCalendar(2022, Calendar.DECEMBER, 27, 0, 11).getTime());
         Assert.assertEquals(27, result);
     }
-
     @Test
     public void testGetMonthOfDate() throws Exception {
         int result = requestServiceImpl.getMonthOfDate(new GregorianCalendar(2022, Calendar.DECEMBER, 27, 0, 11).getTime());
@@ -95,7 +89,6 @@ public class RequestServiceImplTest {
     public void testValidateOTTime() throws Exception {
         requestServiceImpl.validateOTTime(0d, 0d, 0d, 0d);
     }
-
 
     @Test
     public void testGetNotiContentWhenCreateRequest() throws Exception {
@@ -126,9 +119,6 @@ public class RequestServiceImplTest {
         String result = requestServiceImpl.getNotiURLForITSupport();
         Assert.assertEquals("request-center/borrow-device", result);
     }
-
-
-
 
 }
 
