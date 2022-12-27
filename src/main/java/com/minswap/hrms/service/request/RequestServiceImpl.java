@@ -350,8 +350,7 @@ public class RequestServiceImpl implements RequestService {
                 Integer deviceTypeStatus = requestRepository.getDeviceTypeStatus(id);
                 if (deviceTypeStatus.intValue() == 1) {
                     requestDto.setIsDeviceTypeDeleted(1);
-                }
-                else {
+                } else {
                     requestDto.setIsDeviceTypeDeleted(0);
                 }
                 requestDto.setRequestTypeName(DEVICE_TYPE);
@@ -511,8 +510,8 @@ public class RequestServiceImpl implements RequestService {
             Date startTime = null;
             Date endTime = null;
             if (requestTypeId != BORROW_REQUEST_TYPE_ID) {
-                 startTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).parse(editRequest.getStartTime());
-                 endTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).parse(editRequest.getEndTime());
+                startTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).parse(editRequest.getStartTime());
+                endTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).parse(editRequest.getEndTime());
             }
             validateForCreateAndEditRequest(Long.valueOf(requestTypeId.intValue()),
                     startTime,
@@ -523,8 +522,7 @@ public class RequestServiceImpl implements RequestService {
                 startTime.setTime(startTime.getTime() + appConfig.getMillisecondSevenHours());
                 endTime.setTime(endTime.getTime() + appConfig.getMillisecondSevenHours());
                 requestRepository.updateNormalRequest(id, startTime, endTime, editRequest.getReason());
-            }
-            else {
+            } else {
                 requestRepository.updateBorrowDeviceRequest(id, editRequest.getDeviceTypeId());
             }
             List<String> listImage = editRequest.getListEvidence();
@@ -797,12 +795,11 @@ public class RequestServiceImpl implements RequestService {
                 startTime.setTime(startTime.getTime() - appConfig.getMillisecondSevenHours());
                 double newOTTime = Double.parseDouble(decimalFormat.format(otTime - otTimeReturn));
                 timeCheckRepository.updateOTTime(getDayOfDate(startTime), personId, newOTTime, getMonthOfDate(startTime));
-            }
-            else {
+            } else {
                 otTimeOfStartDay = calculateHoursBetweenTwoDateTime(startTime,
-                                                                    formatTimeToKnownDate(startTime, TIME_END_OF_DAY));
+                        formatTimeToKnownDate(startTime, TIME_END_OF_DAY));
                 otTimeOfEndDay = calculateHoursBetweenTwoDateTime(formatTimeToKnownDate(endTime, TIME_START_OF_DAY),
-                                                                  endTime);
+                        endTime);
                 startTime.setTime(startTime.getTime() + appConfig.getMillisecondSevenHours());
                 endTime.setTime(endTime.getTime() + appConfig.getMillisecondSevenHours());
                 Double otTimeInDBOfStartDay = timeCheckRepository.getOtTimeInDate(personId, startTime);
@@ -1467,7 +1464,10 @@ public class RequestServiceImpl implements RequestService {
         double breakTimeHoursInOneDay = calculateHoursBetweenTwoDateTime(lunchBreakStartTime, lunchBreakEndTime);
         double workingTimeHoursInOneDay = 0;
         // khi gọi đến hàm này, mặc định là start time va end time cùng ngày với nhau
-        if (startTime.before(startOfficeTime)) {
+        if ((startTime.before(startOfficeTime) && endTime.before(startOfficeTime))
+                || (startTime.after(endOfficeTime) && endTime.after(endOfficeTime))) {
+            workingTimeHoursInOneDay = 0;
+        } else if (startTime.before(startOfficeTime)) {
             if (endTime.after(endOfficeTime)) {
                 workingTimeHoursInOneDay = calculateHoursBetweenTwoDateTime(startOfficeTime, endOfficeTime) - breakTimeHoursInOneDay;
             } else if (endTime.after(lunchBreakEndTime) && endTime.getTime() <= endOfficeTime.getTime()) {
@@ -1550,8 +1550,7 @@ public class RequestServiceImpl implements RequestService {
                         "You can't approve this request because the device type borrowed in the request has " +
                                 "been removed. The request will automatically return to the reject status!",
                         httpStatus.NOT_ACCEPTABLE));
-            }
-            else if (deviceTypeStatus == null) {
+            } else if (deviceTypeStatus == null) {
                 throw new BaseException(ErrorCode.newErrorCode(208,
                         "Device type is not exist!",
                         httpStatus.NOT_ACCEPTABLE));
@@ -1560,8 +1559,7 @@ public class RequestServiceImpl implements RequestService {
         Integer isUpdatedSuccess = requestRepository.updateStatusRequest(status, requestId, currentTime);
         if (isUpdatedSuccess == CommonConstant.UPDATE_FAIL) {
             throw new BaseException(ErrorCode.UPDATE_FAIL);
-        }
-        else if (requestTypeId == BORROW_REQUEST_TYPE_ID.intValue()) {
+        } else if (requestTypeId == BORROW_REQUEST_TYPE_ID.intValue()) {
             String url = getNotiURLForITSupport();
             List<Long> listPersonIdHasITSPRole = personRepository.getListITSupportId(Long.valueOf(ROLE_IT_SUPPORT));
             if (listPersonIdHasITSPRole.size() > 0) {
