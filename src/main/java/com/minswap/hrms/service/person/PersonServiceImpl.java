@@ -418,7 +418,11 @@ public class PersonServiceImpl implements PersonService {
         }
         List<OTBudget> otBudgetList = new ArrayList<>();
         otBudgetList.add(new OTBudget(person.getPersonId(), 40, 0, 40, 200, java.time.LocalDateTime.now().getMonthValue(), Year.now()));
-        otBudgetRepository.saveAll(otBudgetList);
+        try {
+            otBudgetRepository.saveAll(otBudgetList);
+        }catch (Exception e) {
+        	 throw new BaseException(ErrorCode.newErrorCode(500, e.getMessage()));
+		}
         ResponseEntity<BaseResponse<Void, Void>> responseEntity = BaseResponse.ofSucceeded(null);
         return responseEntity;
     }
