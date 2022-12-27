@@ -14,6 +14,7 @@ import com.minswap.hrms.request.OfficeTimeRequest;
 import com.minswap.hrms.response.OfficeTimeResponse;
 import com.minswap.hrms.response.dto.OfficeTimeDto;
 import com.minswap.hrms.service.notification.NotificationService;
+import com.minswap.hrms.service.request.RequestService;
 import com.minswap.hrms.service.request.RequestServiceImpl;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +48,9 @@ public class OfficeTimeServiceImpl implements OfficeTimeService{
     private NotificationService notificationService;
 
     private HttpStatus httpStatus;
+
+    @Autowired
+    private RequestServiceImpl requestService;
 
     @Override
     public ResponseEntity<BaseResponse<HttpStatus, Void>> updateOfficeTime(OfficeTimeRequest officeTimeRequest) throws Exception {
@@ -168,10 +172,10 @@ public class OfficeTimeServiceImpl implements OfficeTimeService{
                         "Lunch break must be within the company's working time",
                         httpStatus.NOT_ACCEPTABLE));
             }
-            else if (calculateHoursBetweenTwoDateTime(startOfficeTime, finishOfficeTime) -
-                    calculateHoursBetweenTwoDateTime(startLunchBreakTime, endLunchBreakTime) != 8) {
+            else if (requestService.calculateNumOfHoursWorkedInADay(startOfficeTime, startLunchBreakTime) +
+                     requestService.calculateNumOfHoursWorkedInADay(endLunchBreakTime, finishOfficeTime) != 8) {
                 throw new BaseException(ErrorCode.newErrorCode(208,
-                        "The company's working time in a day must be less than 8 hours",
+                        "The company's working time in a day must be equals 8 hours",
                         httpStatus.NOT_ACCEPTABLE));
             }
         } catch (ParseException e) {
