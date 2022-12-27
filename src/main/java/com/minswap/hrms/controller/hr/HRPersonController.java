@@ -235,4 +235,9 @@ public class HRPersonController {
     public ResponseEntity<BaseResponse<HttpStatus, Void>> importExcel(@Valid @RequestParam MultipartFile file) throws IOException {
         return personService.importExcel(file);
     }
+    
+    @GetMapping("/employee/total")
+    public ResponseEntity<BaseResponse<EmployeeInfoResponse, Void>> getTotalListEmployee() {
+        return personService.getTotalListEmployee();
+    }
 }

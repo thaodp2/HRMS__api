@@ -65,4 +65,5 @@ public interface PersonService {
     Person getPersonInforByEmail(String email);
 
 	ResponseEntity<BaseResponse<ListRolesResponse, Void>> getRoles(UserPrincipal userPrincipal);
+    ResponseEntity<BaseResponse<EmployeeInfoResponse, Void>> getTotalListEmployee();
 }

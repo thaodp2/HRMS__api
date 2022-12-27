@@ -131,5 +131,6 @@ public class EmployeeDetailDto {
         BigDecimal bigDecimal = new BigDecimal(salary);// form to BigDecimal
         return bigDecimal.toString();
     }
-
+    @JsonProperty("total")
+    private Integer total;
 }

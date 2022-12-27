@@ -368,7 +368,7 @@ public class PersonServiceImpl implements PersonService {
     public ResponseEntity<BaseResponse<Void, Void>> createEmployee(EmployeeRequest employeeRequest) {
         Person person = new Person();
         person.setFullName(employeeRequest.getFullName().trim());
-        person.setAddress(employeeRequest.getAddress().trim());
+        person.setAddress(employeeRequest.getAddress());
         Integer personCheckCitizen = personRepository.getUserByCitizenIdentification(employeeRequest.getCitizenIdentification());
         if (personCheckCitizen != null && personCheckCitizen > 0) {
             throw new BaseException(ErrorCode.CITIZEN_INDENTIFICATION_EXSIT);
@@ -415,10 +415,14 @@ public class PersonServiceImpl implements PersonService {
             } catch (Exception e) {
                 throw new BaseException(ErrorCode.newErrorCode(500, e.getMessage()));
             }
-            List<OTBudget> otBudgetList = new ArrayList<>();
-            otBudgetList.add(new OTBudget(person.getPersonId(), 40, 0, 40, 200, java.time.LocalDateTime.now().getMonthValue(), Year.now()));
-            otBudgetRepository.saveAll(otBudgetList);
         }
+        List<OTBudget> otBudgetList = new ArrayList<>();
+        otBudgetList.add(new OTBudget(person.getPersonId(), 40, 0, 40, 200, java.time.LocalDateTime.now().getMonthValue(), Year.now()));
+        try {
+            otBudgetRepository.saveAll(otBudgetList);
+        }catch (Exception e) {
+        	 throw new BaseException(ErrorCode.newErrorCode(500, e.getMessage()));
+		}
         ResponseEntity<BaseResponse<Void, Void>> responseEntity = BaseResponse.ofSucceeded(null);
         return responseEntity;
     }
@@ -1018,7 +1022,7 @@ public class PersonServiceImpl implements PersonService {
         try {
             SimpleDateFormat sm = new SimpleDateFormat("yyyy-MM-dd");
             Date date = sm.parse(dateStr);
-            date.setTime(date.getTime() + MILLISECOND_PER_DAY);
+            date.setTime(date.getTime());
             return date;
         } catch (Exception e) {
             throw new BaseException(ErrorCode.DATE_FAIL_FOMART);
@@ -1029,4 +1033,15 @@ public class PersonServiceImpl implements PersonService {
         String[] userNameArr = gmail.split("@");
         return userNameArr[0];
     }
+
+	@Override
+	public ResponseEntity<BaseResponse<EmployeeInfoResponse, Void>> getTotalListEmployee() {
+		List<Person> people;
+        people = personRepository.findAll();
+        EmployeeDetailDto masterDataDtos = new EmployeeDetailDto();
+        masterDataDtos.setTotal(people.size());
+        EmployeeInfoResponse employeeInfoResponse = new EmployeeInfoResponse();
+        employeeInfoResponse.setEmployeeDetail(masterDataDtos);;
+		return BaseResponse.ofSucceeded(employeeInfoResponse);
+	}
 }
