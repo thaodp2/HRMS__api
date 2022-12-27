@@ -368,7 +368,7 @@ public class PersonServiceImpl implements PersonService {
     public ResponseEntity<BaseResponse<Void, Void>> createEmployee(EmployeeRequest employeeRequest) {
         Person person = new Person();
         person.setFullName(employeeRequest.getFullName().trim());
-        person.setAddress(employeeRequest.getAddress().trim());
+        person.setAddress(employeeRequest.getAddress());
         Integer personCheckCitizen = personRepository.getUserByCitizenIdentification(employeeRequest.getCitizenIdentification());
         if (personCheckCitizen != null && personCheckCitizen > 0) {
             throw new BaseException(ErrorCode.CITIZEN_INDENTIFICATION_EXSIT);
@@ -1029,4 +1029,15 @@ public class PersonServiceImpl implements PersonService {
         String[] userNameArr = gmail.split("@");
         return userNameArr[0];
     }
+
+	@Override
+	public ResponseEntity<BaseResponse<EmployeeInfoResponse, Void>> getTotalListEmployee() {
+		List<Person> people;
+        people = personRepository.findAll();
+        EmployeeDetailDto masterDataDtos = new EmployeeDetailDto();
+        masterDataDtos.setTotal(people.size());
+        EmployeeInfoResponse employeeInfoResponse = new EmployeeInfoResponse();
+        employeeInfoResponse.setEmployeeDetail(masterDataDtos);;
+		return BaseResponse.ofSucceeded(employeeInfoResponse);
+	}
 }
