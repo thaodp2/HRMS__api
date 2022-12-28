@@ -54,7 +54,7 @@ public class OfficeTimeServiceImpl implements OfficeTimeService{
 
     @Override
     public ResponseEntity<BaseResponse<HttpStatus, Void>> updateOfficeTime(OfficeTimeRequest officeTimeRequest) throws Exception {
-        try{
+
         ModelMapper modelMapper = new ModelMapper();
         Long officeTimeId = officeTimeRepository.getPresentOfficeTimeId();
         Optional<OfficeTime> officeTimeDB = officeTimeRepository.findOfficeTimeByOfficeTimeId(officeTimeId);
@@ -88,10 +88,6 @@ public class OfficeTimeServiceImpl implements OfficeTimeService{
                     0,"system-company/office-time",0, null, item, officeTime.getCreateDate());
             notificationRepository.save(notification);
             notificationService.send(notification);
-        }
-
-        }catch (Exception ex){
-            throw new Exception(ex.getMessage());
         }
         ResponseEntity<BaseResponse<HttpStatus, Void>> responseEntity
                 = BaseResponse.ofSucceededOffset(HttpStatus.OK, null);
@@ -154,12 +150,12 @@ public class OfficeTimeServiceImpl implements OfficeTimeService{
                     parse("2022-01-01" + " " + lunchBreakTimeStart);
             java.util.Date endLunchBreakTime = new SimpleDateFormat(CommonConstant.YYYY_MM_DD_HH_MM_SS).
                     parse("2022-01-01" + " " + lunchBreakTimeEnd);
-            if (startOfficeTime.getTime() <= finishOfficeTime.getTime()) {
+            if (startOfficeTime.getTime() >= finishOfficeTime.getTime()) {
                 throw new BaseException(ErrorCode.newErrorCode(208,
                         "Start office time must be before end office time",
                         httpStatus.NOT_ACCEPTABLE));
             }
-            else if (startLunchBreakTime.getTime() <= endLunchBreakTime.getTime()) {
+            else if (startLunchBreakTime.getTime() >= endLunchBreakTime.getTime()) {
                 throw new BaseException(ErrorCode.newErrorCode(208,
                         "Lunch break start time must be before lunch break end time",
                         httpStatus.NOT_ACCEPTABLE));
