@@ -69,6 +69,10 @@ public class BenefitBudgetServiceImpl implements BenefitBudgetService {
     @Override
     public List<BenefitBudgetDto> getBenefitBudgetList(Long managerId, Long personId, Integer page, Integer limit, Long requestTypeId, String search, Integer month, Year year, String sort, String dir) {
         Sort.Direction dirSort = CommonUtil.getSortDirection(sort, dir);
+        if(dirSort == null){
+            dirSort = Sort.Direction.DESC;
+            sort = "rollNumber";
+        }
         List<BenefitBudgetDto> pageInfor = null;
         if (requestTypeId != CommonConstant.REQUEST_TYPE_ID_OF_OT) {
             if (page == null && limit == null) {
